@@ -130,6 +130,9 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
 .sbtn.no{color:var(--bad)}
 .pendbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-radius:10px;border:1px solid var(--ember);background:color-mix(in srgb,var(--ember) 10%,var(--surface))}
 .pendbar b{color:var(--ember)}
+.member .pwform{flex-basis:100%;flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:12px;background:var(--bg)}
+.member .pwform:not([hidden]){display:flex}
+.member .pwform label{flex:1 1 220px}
 .group-h{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:6px 0 8px}
 @media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s ease}}
 </style>
@@ -146,7 +149,33 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     <button class="btn ember" type="submit" id="l-btn">Prijavi se</button>
     <span class="msg" id="l-msg" role="status"></span>
   </form>
+  <p class="status"><button class="linkbtn" id="to-forgot" type="button">Zaboravio/la si lozinku?</button></p>
   <p class="status">Nemaš nalog? <button class="linkbtn" id="to-signup" type="button">Napravi nalog</button></p>
+</div>
+
+<!-- ZABORAVLJENA LOZINKA -->
+<div class="login" id="forgot-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <form id="forgot-form" novalidate>
+    <h2>Zaboravljena lozinka</h2>
+    <label>Email naloga<input type="email" id="f2-email" autocomplete="username" required></label>
+    <button class="btn ember" type="submit" id="f2-btn">Pošalji link za novu lozinku</button>
+    <span class="msg" id="f2-msg" role="status"></span>
+  </form>
+  <p class="status">Ako mejl ne stigne za par minuta (proveri i spam), javi se administratoru — on ti može postaviti novu lozinku. <button class="linkbtn" id="forgot-back" type="button">Nazad na prijavu</button></p>
+</div>
+
+<!-- NOVA LOZINKA -->
+<div class="login" id="newpass-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <form id="newpass-form" novalidate>
+    <h2>Nova lozinka</h2>
+    <label>Nova lozinka<span class="hint">najmanje 8 znakova</span><input type="password" id="np-pass" autocomplete="new-password" minlength="8" required></label>
+    <label>Ponovi lozinku<input type="password" id="np-pass2" autocomplete="new-password" minlength="8" required></label>
+    <button class="btn ember" type="submit" id="np-btn">Sačuvaj lozinku</button>
+    <span class="msg" id="np-msg" role="status"></span>
+  </form>
+  <p class="status"><button class="linkbtn" id="np-cancel" type="button">Odustani</button></p>
 </div>
 
 <!-- REGISTRACIJA -->
@@ -181,7 +210,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
       <h1>Smoker Yield Log</h1>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><button class="linkbtn" id="logout">Odjavi se</button></div>
+      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><button class="linkbtn" id="change-pass">Promeni lozinku</button><button class="linkbtn" id="logout">Odjavi se</button></div>
       <div class="status" id="status">Učitavanje…</div>
     </div>
   </header>
@@ -316,7 +345,8 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
   const fmtDate = s => { if(!s) return '—'; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}.`; };
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const show = id => ['login-view','signup-view','pending-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
+  const show = id => ['login-view','signup-view','forgot-view','newpass-view','pending-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
+  let recovering = /type=recovery/.test(location.hash);
   const VIEWS = ['unos','pregled','istorija','tim'];
   const ROLE_LABEL = {admin:'administrator', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
 
@@ -538,13 +568,29 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
         if(self) acts=`<span class="role">${ROLE_LABEL[p.role]} · ti</span>`;
         else if(p.role==='ceka') acts=`<button class="sbtn go" data-id="${p.id}" data-role="kuvar">Odobri — kuhinja</button><button class="sbtn" data-id="${p.id}" data-role="admin">Odobri — administrator</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Odbij</button>`;
         else if(p.role==='odbijen') acts=`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati pristup</button>`;
-        else acts=`<span class="role">${ROLE_LABEL[p.role]}</span>${p.role==='kuvar'?`<button class="sbtn" data-id="${p.id}" data-role="admin">Postavi za administratora</button>`:`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati u kuhinju</button>`}<button class="sbtn no" data-id="${p.id}" data-role="odbijen">Ukini pristup</button>`;
-        html+=`<div class="member"><div class="who2"><b>${esc(p.full_name||'—')}</b><span>${esc(p.email||'')}</span></div><div class="acts">${acts}</div></div>`;
+        else acts=`<span class="role">${ROLE_LABEL[p.role]}</span>${p.role==='kuvar'?`<button class="sbtn" data-id="${p.id}" data-role="admin">Postavi za administratora</button>`:`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati u kuhinju</button>`}<button class="sbtn" data-pw="${p.id}" type="button">Nova lozinka</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Ukini pristup</button>`;
+        const pwForm = (!self && (p.role==='kuvar'||p.role==='admin')) ? `<form class="pwform" data-for="${p.id}" hidden novalidate><label>Nova lozinka za ${esc(p.full_name||p.email)}<span class="hint">najmanje 8 znakova — javi mu je lično</span><input type="text" autocomplete="off" minlength="8"></label><button class="sbtn go" type="submit">Sačuvaj</button><span class="msg"></span></form>` : '';
+        html+=`<div class="member"><div class="who2"><b>${esc(p.full_name||'—')}</b><span>${esc(p.email||'')}</span></div><div class="acts">${acts}</div>${pwForm}</div>`;
       });
       html+='</div></div>';
     });
     $('team').innerHTML = html || '<div class="empty"><strong>Još nema naloga</strong>Kad se neko registruje na sajtu, pojaviće se ovde.</div>';
-    $('team').querySelectorAll('.sbtn').forEach(b=>b.addEventListener('click',async()=>{
+    $('team').querySelectorAll('[data-pw]').forEach(b=>b.addEventListener('click',()=>{
+      const f=$('team').querySelector(`.pwform[data-for="${b.dataset.pw}"]`); if(!f) return;
+      f.hidden=!f.hidden; if(!f.hidden) f.querySelector('input').focus();
+    }));
+    $('team').querySelectorAll('.pwform').forEach(f=>f.addEventListener('submit',async ev=>{
+      ev.preventDefault();
+      const inp=f.querySelector('input'), m=f.querySelector('.msg'), btn=f.querySelector('button');
+      m.className='msg';
+      if(inp.value.length<8){ m.classList.add('err'); m.textContent='Najmanje 8 znakova.'; return; }
+      btn.disabled=true;
+      const {error}=await sb.rpc('admin_set_password',{target:f.dataset.for,new_password:inp.value});
+      btn.disabled=false;
+      if(error){ m.classList.add('err'); m.textContent=error.message; return; }
+      inp.value=''; m.classList.add('ok'); m.textContent='Lozinka je postavljena.';
+    }));
+    $('team').querySelectorAll('.sbtn[data-role]').forEach(b=>b.addEventListener('click',async()=>{
       b.disabled=true;
       const {error}=await sb.from('profiles').update({role:b.dataset.role}).eq('id',b.dataset.id);
       if(error){ b.disabled=false; b.textContent='Nije uspelo'; return; }
@@ -617,11 +663,46 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   $('logout').addEventListener('click',()=>sb.auth.signOut());
 
   $('pend-logout').addEventListener('click',()=>sb.auth.signOut());
+
+  // ---------- lozinke ----------
+  $('to-forgot').addEventListener('click',()=>{ $('f2-email').value=$('l-email').value; show('forgot-view'); $('f2-email').focus(); });
+  $('forgot-back').addEventListener('click',()=>show('login-view'));
+  $('forgot-form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const m=$('f2-msg'); m.className='msg';
+    const email=$('f2-email').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ m.classList.add('err'); m.textContent='Upiši ispravan email.'; return; }
+    $('f2-btn').disabled=true;
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo: location.origin+location.pathname});
+    $('f2-btn').disabled=false;
+    if(error && /rate|limit|security purposes/i.test(error.message)){ m.classList.add('err'); m.textContent='Previše zahteva za kratko vreme. Probaj ponovo za sat vremena ili se javi administratoru.'; return; }
+    m.classList.add('ok'); m.textContent='Ako nalog sa ovim emailom postoji, poslali smo link. Otvori mejl i klikni na link.';
+  });
+  $('change-pass').addEventListener('click',()=>{ $('np-msg').textContent=''; show('newpass-view'); $('np-pass').focus(); });
+  $('np-cancel').addEventListener('click',async()=>{
+    recovering=false;
+    const {data}=await sb.auth.getSession(); enter(data.session);
+  });
+  $('newpass-form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const m=$('np-msg'); m.className='msg';
+    const p1=$('np-pass').value, p2=$('np-pass2').value;
+    if(p1.length<8){ m.classList.add('err'); m.textContent='Lozinka mora imati najmanje 8 znakova.'; return; }
+    if(p1!==p2){ m.classList.add('err'); m.textContent='Lozinke se ne poklapaju.'; return; }
+    $('np-btn').disabled=true;
+    const {error}=await sb.auth.updateUser({password:p1});
+    $('np-btn').disabled=false;
+    if(error){ m.classList.add('err'); m.textContent = /same|different/i.test(error.message) ? 'Nova lozinka mora biti drugačija od stare.' : 'Lozinka nije promenjena: '+error.message; return; }
+    $('np-pass').value=''; $('np-pass2').value='';
+    recovering=false;
+    const {data}=await sb.auth.getSession(); await enter(data.session);
+  });
   $('pendbar-go').addEventListener('click',()=>tab('tim'));
 
   async function enter(session){
     stopChannels();
     if(!session){ me=null; isAdmin=false; entries=[]; team=[]; show('login-view'); return; }
+    if(recovering){ $('np-msg').textContent=''; show('newpass-view'); return; }
     const uid=session.user.id;
     const {data:prof}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
     me={id:uid, full_name:(prof&&prof.full_name)||session.user.email, role:(prof&&prof.role)||'ceka'};
@@ -649,6 +730,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   }
   let lastUid=null;
   sb.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){ recovering=true; lastUid=session?session.user.id:null; setTimeout(()=>enter(session),0); return; }
     const uid=session?session.user.id:null;
     if(uid===lastUid && event!=='INITIAL_SESSION') return;
     lastUid=uid; setTimeout(()=>enter(session),0);
