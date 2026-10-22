@@ -455,7 +455,11 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     VIEWS.forEach(x=>$('view-'+x).hidden = x!==v);
     try{localStorage.setItem('syl-tab',v)}catch(_){}
   }
-  function restoreTab(){ let t='unos'; try{ t=localStorage.getItem('syl-tab')||'unos'; }catch(_){} tab(t); }
+  const startHash = (location.hash||'').slice(1);
+  function restoreTab(){
+    if(VIEWS.includes(startHash)){ tab(startHash); return; }
+    let t='unos'; try{ t=localStorage.getItem('syl-tab')||'unos'; }catch(_){} tab(t);
+  }
 
   // ---------- prikaz ----------
   const inPeriod = (e,days) => { if(!days) return true; const d=new Date(); d.setDate(d.getDate()-days+1); return (e.cook_date||'')>=d.toISOString().slice(0,10); };
