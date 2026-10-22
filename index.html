@@ -155,6 +155,11 @@ nav{gap:6px 18px;align-items:flex-end}
 .hbar .n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .daychart{width:100%;height:150px;display:block}
 .cell-input{width:110px;padding:5px 8px;font-size:14px}
+#n-editor form.pwform{flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:12px;background:var(--bg)}
+#n-editor form.pwform label{flex:1 1 140px}
+tr.clickrow{cursor:pointer}
+tr.clickrow:hover td{background:var(--bg)}
+tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
 .pendbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-radius:10px;border:1px solid var(--ember);background:color-mix(in srgb,var(--ember) 10%,var(--surface))}
 .pendbar b{color:var(--ember)}
 .member .pwform{flex-basis:100%;flex-direction:row;flex-wrap:wrap;align-items:flex-end;gap:10px;padding:12px;background:var(--bg)}
@@ -256,6 +261,9 @@ nav{gap:6px 18px;align-items:flex-end}
     <div class="navgroup"><span class="navlabel">Otpis</span>
       <button role="tab" aria-selected="false" data-view="otpis">Otpis po smeni</button>
       <button role="tab" aria-selected="false" data-view="otpis-pregled">Pregled otpisa</button>
+    </div>
+    <div class="navgroup" id="nav-sef" hidden><span class="navlabel">Proizvodi</span>
+      <button role="tab" aria-selected="false" data-view="normativi">Normativi i zarada</button>
     </div>
     <div class="navgroup" id="nav-admin" hidden><span class="navlabel">Administracija</span>
       <button role="tab" aria-selected="false" data-view="namirnice">Namirnice</button>
@@ -434,6 +442,40 @@ nav{gap:6px 18px;align-items:flex-end}
     </div>
   </section>
 
+  <!-- NORMATIVI I ZARADA -->
+  <section id="view-normativi" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <h2>Normativi i zarada po proizvodu</h2>
+        <p class="lede">Za svako jelo: sastojci po porciji, trošak porcije, food cost i marža. Food cost se računa od cene bez PDV-a. Dimljeno meso vredi po stvarnoj ceni iz yield loga (poslednjih 60 dana), ostale namirnice po ceni iz „Namirnice“.</p>
+      </div>
+      <div class="filters">
+        <label>Kategorija<select id="n-cat"><option value="">Sve</option></select></label>
+        <label>Poređaj<select id="n-sort">
+          <option value="menu">Kao u meniju</option>
+          <option value="fc">Najveći food cost prvo</option>
+          <option value="margin">Najmanja marža prvo</option>
+          <option value="margin-desc">Najveća marža prvo</option>
+        </select></label>
+        <label>Cilj food cost-a (%)<span class="hint" id="n-target-hint">nije postavljen</span><input class="num" id="n-target" inputmode="decimal" placeholder="npr. 30"></label>
+      </div>
+      <div class="stat-row" id="n-stats"></div>
+      <div id="n-editor" hidden></div>
+      <div id="n-list"></div>
+      <form id="nd-form" novalidate hidden>
+        <fieldset>
+          <legend>Novo jelo</legend>
+          <label>Naziv<input id="nd-name" autocomplete="off"></label>
+          <label>Kategorija<input id="nd-cat" list="nd-cats" autocomplete="off" placeholder="npr. Glavna jela"><datalist id="nd-cats"></datalist></label>
+          <label>Prodajna cena (RSD, sa PDV-om)<input class="num" id="nd-price" inputmode="decimal"></label>
+          <label>PDV (%)<input class="num" id="nd-vat" inputmode="decimal" value="20"></label>
+        </fieldset>
+        <div class="actions"><button class="btn" type="submit">Dodaj jelo</button><span class="msg" id="nd-msg" role="status"></span></div>
+      </form>
+      <datalist id="n-items"></datalist>
+    </div>
+  </section>
+
   <!-- NAMIRNICE (ADMIN) -->
   <section id="view-namirnice" hidden>
     <div style="display:flex;flex-direction:column;gap:16px">
@@ -490,8 +532,9 @@ nav{gap:6px 18px;align-items:flex-end}
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const show = id => ['login-view','signup-view','forgot-view','newpass-view','pending-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
   let recovering = /type=recovery/.test(location.hash);
-  const VIEWS = ['unos','pregled','istorija','otpis','otpis-pregled','namirnice','tim'];
+  const VIEWS = ['unos','pregled','istorija','otpis','otpis-pregled','normativi','namirnice','tim'];
   const ADMIN_VIEWS = ['namirnice','tim'];
+  const SEF_VIEWS = ['normativi'];
   const ROLE_LABEL = {admin:'administrator', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
   const REASONS = {visak:'Višak na kraju dana', prekuvano:'Prekuvano / presušeno', rok:'Istekao rok / pokvareno', greska:'Greška u pripremi', vraceno:'Vraćeno od gosta', ostecenje:'Pad / oštećenje / razbijeno', osoblje:'Osoblje / degustacija', ostalo:'Ostalo'};
   const STAGES = {sirovo:'sirovo', pripremljeno:'pripremljeno', gotovo:'gotovo jelo'};
@@ -503,6 +546,7 @@ nav{gap:6px 18px;align-items:flex-end}
 
   let me=null, isAdmin=false, isSef=false, products=[], entries=[], team=[], channel=null, pendChannel=null;
   let wItems=[], wEntries=[], wShifts=[];
+  let dishes=[], dishLines=[], fcTarget=null, openDish=null;
   const prodName = id => (products.find(p=>p.id===id)||{}).name || id;
   const targetFor = id => { const p=products.find(p=>p.id===id); return p && p.target_yield!=null ? Number(p.target_yield) : null; };
 
@@ -598,7 +642,7 @@ nav{gap:6px 18px;align-items:flex-end}
   // ---------- tabovi ----------
   document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.view)));
   function tab(v){
-    if(!VIEWS.includes(v) || (ADMIN_VIEWS.includes(v) && !isAdmin)) v='unos';
+    if(!VIEWS.includes(v) || (ADMIN_VIEWS.includes(v) && !isAdmin) || (SEF_VIEWS.includes(v) && !isSef)) v='unos';
     document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
     VIEWS.forEach(x=>$('view-'+x).hidden = x!==v);
     try{localStorage.setItem('syl-tab',v)}catch(_){}
@@ -985,6 +1029,209 @@ nav{gap:6px 18px;align-items:flex-end}
     renderWaste(); renderWasteOverview();
   }
 
+  // ---------- NORMATIVI I ZARADA ----------
+  const N = id => $('n-'+id);
+  const DISPLAY_UNITS = {kg:[['g',0.001],['kg',1]], l:[['ml',0.001],['l',1]], kom:[['kom',1]], porcija:[['porcija',1]]};
+  const nItemByName = s => { const n=String(s||'').trim().replace(/\s+/g,' ').toLowerCase(); return n ? wItems.find(i=>i.name.toLowerCase()===n) : null; };
+  function lineDisplay(qty, unit){
+    if(unit==='kg' && qty<1) return fmt(qty*1000, (qty*1000)%1?1:0)+' g';
+    if(unit==='l' && qty<1) return fmt(qty*1000, (qty*1000)%1?1:0)+' ml';
+    return fmt(qty, qty%1?2:0)+' '+UNIT[unit];
+  }
+  function lineCost(line){
+    const it=itemById(line.item_id); if(!it) return {cost:null, basis:'namirnica ne postoji'};
+    const uc=unitCostFor(it, 'gotovo', today());
+    if(!uc) return {cost:null, unit:null, basis:'nema cenu', it};
+    return {cost: line.qty*uc.cost, unit:uc.cost, basis:uc.basis, it};
+  }
+  function dishCalc(d){
+    const lines=dishLines.filter(l=>l.dish_id===d.id);
+    const parts=lines.map(l=>({l, ...lineCost(l)}));
+    const missing=parts.filter(p=>p.cost==null).length;
+    const cost=parts.reduce((a,p)=>a+(p.cost||0),0);
+    const net = d.price!=null ? d.price/(1+(Number(d.vat)||0)/100) : null;
+    const fc = net>0 && lines.length ? cost/net*100 : null;
+    const margin = net!=null && lines.length ? net-cost : null;
+    return {lines, parts, missing, cost, net, fc, margin};
+  }
+  function fcPill(c){
+    if(!c.lines.length) return '<span class="pill none">nema normativa</span>';
+    if(c.missing) return `<span class="pill warn">nepotpuno · ${c.missing} bez cene</span>`;
+    if(c.fc==null) return '<span class="pill none">nema cene jela</span>';
+    if(fcTarget==null) return `<span class="pill none">${fmt(c.fc,1)} %</span>`;
+    const cls = c.fc<=fcTarget ? 'good' : c.fc<=fcTarget+3 ? 'warn' : 'bad';
+    return `<span class="pill ${cls}">${fmt(c.fc,1)} %</span>`;
+  }
+  function renderNormativi(){
+    if(!isSef) return;
+    // filteri
+    const cats=[...new Set(dishes.map(d=>d.category))];
+    const cs=N('cat'), cv=cs.value;
+    cs.innerHTML='<option value="">Sve</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    cs.value=cats.includes(cv)?cv:'';
+    $('nd-cats').innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
+    $('n-items').innerHTML=wItems.filter(i=>i.active).map(i=>`<option value="${esc(i.name)}">${UNIT[i.unit]}${i.price==null&&!i.smoked_product_id?' · bez cene':''}</option>`).join('');
+    // cilj
+    N('target').disabled=!isAdmin;
+    if(document.activeElement!==N('target')) N('target').value = fcTarget!=null ? fmt(fcTarget, fcTarget%1?1:0) : '';
+    N('target-hint').textContent = fcTarget!=null ? 'zeleno do cilja, žuto do 3 pp iznad' : (isAdmin?'nije postavljen — upiši ako želite ocenu':'nije postavljen');
+    $('nd-form').hidden=!isAdmin;
+    // obračun
+    const all=dishes.filter(d=>d.active).map(d=>({d, c:dishCalc(d)}));
+    const complete=all.filter(x=>x.c.lines.length && !x.c.missing && x.c.fc!=null);
+    const avg = complete.length ? complete.reduce((a,x)=>a+x.c.fc,0)/complete.length : null;
+    N('stats').innerHTML=`
+      <div class="stat"><div class="k">Jela</div><div class="v">${all.length}</div><div class="status">${complete.length} sa potpunim obračunom</div></div>
+      <div class="stat"><div class="k">Prosečan food cost</div><div class="v">${avg!=null?fmt(avg,1)+' %':'—'}</div><div class="status">jela sa potpunim obračunom</div></div>
+      <div class="stat"><div class="k">Bez normativa</div><div class="v">${all.filter(x=>!x.c.lines.length).length}</div><div class="status">jela bez sastojaka</div></div>
+      <div class="stat"><div class="k">Nepotpuno</div><div class="v">${all.filter(x=>x.c.missing).length}</div><div class="status">sastojci bez cene</div></div>`;
+    // lista
+    let rows=all.filter(x=>!cs.value||x.d.category===cs.value);
+    const s=N('sort').value;
+    const nz=v=>v==null?-Infinity:v;
+    if(s==='fc') rows.sort((a,b)=>nz(b.c.fc)-nz(a.c.fc));
+    else if(s==='margin') rows.sort((a,b)=>(a.c.margin??Infinity)-(b.c.margin??Infinity));
+    else if(s==='margin-desc') rows.sort((a,b)=>nz(b.c.margin)-nz(a.c.margin));
+    else rows.sort((a,b)=>a.d.sort-b.d.sort||a.d.name.localeCompare(b.d.name,'sr'));
+    N('list').innerHTML = rows.length ? `<div class="tablewrap"><table><thead><tr><th>Jelo</th><th>Kategorija</th><th class="n">Cena sa PDV</th><th class="n">Bez PDV</th><th class="n">Trošak porcije</th><th class="n">Food cost</th><th class="n">Marža RSD</th><th></th></tr></thead><tbody>`+
+      rows.map(({d,c})=>`<tr class="clickrow${openDish===d.id?' sel':''}" data-dish="${d.id}" tabindex="0"><td><strong>${esc(d.name)}</strong><div class="note">${c.lines.length} ${c.lines.length===1?'sastojak':'sastojaka'}</div></td><td>${esc(d.category)}</td><td class="n">${d.price!=null?fmt(d.price,0):'—'}</td><td class="n">${c.net!=null?fmt(c.net,0):'—'}</td><td class="n">${c.lines.length?fmt(c.cost,0)+(c.missing?'*':''):'—'}</td><td class="n">${fcPill(c)}</td><td class="n">${c.margin!=null?fmt(c.margin,0)+(c.missing?'*':''):'—'}</td><td><button class="linkbtn" type="button" data-open="${d.id}">${openDish===d.id?'Otvoreno':'Normativ'}</button></td></tr>`).join('')+
+      `</tbody></table></div><p class="status" style="margin-top:6px">* nepotpuno — bar jedan sastojak nema cenu, pa su trošak i marža privremeni.</p>`
+      : '<div class="empty"><strong>Nema jela za ovaj filter</strong></div>';
+    N('list').querySelectorAll('[data-dish]').forEach(tr=>{
+      const open=()=>{ openDish=tr.dataset.dish; renderNormativi(); N('editor').scrollIntoView({behavior:'smooth',block:'start'}); };
+      tr.addEventListener('click',open);
+      tr.addEventListener('keydown',e=>{ if(e.key==='Enter') open(); });
+    });
+    renderDishEditor();
+  }
+  function renderDishEditor(){
+    const box=N('editor'), d=dishes.find(x=>x.id===openDish);
+    if(!d){ box.hidden=true; box.innerHTML=''; return; }
+    box.hidden=false;
+    const c=dishCalc(d);
+    const lines=c.parts.slice().sort((a,b)=>a.l.sort-b.l.sort||(a.l.created_at||'').localeCompare(b.l.created_at||''));
+    box.innerHTML=`<div class="panel" style="display:flex;flex-direction:column;gap:14px">
+      <div class="row" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
+        <div><div class="group-h" style="margin:0">${esc(d.category)}</div><h3 style="font-size:26px;margin:2px 0 0">${esc(d.name)}</h3></div>
+        <button class="sbtn" type="button" id="ne-close">Zatvori</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="k">Trošak porcije</div><div class="v">${c.lines.length?fmt(c.cost,0):'—'}</div><div class="status">RSD${c.missing?' · nepotpuno':''}</div></div>
+        <div class="stat"><div class="k">Food cost</div><div class="v">${c.fc!=null?fmt(c.fc,1)+' %':'—'}</div><div class="status">${fcTarget!=null?'cilj '+fmt(fcTarget,fcTarget%1?1:0)+' %':'cilj nije postavljen'}</div></div>
+        <div class="stat"><div class="k">Marža po porciji</div><div class="v">${c.margin!=null?fmt(c.margin,0):'—'}</div><div class="status">RSD, bez PDV-a</div></div>
+        <div class="stat"><div class="k">Cena</div><div class="v">${d.price!=null?fmt(d.price,0):'—'}</div><div class="status">sa PDV-om (${fmt(Number(d.vat),0)} %) · bez PDV-a ${c.net!=null?fmt(c.net,0):'—'}</div></div>
+      </div>
+      ${isAdmin?`<form id="ne-dish" class="pwform" style="display:flex" novalidate>
+        <label>Prodajna cena (RSD, sa PDV-om)<input class="num" id="ne-price" inputmode="decimal" value="${d.price!=null?fmt(d.price,0).replace(/\./g,''):''}"></label>
+        <label>PDV (%)<input class="num" id="ne-vat" inputmode="decimal" value="${fmt(Number(d.vat),0)}"></label>
+        <label>Kategorija<input id="ne-cat" list="nd-cats" value="${esc(d.category)}"></label>
+        <label style="flex:0 0 auto;flex-direction:row;align-items:center;gap:6px"><input type="checkbox" id="ne-active" style="width:auto"${d.active?' checked':''}> aktivno</label>
+        <button class="sbtn go" type="submit">Sačuvaj jelo</button><span class="msg" id="ne-dish-msg"></span>
+      </form>`:''}
+      ${lines.length?`<div class="tablewrap"><table><thead><tr><th>Sastojak</th><th class="n">Količina</th><th class="n">Cena / jed.</th><th class="n">Trošak</th><th class="n">Udeo</th><th>Napomena</th><th></th></tr></thead><tbody>${
+        lines.map(p=>{
+          const it=p.it||itemById(p.l.item_id)||{name:'?',unit:'kg'};
+          const share = c.cost>0 && p.cost!=null ? p.cost/c.cost*100 : null;
+          return `<tr><td><strong>${esc(it.name)}</strong><div class="note">${esc(p.basis||'')}</div></td>
+            <td class="n"><input class="cell-input num" data-lq="${p.l.id}" data-unit="${it.unit}" inputmode="decimal" value="${esc(lineDisplay(p.l.qty,it.unit).split(' ')[0])}" aria-label="Količina za ${esc(it.name)}"> ${esc(lineDisplay(p.l.qty,it.unit).split(' ').slice(1).join(' '))}</td>
+            <td class="n">${p.unit!=null?fmt(p.unit,0)+'/'+UNIT[it.unit]:'<span class="pill warn">bez cene</span>'}</td>
+            <td class="n">${p.cost!=null?fmt(p.cost,1):'—'}</td>
+            <td class="n">${share!=null?fmt(share,0)+' %':'—'}</td>
+            <td>${esc(p.l.note||'')}</td>
+            <td><button class="del" type="button" data-ldel="${p.l.id}">Ukloni</button></td></tr>`;
+        }).join('')}</tbody></table></div>`:'<div class="empty"><strong>Ovo jelo još nema normativ</strong>Dodaj sastojke ispod: meso, prilog, sos, hleb, ambalažu ako se računa.</div>'}
+      <form id="ne-add" class="pwform" style="display:flex" novalidate>
+        <label style="flex:2 1 240px">Sastojak<span class="hint">postojeća namirnica; ako je nema, biće dodata bez cene</span><input id="ne-item" list="n-items" autocomplete="off" placeholder="npr. Coleslaw salata"></label>
+        <label style="flex:0 1 120px">Količina<input class="num" id="ne-qty" inputmode="decimal" placeholder="npr. 150"></label>
+        <label style="flex:0 1 120px">Jedinica<select id="ne-unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="kom">kom</option><option value="porcija">porcija</option></select></label>
+        <label style="flex:1 1 160px">Napomena<input id="ne-note" autocomplete="off" placeholder="opciono"></label>
+        <button class="sbtn go" type="submit">Dodaj sastojak</button><span class="msg" id="ne-msg"></span>
+      </form>
+    </div>`;
+    $('ne-close').addEventListener('click',()=>{ openDish=null; renderNormativi(); });
+    // jedinica prati namirnicu
+    const syncUnit=()=>{ const it=nItemByName($('ne-item').value); if(it){ $('ne-unit').value = it.unit==='kg'?'g':it.unit==='l'?'ml':it.unit; } };
+    $('ne-item').addEventListener('change',syncUnit); $('ne-item').addEventListener('input',syncUnit);
+    $('ne-add').addEventListener('submit',async ev=>{
+      ev.preventDefault();
+      const m=$('ne-msg'); m.className='msg';
+      const name=$('ne-item').value.trim().replace(/\s+/g,' '), q=num($('ne-qty').value), du=$('ne-unit').value;
+      if(name.length<2){ m.classList.add('err'); m.textContent='Upiši sastojak.'; return; }
+      if(!(q>0)){ m.classList.add('err'); m.textContent='Upiši količinu.'; return; }
+      const base = du==='g'?'kg':du==='ml'?'l':du;
+      let it=nItemByName(name);
+      if(it && it.unit!==base){ m.classList.add('err'); m.textContent=`${it.name} se vodi u jedinici „${UNIT[it.unit]}“ — izaberi ${it.unit==='kg'?'g ili kg':it.unit==='l'?'ml ili l':it.unit}.`; return; }
+      if(!it){
+        const {data,error}=await sb.from('waste_items').insert({name, area:'kuhinja', grp:'Normativi', unit:base, sort:800}).select().single();
+        if(error){ m.classList.add('err'); m.textContent='Namirnica nije dodata: '+error.message; return; }
+        wItems.push({...data, price:null}); it=data;
+      }
+      const qty = (du==='g'||du==='ml') ? q/1000 : q;
+      const maxSort=Math.max(0,...dishLines.filter(l=>l.dish_id===d.id).map(l=>l.sort||0));
+      const {error}=await sb.from('dish_lines').insert({dish_id:d.id, item_id:it.id, qty, note:$('ne-note').value.trim()||null, sort:maxSort+1});
+      if(error){ m.classList.add('err'); m.textContent='Nije dodato: '+error.message; return; }
+      await loadNormativi();
+    });
+    box.querySelectorAll('[data-lq]').forEach(inp=>inp.addEventListener('change',async()=>{
+      const v=num(inp.value); if(!(v>0)){ renderDishEditor(); return; }
+      const line=dishLines.find(l=>l.id===inp.dataset.lq), it=itemById(line.item_id);
+      const shown=lineDisplay(line.qty,it.unit).split(' ')[1];
+      const qty = (shown==='g'||shown==='ml') ? v/1000 : v;
+      const {error}=await sb.from('dish_lines').update({qty}).eq('id',line.id);
+      if(error) $('status').textContent='Količina nije sačuvana: '+error.message;
+      await loadNormativi();
+    }));
+    box.querySelectorAll('[data-ldel]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!b.classList.contains('confirm')){ b.classList.add('confirm'); b.textContent='Sigurno?'; setTimeout(()=>{if(b.isConnected){b.classList.remove('confirm');b.textContent='Ukloni';}},4000); return; }
+      const {error}=await sb.from('dish_lines').delete().eq('id',b.dataset.ldel);
+      if(error){ b.textContent='Nije uklonjeno'; return; }
+      await loadNormativi();
+    }));
+    if($('ne-dish')) $('ne-dish').addEventListener('submit',async ev=>{
+      ev.preventDefault();
+      const m=$('ne-dish-msg'); m.className='msg';
+      const price=num($('ne-price').value), vat=num($('ne-vat').value);
+      if(Number.isNaN(price)||Number.isNaN(vat)||vat==null||vat<0||vat>=100){ m.classList.add('err'); m.textContent='Proveri cenu i PDV.'; return; }
+      const {error}=await sb.from('dishes').update({price, vat, category:$('ne-cat').value.trim()||'Ostalo', active:$('ne-active').checked}).eq('id',d.id);
+      if(error){ m.classList.add('err'); m.textContent='Nije sačuvano: '+error.message; return; }
+      await loadNormativi();
+    });
+  }
+  N('cat').addEventListener('change',renderNormativi);
+  N('sort').addEventListener('change',renderNormativi);
+  N('target').addEventListener('change',async()=>{
+    if(!isAdmin) return;
+    const v=num(N('target').value);
+    if(Number.isNaN(v)||(v!=null&&(v<=0||v>=100))){ N('target').value=fcTarget!=null?fmt(fcTarget,1):''; return; }
+    const {error} = v==null ? await sb.from('app_settings').delete().eq('key','fc_target') : await sb.from('app_settings').upsert({key:'fc_target', value:v});
+    if(error){ $('status').textContent='Cilj nije sačuvan: '+error.message; return; }
+    await loadNormativi();
+  });
+  $('nd-form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const m=$('nd-msg'); m.className='msg';
+    const name=$('nd-name').value.trim(), price=num($('nd-price').value), vat=num($('nd-vat').value);
+    if(!name){ m.classList.add('err'); m.textContent='Upiši naziv jela.'; return; }
+    if(Number.isNaN(price)||Number.isNaN(vat)){ m.classList.add('err'); m.textContent='Cena i PDV moraju biti brojevi.'; return; }
+    const {data,error}=await sb.from('dishes').insert({name, category:$('nd-cat').value.trim()||'Ostalo', price, vat:vat??20, sort:900}).select().single();
+    if(error){ m.classList.add('err'); m.textContent=/duplicate|unique/i.test(error.message)?'Jelo sa tim nazivom već postoji.':'Nije dodato: '+error.message; return; }
+    $('nd-name').value=''; $('nd-price').value=''; m.classList.add('ok'); m.textContent='Dodato: '+name+'. Sad mu upiši normativ.';
+    openDish=data.id; await loadNormativi();
+    N('editor').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  async function loadNormativi(){
+    if(!isSef) return;
+    const [d,l,s]=await Promise.all([
+      sb.from('dishes').select('*').order('sort').order('name'),
+      sb.from('dish_lines').select('*'),
+      sb.from('app_settings').select('*').eq('key','fc_target').maybeSingle()
+    ]);
+    if(!d.error) dishes=(d.data||[]).map(x=>({...x, price:x.price==null?null:Number(x.price), vat:Number(x.vat)}));
+    if(!l.error) dishLines=(l.data||[]).map(x=>({...x, qty:Number(x.qty)}));
+    if(!s.error) fcTarget = s.data && s.data.value!=null ? Number(s.data.value) : null;
+    renderNormativi();
+  }
+
   // ---------- podaci ----------
   async function loadProducts(){
     const {data,error}=await sb.from('products').select('*').order('sort');
@@ -1005,7 +1252,10 @@ nav{gap:6px 18px;align-items:flex-end}
       .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>loadTeam())
       .on('postgres_changes',{event:'*',schema:'public',table:'waste'},()=>loadWaste())
       .on('postgres_changes',{event:'*',schema:'public',table:'waste_shifts'},()=>loadWaste())
-      .on('postgres_changes',{event:'*',schema:'public',table:'waste_items'},()=>loadWasteItems())
+      .on('postgres_changes',{event:'*',schema:'public',table:'waste_items'},()=>{ loadWasteItems().then(renderNormativi); })
+      .on('postgres_changes',{event:'*',schema:'public',table:'dishes'},()=>loadNormativi())
+      .on('postgres_changes',{event:'*',schema:'public',table:'dish_lines'},()=>loadNormativi())
+      .on('postgres_changes',{event:'*',schema:'public',table:'app_settings'},()=>loadNormativi())
       .subscribe();
   }
   function stopChannels(){
@@ -1111,13 +1361,14 @@ nav{gap:6px 18px;align-items:flex-end}
     $('me-name').textContent=me.full_name; $('me-role').textContent=ROLE_LABEL[me.role];
     isSef = me.role==='sef' || isAdmin;
     $('nav-admin').hidden=!isAdmin;
+    $('nav-sef').hidden=!isSef;
     if(!W('date').value) W('date').value=today();
     try{ const sh=localStorage.getItem('syl-shift'); if(sh) W('shift').value=sh; }catch(_){}
     W('cook').value=me.full_name;
     F('cook').value=me.full_name;
     if(!F('date').value) F('date').value=today();
     show('app-view'); restoreTab();
-    await loadProducts(); await loadCooks(); await loadTeam(); await loadWasteItems(); await loadWaste(); subscribe();
+    await loadProducts(); await loadCooks(); await loadTeam(); await loadWasteItems(); await loadWaste(); await loadNormativi(); subscribe();
   }
   let lastUid=null;
   sb.auth.onAuthStateChange((event,session)=>{
