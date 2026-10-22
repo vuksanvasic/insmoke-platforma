@@ -117,6 +117,18 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;color:var(--muted)}
 .empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
 .foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.count{display:inline-block;min-width:18px;padding:0 5px;border-radius:99px;background:var(--ember);color:#fff;font:600 11px/18px var(--f-mono);text-align:center;margin-left:4px}
+.team{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.member{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.member:last-child{border-bottom:0}
+.member .who2{min-width:0;display:flex;flex-direction:column}
+.member .who2 b{font-weight:600}
+.member .who2 span{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.member .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sbtn{font:600 13px var(--f-body);border-radius:6px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
+.sbtn.go{background:var(--good);border-color:var(--good);color:#fff}
+.sbtn.no{color:var(--bad)}
+.group-h{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:6px 0 8px}
 @media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s ease}}
 </style>
 </head>
@@ -126,12 +138,37 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
 <div class="login" id="login-view" hidden>
   <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
   <form id="login-form" novalidate>
+    <h2>Prijava</h2>
     <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
     <label>Lozinka<input type="password" id="l-pass" autocomplete="current-password" required></label>
     <button class="btn ember" type="submit" id="l-btn">Prijavi se</button>
     <span class="msg" id="l-msg" role="status"></span>
   </form>
-  <p class="status">Nalog otvara administrator. Ako si zaboravio lozinku, javi se njemu.</p>
+  <p class="status">Nemaš nalog? <button class="linkbtn" id="to-signup" type="button">Napravi nalog</button></p>
+</div>
+
+<!-- REGISTRACIJA -->
+<div class="login" id="signup-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <form id="signup-form" novalidate>
+    <h2>Novi nalog</h2>
+    <label>Ime i prezime<input id="s-name" autocomplete="name" required></label>
+    <label>Email<input type="email" id="s-email" autocomplete="username" required></label>
+    <label>Lozinka<span class="hint">najmanje 8 znakova</span><input type="password" id="s-pass" autocomplete="new-password" minlength="8" required></label>
+    <button class="btn ember" type="submit" id="s-btn">Napravi nalog</button>
+    <span class="msg" id="s-msg" role="status"></span>
+  </form>
+  <p class="status">Posle registracije administrator odobrava nalog. Već imaš nalog? <button class="linkbtn" id="to-login" type="button">Prijavi se</button></p>
+</div>
+
+<!-- ČEKA ODOBRENJE / ODBIJEN -->
+<div class="login" id="pending-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <div class="empty" style="text-align:left">
+    <strong id="pend-title">Nalog čeka odobrenje</strong>
+    <span id="pend-text">Administrator treba da odobri tvoj nalog. Čim to uradi, ova strana se sama otvara.</span>
+  </div>
+  <p class="status"><span id="pend-who"></span> · <button class="linkbtn" id="pend-logout" type="button">Odjavi se</button></p>
 </div>
 
 <!-- APLIKACIJA -->
@@ -151,6 +188,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     <button role="tab" aria-selected="true" data-view="unos">Novi unos</button>
     <button role="tab" aria-selected="false" data-view="pregled">Pregled po mesu</button>
     <button role="tab" aria-selected="false" data-view="istorija">Istorija</button>
+    <button role="tab" aria-selected="false" data-view="tim" id="tab-tim" hidden>Tim <span class="count" id="tim-count" hidden></span></button>
   </nav>
 
   <section id="view-unos" class="entry">
@@ -242,6 +280,16 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     </div>
   </section>
 
+  <section id="view-tim" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <h2>Tim</h2>
+        <p class="lede">Ko ima pristup platformi. Novi nalozi čekaju tvoje odobrenje pre nego što vide ili upišu bilo šta.</p>
+      </div>
+      <div id="team"></div>
+    </div>
+  </section>
+
   <p class="foot">Yield = kg za prodaju ÷ sirovih kg. Ako „za prodaju“ nije upisano, računa se iz težine iz smokera. Stvarna cena po kg = (sirovo × nabavna cena) ÷ kg za prodaju.</p>
 </div>
 
@@ -261,13 +309,15 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
   const fmtDate = s => { if(!s) return '—'; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}.`; };
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const show = id => ['login-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
+  const show = id => ['login-view','signup-view','pending-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
+  const VIEWS = ['unos','pregled','istorija','tim'];
+  const ROLE_LABEL = {admin:'administrator', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
 
   const cfg = window.APP_CONFIG || {};
   if (!window.supabase || !cfg.SUPABASE_URL || /VAS-PROJEKAT/.test(cfg.SUPABASE_URL)) { show('config-view'); return; }
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
 
-  let me=null, isAdmin=false, products=[], entries=[], channel=null;
+  let me=null, isAdmin=false, products=[], entries=[], team=[], channel=null, pendChannel=null;
   const prodName = id => (products.find(p=>p.id===id)||{}).name || id;
   const targetFor = id => { const p=products.find(p=>p.id===id); return p && p.target_yield!=null ? Number(p.target_yield) : null; };
 
@@ -363,11 +413,12 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   // ---------- tabovi ----------
   document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.view)));
   function tab(v){
+    if(!VIEWS.includes(v) || (v==='tim' && !isAdmin)) v='unos';
     document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
-    ['unos','pregled','istorija'].forEach(x=>$('view-'+x).hidden = x!==v);
+    VIEWS.forEach(x=>$('view-'+x).hidden = x!==v);
     try{localStorage.setItem('syl-tab',v)}catch(_){}
   }
-  try{const t=localStorage.getItem('syl-tab'); if(t) tab(t);}catch(_){}
+  function restoreTab(){ let t='unos'; try{ t=localStorage.getItem('syl-tab')||'unos'; }catch(_){} tab(t); }
 
   // ---------- prikaz ----------
   const inPeriod = (e,days) => { if(!days) return true; const d=new Date(); d.setDate(d.getDate()-days+1); return (e.cook_date||'')>=d.toISOString().slice(0,10); };
@@ -452,6 +503,45 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     }));
   }
   function renderAll(){ renderProducts(); renderCards(); renderHistory(); updateCalc(); }
+
+  // ---------- tim (administrator) ----------
+  async function loadTeam(){
+    if(!isAdmin) return;
+    const {data,error}=await sb.from('profiles').select('id,full_name,email,role,created_at').order('created_at');
+    if(error) return;
+    team=data||[]; renderTeam();
+  }
+  function renderTeam(){
+    const pending=team.filter(p=>p.role==='ceka');
+    $('tim-count').textContent=pending.length; $('tim-count').hidden=!pending.length;
+    const groups=[
+      ['Čekaju odobrenje', pending],
+      ['Aktivni', team.filter(p=>p.role==='admin'||p.role==='kuvar')],
+      ['Odbijeni', team.filter(p=>p.role==='odbijen')]
+    ];
+    let html='';
+    groups.forEach(([title,list])=>{
+      if(!list.length) return;
+      html+=`<div><div class="group-h">${title} · ${list.length}</div><div class="team">`;
+      list.forEach(p=>{
+        const self=p.id===me.id;
+        let acts='';
+        if(self) acts=`<span class="role">${ROLE_LABEL[p.role]} · ti</span>`;
+        else if(p.role==='ceka') acts=`<button class="sbtn go" data-id="${p.id}" data-role="kuvar">Odobri — kuhinja</button><button class="sbtn" data-id="${p.id}" data-role="admin">Odobri — administrator</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Odbij</button>`;
+        else if(p.role==='odbijen') acts=`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati pristup</button>`;
+        else acts=`<span class="role">${ROLE_LABEL[p.role]}</span>${p.role==='kuvar'?`<button class="sbtn" data-id="${p.id}" data-role="admin">Postavi za administratora</button>`:`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati u kuhinju</button>`}<button class="sbtn no" data-id="${p.id}" data-role="odbijen">Ukini pristup</button>`;
+        html+=`<div class="member"><div class="who2"><b>${esc(p.full_name||'—')}</b><span>${esc(p.email||'')}</span></div><div class="acts">${acts}</div></div>`;
+      });
+      html+='</div></div>';
+    });
+    $('team').innerHTML = html || '<div class="empty"><strong>Još nema naloga</strong>Kad se neko registruje na sajtu, pojaviće se ovde.</div>';
+    $('team').querySelectorAll('.sbtn').forEach(b=>b.addEventListener('click',async()=>{
+      b.disabled=true;
+      const {error}=await sb.from('profiles').update({role:b.dataset.role}).eq('id',b.dataset.id);
+      if(error){ b.disabled=false; b.textContent='Nije uspelo'; return; }
+      loadTeam();
+    }));
+  }
   $('p-period').addEventListener('change',renderCards);
   $('h-period').addEventListener('change',renderHistory);
   $('h-product').addEventListener('change',renderHistory);
@@ -473,8 +563,36 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     channel = sb.channel('yield-live')
       .on('postgres_changes',{event:'*',schema:'public',table:'cooks'},()=>loadCooks())
       .on('postgres_changes',{event:'*',schema:'public',table:'products'},()=>loadProducts())
+      .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>loadTeam())
       .subscribe();
   }
+  function stopChannels(){
+    if(channel){ sb.removeChannel(channel); channel=null; }
+    if(pendChannel){ sb.removeChannel(pendChannel); pendChannel=null; }
+  }
+
+  // ---------- registracija ----------
+  $('to-signup').addEventListener('click',()=>{ show('signup-view'); $('s-name').focus(); });
+  $('to-login').addEventListener('click',()=>{ show('login-view'); $('l-email').focus(); });
+  $('signup-form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const m=$('s-msg'); m.className='msg'; m.textContent='';
+    const full_name=$('s-name').value.trim(), email=$('s-email').value.trim(), password=$('s-pass').value;
+    if(!full_name){ m.classList.add('err'); m.textContent='Upiši ime i prezime.'; return; }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ m.classList.add('err'); m.textContent='Upiši ispravan email.'; return; }
+    if(password.length<8){ m.classList.add('err'); m.textContent='Lozinka mora imati najmanje 8 znakova.'; return; }
+    $('s-btn').disabled=true;
+    const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name}}});
+    $('s-btn').disabled=false;
+    if(error){
+      m.classList.add('err');
+      m.textContent = /registered|exists/i.test(error.message) ? 'Nalog sa ovim emailom već postoji. Prijavi se.' :
+        /signups? not allowed|disabled/i.test(error.message) ? 'Registracija je trenutno isključena. Javi se administratoru.' :
+        'Nalog nije napravljen: '+error.message;
+      return;
+    }
+    if(!data.session){ m.classList.add('ok'); m.textContent='Nalog je napravljen. Proveri email i potvrdi adresu, pa se prijavi.'; }
+  });
 
   // ---------- prijava ----------
   $('login-form').addEventListener('submit',async ev=>{
@@ -489,17 +607,35 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   });
   $('logout').addEventListener('click',()=>sb.auth.signOut());
 
+  $('pend-logout').addEventListener('click',()=>sb.auth.signOut());
+
   async function enter(session){
-    if(!session){ if(channel){ sb.removeChannel(channel); channel=null; } me=null; show('login-view'); return; }
+    stopChannels();
+    if(!session){ me=null; isAdmin=false; entries=[]; team=[]; show('login-view'); return; }
     const uid=session.user.id;
     const {data:prof}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
-    me={id:uid, full_name:(prof&&prof.full_name)||session.user.email, role:(prof&&prof.role)||'kuvar'};
+    me={id:uid, full_name:(prof&&prof.full_name)||session.user.email, role:(prof&&prof.role)||'ceka'};
     isAdmin = me.role==='admin';
-    $('me-name').textContent=me.full_name; $('me-role').textContent=isAdmin?'administrator':'kuhinja';
-    if(!F('cook').value) F('cook').value=me.full_name;
+
+    if(me.role==='ceka' || me.role==='odbijen'){
+      $('pend-title').textContent = me.role==='ceka' ? 'Nalog čeka odobrenje' : 'Pristup nije odobren';
+      $('pend-text').textContent = me.role==='ceka'
+        ? 'Administrator treba da odobri tvoj nalog. Čim to uradi, ova strana se sama otvara.'
+        : 'Administrator nije odobrio pristup ovom nalogu. Ako misliš da je greška, javi mu se.';
+      $('pend-who').textContent = `${me.full_name} (${session.user.email})`;
+      show('pending-view');
+      pendChannel = sb.channel('moj-nalog')
+        .on('postgres_changes',{event:'UPDATE',schema:'public',table:'profiles',filter:'id=eq.'+uid},()=>enter(session))
+        .subscribe();
+      return;
+    }
+
+    $('me-name').textContent=me.full_name; $('me-role').textContent=ROLE_LABEL[me.role];
+    $('tab-tim').hidden=!isAdmin;
+    F('cook').value=me.full_name;
     if(!F('date').value) F('date').value=today();
-    show('app-view');
-    await loadProducts(); await loadCooks(); subscribe();
+    show('app-view'); restoreTab();
+    await loadProducts(); await loadCooks(); await loadTeam(); subscribe();
   }
   let lastUid=null;
   sb.auth.onAuthStateChange((event,session)=>{

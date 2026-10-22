@@ -9,13 +9,17 @@ Interni alat kuhinje za upis yielda sa smokera. Statičan sajt (GitHub Pages) + 
 | `index.html` | ceo sajt |
 | `config.js` | adresa i javni ključ Supabase projekta |
 | `supabase/schema.sql` | tabele, meso sa menija, uloge i zaštita podataka |
+| `supabase/02_registracija.sql` | registracija na sajtu uz odobrenje administratora (pokrenuti posle schema.sql) |
 
 ## Uloge
 
+- **čeka odobrenje** — nov nalog; ne vidi ništa dok ga administrator ne odobri
 - **kuhinja** — upisuje cikluse, vidi sve, briše samo svoje unose
-- **administrator** — sve to, plus postavlja ciljeve yielda i briše bilo koji unos
+- **administrator** — sve to, plus postavlja ciljeve yielda, briše bilo koji unos i odobrava naloge u tabu **Tim**
+- **odbijen** — nema pristup
 
-Svaki nov nalog je automatski „kuhinja“.
+Naloge ljudi prave sami na sajtu (**Napravi nalog**). Administrator ih odobrava u tabu **Tim**.
+Administrator ne može sam sebi da promeni ulogu, da se ne bi slučajno zaključao.
 
 ---
 
@@ -27,10 +31,11 @@ Svaki nov nalog je automatski „kuhinja“.
    - Ime: `insmoke-platforma`
    - Region: **Central EU (Frankfurt)** — najbliže Beogradu
    - Lozinku baze sačuvaj negde, ne treba za svakodnevni rad.
-2. Levo **SQL Editor** → **New query** → nalepi ceo sadržaj `supabase/schema.sql` → **Run**.
-3. Levo **Authentication** → **Sign In / Providers** → isključi **Allow new users to sign up**.
-   (Niko ne može sam da otvori nalog — naloge otvaraš ti.)
-4. Levo **Project Settings** → **API** → kopiraj:
+2. Levo **SQL Editor** → **New query** → nalepi ceo sadržaj `supabase/schema.sql` → **Run**, zatim isto za `supabase/02_registracija.sql`.
+3. Levo **Authentication** → **Sign In / Providers**: **Allow new users to sign up** uključeno, **Confirm email** isključeno.
+   (Svako može da napravi nalog, ali ne vidi ništa dok ga administrator ne odobri.)
+4. **Authentication** → **URL Configuration** → **Site URL** = adresa sajta.
+5. Levo **Project Settings** → **API Keys** → kopiraj:
    - **Project URL**
    - **anon public** ključ
 
@@ -38,21 +43,17 @@ Svaki nov nalog je automatski „kuhinja“.
 
 ### 2. Nalozi za tim
 
-**Authentication** → **Users** → **Add user** → **Create new user**
-- email i lozinka za svaku osobu
-- uključi **Auto Confirm User**
-
-Posle toga u **SQL Editor** postavi imena i sebe za administratora:
+1. Svako otvori sajt → **Napravi nalog** → ime, email, lozinka.
+2. Prvi administrator se postavlja jednom, u **SQL Editor**:
 
 ```sql
-update public.profiles set full_name = 'Vuksan', role = 'admin'
+update public.profiles set role = 'admin'
 where id = (select id from auth.users where email = 'office@nutribox.rs');
-
-update public.profiles set full_name = 'Marko'
-where id = (select id from auth.users where email = 'MARKOV-EMAIL');
 ```
 
-Ako neko zaboravi lozinku: **Authentication → Users → … → Send password recovery** ili mu postavi novu.
+3. Posle toga administrator sve odobrava na sajtu, u tabu **Tim**.
+
+Ako neko zaboravi lozinku: Supabase → **Authentication → Users** → izaberi osobu → postavi novu lozinku.
 
 ### 3. Sajt na besplatnoj adresi (GitHub Pages)
 
