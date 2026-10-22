@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Smoker Yield Log · In Smoke We Trust</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: radni alat za kuhinju — traka sa tabovima, forma sa živim proračunom, pregled po mesu, istorija ciklusa */
+:root{
+  --bg:#efebe7; --surface:#faf8f6; --ink:#211c19; --muted:#6d625b; --line:#d9d1ca;
+  --ember:#b4401e; --char:#2e2724;
+  --good:#2f7a4b; --warn:#a86a10; --bad:#b0322a;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#181412; --surface:#221d1a; --ink:#efe8e2; --muted:#a8998f; --line:#3a312c;
+  --ember:#e2683f; --char:#0f0c0b;
+  --good:#5fb57f; --warn:#d9a043; --bad:#e2675d; color-scheme:dark}}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:3px solid var(--ink);padding-bottom:12px}
+.brand small{display:block;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,52px);line-height:.95;margin:2px 0 0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600}
+.role{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:2px 8px}
+.linkbtn{background:none;border:0;color:var(--ink);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+.status{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{font:600 14px var(--f-body);background:transparent;color:var(--muted);border:1px solid transparent;border-radius:6px;padding:8px 14px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav button:hover:not([aria-selected="true"]){border-color:var(--line);color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;margin:0;letter-spacing:.02em}
+.lede{color:var(--muted);margin:4px 0 0;max-width:62ch}
+
+/* prijava */
+.login{max-width:380px;margin:8vh auto 0;display:flex;flex-direction:column;gap:16px}
+.login h1{font-size:44px}
+.login form{gap:14px}
+
+/* forma */
+.entry{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.entry{grid-template-columns:1fr}}
+form{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:18px}
+fieldset{border:0;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+legend{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin-bottom:8px;padding:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;min-width:0}
+label .hint{font-weight:400;color:var(--muted);font-size:12px}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0}
+input.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+textarea{resize:vertical;min-height:64px}
+.wide{grid-column:1/-1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:600 15px var(--f-body);border-radius:6px;padding:11px 18px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--bg)}
+.btn.ember{background:var(--ember);border-color:var(--ember);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.msg{font-size:14px}
+.msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
+
+/* živi proračun */
+.calc{background:var(--char);color:#f2ebe5;border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.calc .big{font-family:var(--f-display);font-weight:800;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.calc .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#bfb2a8}
+.calc dl{display:grid;grid-template-columns:1fr auto;gap:8px 12px;margin:0}
+.calc dt{color:#cfc4bb;font-size:14px}
+.calc dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.bar{height:10px;border-radius:5px;background:#4a403b;overflow:hidden;display:flex}
+.bar span{display:block;height:100%;width:0}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:#cfc4bb}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.verdict{font-size:14px;border-top:1px solid #4a403b;padding-top:12px}
+.s-sell{background:#e2683f}.s-cook{background:#8a7466}.s-trim{background:#5c4f48}
+
+/* pregled */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-family:var(--f-display);font-weight:600;font-size:22px;text-transform:uppercase;margin:0;letter-spacing:.02em}
+.card .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card .y{font-family:var(--f-display);font-weight:800;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.pill{font:500 12px var(--f-mono);padding:3px 8px;border-radius:99px;white-space:nowrap}
+.pill.good{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.pill.none{color:var(--muted);background:var(--bg)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;color:var(--muted)}
+.stats b{display:block;font:500 14px var(--f-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.spark{width:100%;height:46px;display:block}
+.target{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.target input{width:72px;padding:4px 6px;font-size:14px}
+
+/* istorija */
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filters label{width:180px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+td.n,th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+td .note{color:var(--muted);font-size:13px;max-width:28ch}
+.del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline;padding:0}
+.del.confirm{color:var(--bad);font-weight:600}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:28px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s ease}}
+</style>
+</head>
+<body>
+
+<!-- PRIJAVA -->
+<div class="login" id="login-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <form id="login-form" novalidate>
+    <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
+    <label>Lozinka<input type="password" id="l-pass" autocomplete="current-password" required></label>
+    <button class="btn ember" type="submit" id="l-btn">Prijavi se</button>
+    <span class="msg" id="l-msg" role="status"></span>
+  </form>
+  <p class="status">Nalog otvara administrator. Ako si zaboravio lozinku, javi se njemu.</p>
+</div>
+
+<!-- APLIKACIJA -->
+<div class="wrap" id="app-view" hidden>
+  <header>
+    <div class="brand">
+      <small>In Smoke We Trust · kuhinja</small>
+      <h1>Smoker Yield Log</h1>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><button class="linkbtn" id="logout">Odjavi se</button></div>
+      <div class="status" id="status">Učitavanje…</div>
+    </div>
+  </header>
+
+  <nav role="tablist" aria-label="Sekcije">
+    <button role="tab" aria-selected="true" data-view="unos">Novi unos</button>
+    <button role="tab" aria-selected="false" data-view="pregled">Pregled po mesu</button>
+    <button role="tab" aria-selected="false" data-view="istorija">Istorija</button>
+  </nav>
+
+  <section id="view-unos" class="entry">
+    <form id="form" novalidate>
+      <div>
+        <h2>Novi ciklus</h2>
+        <p class="lede">Izmeri meso na četiri tačke: kad stigne, posle trimovanja, kad izađe iz smokera i kad se iseče za prodaju. Yield se računa sam.</p>
+      </div>
+      <fieldset>
+        <legend>Osnovno</legend>
+        <label>Datum<input type="date" id="f-date" required></label>
+        <label>Meso<select id="f-product" required><option value="">Izaberi meso</option></select></label>
+        <label>Ko je pekao<input id="f-cook" autocomplete="off"></label>
+        <label>Šarža / dobavljač<input id="f-batch" placeholder="npr. Mesara X, lot 14" autocomplete="off"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Merenja (kg)</legend>
+        <label>Sirovo — nabavka<span class="hint">težina kad stigne</span><input class="num" id="f-raw" inputmode="decimal" placeholder="0,000" required></label>
+        <label>Posle trimovanja<span class="hint">ide u smoker</span><input class="num" id="f-trim" inputmode="decimal" placeholder="0,000"></label>
+        <label>Iz smokera<span class="hint">posle odmaranja</span><input class="num" id="f-cooked" inputmode="decimal" placeholder="0,000" required></label>
+        <label>Za prodaju<span class="hint">očišćeno, isečeno</span><input class="num" id="f-sell" inputmode="decimal" placeholder="0,000"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Smoker</legend>
+        <label>Nabavna cena (RSD/kg)<input class="num" id="f-price" inputmode="decimal" placeholder="npr. 1450"></label>
+        <label>Temperatura (°C)<input class="num" id="f-temp" inputmode="decimal" placeholder="npr. 120"></label>
+        <label>Vreme u smokeru (h)<input class="num" id="f-hours" inputmode="decimal" placeholder="npr. 12,5"></label>
+        <label>Drvo<input id="f-wood" list="woods" placeholder="npr. hrast" autocomplete="off">
+          <datalist id="woods"><option value="Hrast"><option value="Bukva"><option value="Trešnja"><option value="Jabuka"><option value="Hrast + trešnja"></datalist>
+        </label>
+        <label class="wide">Napomena<textarea id="f-notes" placeholder="stall na 70 °C, umotano u papir na 75 °C, kora suva…"></textarea></label>
+      </fieldset>
+      <div class="actions">
+        <button class="btn ember" type="submit" id="save">Sačuvaj ciklus</button>
+        <button class="btn ghost" type="reset">Očisti</button>
+        <span class="msg" id="msg" role="status"></span>
+      </div>
+    </form>
+
+    <aside class="calc" aria-live="polite">
+      <div>
+        <div class="lbl">Ukupni yield</div>
+        <div class="big" id="c-yield">—</div>
+        <div class="lbl" id="c-yield-basis" style="margin-top:6px">za prodaju ÷ sirovo</div>
+      </div>
+      <div class="bar" aria-hidden="true"><span id="b-sell" class="s-sell"></span><span id="b-cook" class="s-cook"></span><span id="b-trim" class="s-trim"></span></div>
+      <div class="legend"><span><i class="s-sell"></i>prodaja</span><span><i class="s-cook"></i>gubitak u smokeru</span><span><i class="s-trim"></i>trim + rezanje</span></div>
+      <dl>
+        <dt>Gubitak na trimovanju</dt><dd id="c-trim">—</dd>
+        <dt>Gubitak u smokeru</dt><dd id="c-cook">—</dd>
+        <dt>Gubitak na sečenju</dt><dd id="c-slice">—</dd>
+        <dt>Prodajnih kg</dt><dd id="c-kg">—</dd>
+        <dt>Stvarna cena po kg</dt><dd id="c-cost">—</dd>
+      </dl>
+      <div class="verdict" id="c-verdict">Unesi sirovu težinu i težinu iz smokera.</div>
+    </aside>
+  </section>
+
+  <section id="view-pregled" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <h2>Pregled po mesu</h2>
+        <p class="lede" id="p-lede">Prosečan yield (za prodaju ÷ sirovo) za izabrani period, poređen sa ciljem.</p>
+      </div>
+      <div class="filters">
+        <label>Period<select id="p-period">
+          <option value="7">Poslednjih 7 dana</option><option value="30" selected>Poslednjih 30 dana</option>
+          <option value="90">Poslednjih 90 dana</option><option value="0">Sve</option>
+        </select></label>
+      </div>
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+
+  <section id="view-istorija" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <h2>Istorija ciklusa</h2>
+        <p class="lede">Svaki upisan ciklus, najnoviji na vrhu.</p>
+      </div>
+      <div class="filters">
+        <label>Meso<select id="h-product"><option value="">Sve</option></select></label>
+        <label>Period<select id="h-period">
+          <option value="7">Poslednjih 7 dana</option><option value="30" selected>Poslednjih 30 dana</option>
+          <option value="90">Poslednjih 90 dana</option><option value="0">Sve</option>
+        </select></label>
+      </div>
+      <div id="history"></div>
+    </div>
+  </section>
+
+  <p class="foot">Yield = kg za prodaju ÷ sirovih kg. Ako „za prodaju“ nije upisano, računa se iz težine iz smokera. Stvarna cena po kg = (sirovo × nabavna cena) ÷ kg za prodaju.</p>
+</div>
+
+<div class="login" id="config-view" hidden>
+  <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
+  <div class="empty"><strong>Sajt još nije povezan sa bazom</strong>U fajl config.js treba upisati adresu i anon ključ Supabase projekta.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = v => { if (v == null) return null; const s = String(v).trim().replace(/\s/g,'').replace(',', '.'); if (!s) return null; const n = Number(s); return Number.isFinite(n) ? n : NaN; };
+  const fmt = (n,d=1) => n==null||!Number.isFinite(n) ? '—' : n.toLocaleString('sr-Latn-RS',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const pct = n => n==null||!Number.isFinite(n) ? '—' : fmt(n*100,1)+' %';
+  const today = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+  const fmtDate = s => { if(!s) return '—'; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}.`; };
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const show = id => ['login-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
+
+  const cfg = window.APP_CONFIG || {};
+  if (!window.supabase || !cfg.SUPABASE_URL || /VAS-PROJEKAT/.test(cfg.SUPABASE_URL)) { show('config-view'); return; }
+  const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+
+  let me=null, isAdmin=false, products=[], entries=[], channel=null;
+  const prodName = id => (products.find(p=>p.id===id)||{}).name || id;
+  const targetFor = id => { const p=products.find(p=>p.id===id); return p && p.target_yield!=null ? Number(p.target_yield) : null; };
+
+  // ---------- proračun ----------
+  function compute(e){
+    const raw=e.raw_kg, trim=e.trimmed_kg, cooked=e.cooked_kg, sell=e.sellable_kg;
+    if(!(raw>0) || !(cooked>0)) return null;
+    const out = sell>0 ? sell : cooked;
+    const r = {
+      yield: out/raw, basis: sell>0 ? 'sell' : 'cooked',
+      trimLoss: trim>0 ? (raw-trim)/raw : null,
+      cookLoss: trim>0 ? (trim-cooked)/trim : (raw-cooked)/raw,
+      sliceLoss: sell>0 ? (cooked-sell)/cooked : null,
+      outKg: out, cost: e.price_per_kg>0 ? raw*e.price_per_kg/out : null
+    };
+    const inSmoker = trim>0 ? trim : raw;
+    r.shareSell = out/raw; r.shareCook = Math.max(0,(inSmoker-cooked)/raw); r.shareTrim = Math.max(0,1-r.shareSell-r.shareCook);
+    return r;
+  }
+  function judge(y,target){
+    if(target==null) return {cls:'none',txt:'bez cilja'};
+    const diff=y*100-target;
+    if(diff>=-1) return {cls:'good',txt:(diff>=0?'+':'')+fmt(diff,1)+' pp od cilja'};
+    if(diff>=-4) return {cls:'warn',txt:fmt(diff,1)+' pp od cilja'};
+    return {cls:'bad',txt:fmt(diff,1)+' pp od cilja'};
+  }
+  const toNumRow = r => { const o={...r}; ['raw_kg','trimmed_kg','cooked_kg','sellable_kg','price_per_kg','smoker_temp_c','hours','yield_pct'].forEach(k=>{ if(o[k]!=null) o[k]=Number(o[k]); }); return o; };
+
+  // ---------- forma ----------
+  const F = id => $('f-'+id);
+  function readForm(){
+    return {
+      cook_date:F('date').value, product_id:F('product').value, cook_name:F('cook').value.trim(), batch:F('batch').value.trim(),
+      raw_kg:num(F('raw').value), trimmed_kg:num(F('trim').value), cooked_kg:num(F('cooked').value), sellable_kg:num(F('sell').value),
+      price_per_kg:num(F('price').value), smoker_temp_c:num(F('temp').value), hours:num(F('hours').value),
+      wood:F('wood').value.trim(), notes:F('notes').value.trim()
+    };
+  }
+  function sanity(e){
+    if(e.cooked_kg>e.raw_kg) return 'Težina iz smokera je veća od sirove — proveri merenje.';
+    if(e.trimmed_kg && e.trimmed_kg>e.raw_kg) return 'Težina posle trimovanja je veća od sirove — proveri merenje.';
+    if(e.trimmed_kg && e.cooked_kg>e.trimmed_kg) return 'Težina iz smokera je veća od težine posle trimovanja — proveri merenje.';
+    if(e.sellable_kg && e.sellable_kg>e.cooked_kg) return 'Težina za prodaju je veća od težine iz smokera — proveri merenje.';
+    return null;
+  }
+  function updateCalc(){
+    const e=readForm(), r=compute(e);
+    if(!r){
+      ['c-yield','c-trim','c-cook','c-slice','c-kg','c-cost'].forEach(id=>$(id).textContent='—');
+      ['b-sell','b-cook','b-trim'].forEach(id=>$(id).style.width='0');
+      $('c-verdict').textContent='Unesi sirovu težinu i težinu iz smokera.'; return;
+    }
+    $('c-yield').textContent=pct(r.yield);
+    $('c-yield-basis').textContent = r.basis==='sell' ? 'za prodaju ÷ sirovo' : 'iz smokera ÷ sirovo (nema težine za prodaju)';
+    $('c-trim').textContent=pct(r.trimLoss); $('c-cook').textContent=pct(r.cookLoss); $('c-slice').textContent=pct(r.sliceLoss);
+    $('c-kg').textContent=fmt(r.outKg,2)+' kg'; $('c-cost').textContent=r.cost?fmt(r.cost,0)+' RSD':'—';
+    $('b-sell').style.width=(r.shareSell*100)+'%'; $('b-cook').style.width=(r.shareCook*100)+'%'; $('b-trim').style.width=(r.shareTrim*100)+'%';
+    const bad=sanity(e);
+    if(bad){ $('c-verdict').textContent='Proveri merenja: težina ne može da raste od koraka do koraka.'; return; }
+    if(!e.product_id){ $('c-verdict').textContent='Izaberi meso da vidiš poređenje sa ciljem.'; return; }
+    const t=targetFor(e.product_id);
+    $('c-verdict').textContent = t==null ? 'Za ovo meso još nema cilja — administrator ga postavlja u „Pregled po mesu“.' : `Cilj za ${prodName(e.product_id)}: ${fmt(t,0)} %. Ovaj ciklus: ${judge(r.yield,t).txt}.`;
+  }
+  $('form').addEventListener('input',updateCalc);
+  $('form').addEventListener('reset',()=>setTimeout(()=>{F('date').value=today();F('cook').value=me?me.full_name:'';updateCalc();$('msg').textContent='';},0));
+
+  function validate(e){
+    if(!e.cook_date) return 'Upiši datum.';
+    if(!e.product_id) return 'Izaberi meso.';
+    for(const [k,l] of [['raw_kg','sirovo'],['trimmed_kg','posle trimovanja'],['cooked_kg','iz smokera'],['sellable_kg','za prodaju'],['price_per_kg','cena'],['smoker_temp_c','temperatura'],['hours','vreme']]) if(Number.isNaN(e[k])) return `Polje „${l}“ mora biti broj (npr. 4,250).`;
+    if(!(e.raw_kg>0)) return 'Upiši sirovu težinu u kg.';
+    if(!(e.cooked_kg>0)) return 'Upiši težinu iz smokera u kg.';
+    return sanity(e);
+  }
+  $('form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const msg=$('msg'); msg.className='msg';
+    const e=readForm(), err=validate(e);
+    if(err){msg.classList.add('err');msg.textContent=err;return;}
+    const row={...e}; Object.keys(row).forEach(k=>{ if(row[k]==null||row[k]==='') delete row[k]; });
+    $('save').disabled=true;
+    const {error}=await sb.from('cooks').insert(row);
+    $('save').disabled=false;
+    if(error){ msg.classList.add('err'); msg.textContent='Čuvanje nije uspelo: '+(error.message||'proveri internet i probaj ponovo.'); return; }
+    const r=compute(e);
+    msg.classList.add('ok'); msg.textContent=`Sačuvano: ${prodName(e.product_id)}, yield ${pct(r.yield)}.`;
+    const keep={date:F('date').value,cook:F('cook').value};
+    ['product','batch','raw','trim','cooked','sell','price','temp','hours','wood','notes'].forEach(k=>F(k).value='');
+    F('date').value=keep.date; F('cook').value=keep.cook; updateCalc();
+    loadCooks();
+  });
+
+  // ---------- tabovi ----------
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.view)));
+  function tab(v){
+    document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
+    ['unos','pregled','istorija'].forEach(x=>$('view-'+x).hidden = x!==v);
+    try{localStorage.setItem('syl-tab',v)}catch(_){}
+  }
+  try{const t=localStorage.getItem('syl-tab'); if(t) tab(t);}catch(_){}
+
+  // ---------- prikaz ----------
+  const inPeriod = (e,days) => { if(!days) return true; const d=new Date(); d.setDate(d.getDate()-days+1); return (e.cook_date||'')>=d.toISOString().slice(0,10); };
+  function renderProducts(){
+    const ps=$('f-product'), cur=ps.value; ps.innerHTML='<option value="">Izaberi meso</option>';
+    products.filter(p=>p.active).forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;ps.appendChild(o);});
+    ps.value=cur;
+    const hs=$('h-product'), hc=hs.value; hs.innerHTML='<option value="">Sve</option>';
+    products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;hs.appendChild(o);});
+    hs.value=hc;
+  }
+  function spark(vals,target){
+    if(vals.length<2) return '';
+    const W=240,H=46,p=4, all=vals.concat(target!=null?[target]:[]);
+    const lo=Math.min(...all)-3, hi=Math.max(...all)+3;
+    const x=i=>p+i*(W-2*p)/(vals.length-1), y=v=>H-p-(v-lo)/(hi-lo)*(H-2*p);
+    const pts=vals.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const tl = target!=null ? `<line x1="${p}" x2="${W-p}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" stroke="var(--muted)" stroke-dasharray="3 3" stroke-width="1"/>` : '';
+    const last=vals.length-1;
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Trend yielda, poslednjih ${vals.length} ciklusa">${tl}<polyline points="${pts}" fill="none" stroke="var(--ember)" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${x(last).toFixed(1)}" cy="${y(vals[last]).toFixed(1)}" r="3" fill="var(--ember)"/></svg>`;
+  }
+  function renderCards(){
+    const days=Number($('p-period').value), box=$('cards'); box.innerHTML='';
+    $('p-lede').textContent = 'Prosečan yield (za prodaju ÷ sirovo) za izabrani period, poređen sa ciljem.' + (isAdmin ? ' Cilj menjaš direktno na kartici.' : ' Ciljeve postavlja administrator.');
+    const rows=entries.filter(e=>inPeriod(e,days)).map(e=>({e,r:compute(e)})).filter(x=>x.r);
+    const groups={}; rows.forEach(x=>{(groups[x.e.product_id]=groups[x.e.product_id]||[]).push(x);});
+    const ids = products.map(p=>p.id).filter(id=>groups[id] || isAdmin);
+    if(!rows.length && !isAdmin){
+      box.innerHTML=`<div class="empty" style="grid-column:1/-1"><strong>${entries.length?'Nema ciklusa u ovom periodu':'Još nema upisanih ciklusa'}</strong>Kad tim upiše prvi ciklus u „Novi unos“, ovde se pojavljuje kartica za svako meso: prosečan yield, raspon, stvarna cena po kg i trend.</div>`;
+      return;
+    }
+    ids.forEach(id=>{
+      const g=(groups[id]||[]).slice().sort((a,b)=>(a.e.cook_date+a.e.created_at).localeCompare(b.e.cook_date+b.e.created_at));
+      const t=targetFor(id), c=document.createElement('article'); c.className='card';
+      const targetInput = isAdmin ? `<label class="target">Cilj yielda (%)<input class="num" inputmode="decimal" value="${t!=null?fmt(t,0):''}" data-id="${esc(id)}" aria-label="Cilj yielda za ${esc(prodName(id))}"></label>` : `<div class="target">Cilj yielda: ${t!=null?fmt(t,0)+' %':'nije postavljen'}</div>`;
+      if(!g.length){
+        c.innerHTML=`<div class="row"><h3>${esc(prodName(id))}</h3><span class="pill none">nema ciklusa</span></div><div class="status">Nema upisa u ovom periodu.</div>${targetInput}`;
+      } else {
+        const rawSum=g.reduce((s,x)=>s+x.e.raw_kg,0), outSum=g.reduce((s,x)=>s+x.r.outKg,0), avg=outSum/rawSum;
+        const ys=g.map(x=>x.r.yield*100);
+        const costs=g.filter(x=>x.r.cost); const costAvg=costs.length? costs.reduce((s,x)=>s+x.e.raw_kg*x.e.price_per_kg,0)/costs.reduce((s,x)=>s+x.r.outKg,0):null;
+        const j=judge(avg,t);
+        c.innerHTML=`<div class="row"><h3>${esc(prodName(id))}</h3><span class="pill ${j.cls}">${esc(j.txt)}</span></div>
+          <div class="row"><div class="y">${fmt(avg*100,1)}<span style="font-size:24px"> %</span></div><div class="status">${g.length} ${g.length===1?'ciklus':'ciklusa'} · ${fmt(rawSum,1)} kg sirovo</div></div>
+          ${spark(ys.slice(-12),t)}
+          <div class="stats"><div>Najniži<b>${fmt(Math.min(...ys),1)} %</b></div><div>Najviši<b>${fmt(Math.max(...ys),1)} %</b></div><div>RSD / kg<b>${costAvg?fmt(costAvg,0):'—'}</b></div></div>
+          ${targetInput}`;
+      }
+      box.appendChild(c);
+    });
+    box.querySelectorAll('.target input').forEach(inp=>inp.addEventListener('change',()=>saveTarget(inp.dataset.id,inp.value,inp)));
+  }
+  async function saveTarget(id,val,inp){
+    const v=num(val);
+    if(Number.isNaN(v)||(v!=null&&(v<=0||v>100))){ inp.value=targetFor(id)!=null?fmt(targetFor(id),0):''; return; }
+    const {error}=await sb.from('products').update({target_yield:v}).eq('id',id);
+    if(error){ $('status').textContent='Cilj nije sačuvan: '+error.message; return; }
+    await loadProducts();
+  }
+  function renderHistory(){
+    const days=Number($('h-period').value), prod=$('h-product').value, box=$('history');
+    const rows=entries.filter(e=>inPeriod(e,days)&&(!prod||e.product_id===prod));
+    if(!rows.length){ box.innerHTML=`<div class="empty"><strong>${entries.length?'Nema ciklusa za ovaj filter':'Istorija je prazna'}</strong>${entries.length?'Promeni period ili meso.':'Prvi ciklus upiši u „Novi unos“ — ovde se pojavljuje odmah, za ceo tim.'}</div>`; return; }
+    let html=`<div class="tablewrap"><table><thead><tr><th>Datum</th><th>Meso</th><th class="n">Sirovo</th><th class="n">Trim</th><th class="n">Smoker</th><th class="n">Prodaja</th><th class="n">Yield</th><th class="n">RSD/kg</th><th>Smoker</th><th>Ko · napomena</th><th></th></tr></thead><tbody>`;
+    rows.forEach(e=>{
+      const r=compute(e), j=r?judge(r.yield,targetFor(e.product_id)):{cls:'none'};
+      const sm=[e.smoker_temp_c!=null?fmt(e.smoker_temp_c,0)+' °C':null,e.hours!=null?fmt(e.hours,1)+' h':null,e.wood||null].filter(Boolean).join(' · ')||'—';
+      const canDel = isAdmin || (me && e.created_by===me.id);
+      html+=`<tr><td>${fmtDate(e.cook_date)}</td><td><strong>${esc(prodName(e.product_id))}</strong>${e.batch?`<div class="note">${esc(e.batch)}</div>`:''}</td>
+        <td class="n">${fmt(e.raw_kg,2)}</td><td class="n">${e.trimmed_kg?fmt(e.trimmed_kg,2):'—'}</td><td class="n">${fmt(e.cooked_kg,2)}</td><td class="n">${e.sellable_kg?fmt(e.sellable_kg,2):'—'}</td>
+        <td class="n"><span class="pill ${j.cls}">${r?pct(r.yield):'—'}</span></td><td class="n">${r&&r.cost?fmt(r.cost,0):'—'}</td>
+        <td>${esc(sm)}</td><td>${esc(e.cook_name||'—')}${e.notes?`<div class="note">${esc(e.notes)}</div>`:''}</td>
+        <td>${canDel?`<button class="del" data-id="${esc(e.id)}">Obriši</button>`:''}</td></tr>`;
+    });
+    box.innerHTML=html+'</tbody></table></div>';
+    box.querySelectorAll('.del').forEach(b=>b.addEventListener('click',async()=>{
+      if(!b.classList.contains('confirm')){ b.classList.add('confirm'); b.textContent='Sigurno?'; setTimeout(()=>{if(b.isConnected){b.classList.remove('confirm');b.textContent='Obriši';}},4000); return; }
+      b.disabled=true;
+      const {error}=await sb.from('cooks').delete().eq('id',b.dataset.id);
+      if(error){ b.textContent='Nije obrisano'; return; }
+      loadCooks();
+    }));
+  }
+  function renderAll(){ renderProducts(); renderCards(); renderHistory(); updateCalc(); }
+  $('p-period').addEventListener('change',renderCards);
+  $('h-period').addEventListener('change',renderHistory);
+  $('h-product').addEventListener('change',renderHistory);
+
+  // ---------- podaci ----------
+  async function loadProducts(){
+    const {data,error}=await sb.from('products').select('*').order('sort');
+    if(!error){ products=data||[]; renderAll(); }
+  }
+  async function loadCooks(){
+    const {data,error}=await sb.from('cooks').select('*').order('cook_date',{ascending:false}).order('created_at',{ascending:false}).limit(3000);
+    if(error){ $('status').textContent='Podaci nisu učitani: '+error.message; return; }
+    entries=(data||[]).map(toNumRow);
+    $('status').textContent=`${entries.length} ${entries.length===1?'ciklus':'ciklusa'} u bazi`;
+    renderAll();
+  }
+  function subscribe(){
+    if(channel) return;
+    channel = sb.channel('yield-live')
+      .on('postgres_changes',{event:'*',schema:'public',table:'cooks'},()=>loadCooks())
+      .on('postgres_changes',{event:'*',schema:'public',table:'products'},()=>loadProducts())
+      .subscribe();
+  }
+
+  // ---------- prijava ----------
+  $('login-form').addEventListener('submit',async ev=>{
+    ev.preventDefault();
+    const m=$('l-msg'); m.className='msg'; m.textContent='';
+    const email=$('l-email').value.trim(), password=$('l-pass').value;
+    if(!email||!password){ m.classList.add('err'); m.textContent='Upiši email i lozinku.'; return; }
+    $('l-btn').disabled=true;
+    const {error}=await sb.auth.signInWithPassword({email,password});
+    $('l-btn').disabled=false;
+    if(error){ m.classList.add('err'); m.textContent='Pogrešan email ili lozinka.'; }
+  });
+  $('logout').addEventListener('click',()=>sb.auth.signOut());
+
+  async function enter(session){
+    if(!session){ if(channel){ sb.removeChannel(channel); channel=null; } me=null; show('login-view'); return; }
+    const uid=session.user.id;
+    const {data:prof}=await sb.from('profiles').select('*').eq('id',uid).maybeSingle();
+    me={id:uid, full_name:(prof&&prof.full_name)||session.user.email, role:(prof&&prof.role)||'kuvar'};
+    isAdmin = me.role==='admin';
+    $('me-name').textContent=me.full_name; $('me-role').textContent=isAdmin?'administrator':'kuhinja';
+    if(!F('cook').value) F('cook').value=me.full_name;
+    if(!F('date').value) F('date').value=today();
+    show('app-view');
+    await loadProducts(); await loadCooks(); subscribe();
+  }
+  let lastUid=null;
+  sb.auth.onAuthStateChange((event,session)=>{
+    const uid=session?session.user.id:null;
+    if(uid===lastUid && event!=='INITIAL_SESSION') return;
+    lastUid=uid; setTimeout(()=>enter(session),0);
+  });
+})();
+</script>
+</body>
+</html>
