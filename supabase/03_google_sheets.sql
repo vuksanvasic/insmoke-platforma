@@ -33,7 +33,8 @@ begin
 
   if tg_op <> 'DELETE' then
     zapis := to_jsonb(new) || jsonb_build_object(
-      'product_name', (select name from public.products where id = new.product_id));
+      'product_name', (select name from public.products where id = new.product_id),
+      'target_yield', (select target_yield from public.products where id = new.product_id));
   end if;
   if tg_op <> 'INSERT' then
     stari := to_jsonb(old);
