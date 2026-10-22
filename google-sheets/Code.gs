@@ -1,5 +1,5 @@
 /**
- * In Smoke We Trust — Smoker Yield Log → Google Sheets
+ * In Smoke We Trust · Kitchen Control → Google Sheets
  *
  * Prima svaku promenu ciklusa iz Supabase baze i održava tabelu identičnom sajtu:
  *   nov ciklus → nov red · izmena → red se menja · brisanje → red se briše.
@@ -159,7 +159,7 @@ function posaljiObavestenje_(r, v, urlTabele) {
     subject: 'Nov ciklus: ' + meso + ' — yield ' + broj_sr_(yieldPct, 1) + ' % (' + kuvar + ')',
     body: tekst,
     htmlBody: html,
-    name: 'Smoker Yield Log'
+    name: 'In Smoke We Trust · Kitchen Control'
   });
 }
 
@@ -171,7 +171,7 @@ function posaljiNoviNalog_(r) {
   MailApp.sendEmail({
     to: OBAVESTENJE_NA,
     subject: 'Nov nalog čeka odobrenje: ' + ime,
-    body: 'Neko je napravio nalog na platformi Smoker Yield Log i čeka tvoje odobrenje.\n\n' +
+    body: 'Neko je napravio nalog na platformi In Smoke We Trust · Kitchen Control i čeka tvoje odobrenje.\n\n' +
       'Ime i prezime: ' + ime + '\nEmail: ' + email + '\nVreme: ' + vreme +
       '\n\nOdobri ili odbij u tabu Tim: ' + link +
       '\n\nAko ne znaš ko je ova osoba, odbij nalog.',
@@ -183,7 +183,7 @@ function posaljiNoviNalog_(r) {
       '<tr><td style="padding:4px 16px 4px 0;color:#6d625b">Vreme</td><td>' + esc(vreme) + '</td></tr></table>' +
       '<p style="margin:16px 0"><a href="' + link + '" style="background:#b4401e;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Otvori tab Tim</a></p>' +
       '<p style="margin:0;color:#6d625b">Ako ne znaš ko je ova osoba, odbij nalog.</p></div>',
-    name: 'Smoker Yield Log'
+    name: 'In Smoke We Trust · Kitchen Control'
   });
 }
 
@@ -283,7 +283,7 @@ function posaljiDnevniOtpis_(s) {
     (razlozi.length ? '<h3 style="margin:14px 0 6px">Najčešći razlozi</h3><table style="border-collapse:collapse">' + razlozi.map(function (x) { return red2(x[0], x[1]); }).join('') + '</table>' : '') +
     (artikli.length ? '<h3 style="margin:14px 0 6px">Najviše otpisano</h3><table style="border-collapse:collapse">' + artikli.map(function (x) { return red2(x[0], x[1]); }).join('') + '</table>' : '') +
     '<p style="margin:18px 0 0"><a href="' + ADRESA_SAJTA + '#otpis-pregled" style="background:#b4401e;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Otvori pregled otpisa</a></p></div>';
-  MailApp.sendEmail({ to: OBAVESTENJE_NA, subject: subjekt, body: tekst, htmlBody: html, name: 'Smoker Yield Log' });
+  MailApp.sendEmail({ to: OBAVESTENJE_NA, subject: subjekt, body: tekst, htmlBody: html, name: 'In Smoke We Trust · Kitchen Control' });
 }
 
 function odgovor_(o) {
@@ -291,5 +291,5 @@ function odgovor_(o) {
 }
 
 function posaljiProbniMejl() {
-  MailApp.sendEmail(OBAVESTENJE_NA, 'Smoker Yield Log — obaveštenja su uključena', 'Od sada za svaki nov ciklus sa smokera stiže mejl na ovu adresu.\n\nPlatforma: ' + ADRESA_SAJTA, { name: 'Smoker Yield Log' });
+  MailApp.sendEmail(OBAVESTENJE_NA, 'In Smoke We Trust · Kitchen Control — obaveštenja su uključena', 'Od sada za svaki nov ciklus sa smokera stiže mejl na ovu adresu.\n\nPlatforma: ' + ADRESA_SAJTA, { name: 'In Smoke We Trust · Kitchen Control' });
 }
