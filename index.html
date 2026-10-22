@@ -128,6 +128,8 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
 .sbtn{font:600 13px var(--f-body);border-radius:6px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink)}
 .sbtn.go{background:var(--good);border-color:var(--good);color:#fff}
 .sbtn.no{color:var(--bad)}
+.pendbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-radius:10px;border:1px solid var(--ember);background:color-mix(in srgb,var(--ember) 10%,var(--surface))}
+.pendbar b{color:var(--ember)}
 .group-h{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:6px 0 8px}
 @media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s ease}}
 </style>
@@ -152,7 +154,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   <div class="brand"><small>In Smoke We Trust · kuhinja</small><h1>Smoker Yield Log</h1></div>
   <form id="signup-form" novalidate>
     <h2>Novi nalog</h2>
-    <label>Ime i prezime<input id="s-name" autocomplete="name" required></label>
+    <label>Ime i prezime<span class="hint">npr. Marko Petrović</span><input id="s-name" autocomplete="name" required></label>
     <label>Email<input type="email" id="s-email" autocomplete="username" required></label>
     <label>Lozinka<span class="hint">najmanje 8 znakova</span><input type="password" id="s-pass" autocomplete="new-password" minlength="8" required></label>
     <button class="btn ember" type="submit" id="s-btn">Napravi nalog</button>
@@ -183,6 +185,11 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
       <div class="status" id="status">Učitavanje…</div>
     </div>
   </header>
+
+  <div class="pendbar" id="pendbar" hidden>
+    <span><b>Čeka odobrenje:</b> <span id="pendbar-names"></span></span>
+    <button class="sbtn go" id="pendbar-go" type="button">Pogledaj i odobri</button>
+  </div>
 
   <nav role="tablist" aria-label="Sekcije">
     <button role="tab" aria-selected="true" data-view="unos">Novi unos</button>
@@ -514,6 +521,8 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   function renderTeam(){
     const pending=team.filter(p=>p.role==='ceka');
     $('tim-count').textContent=pending.length; $('tim-count').hidden=!pending.length;
+    $('pendbar').hidden=!pending.length;
+    $('pendbar-names').textContent=pending.map(p=>p.full_name||p.email).join(', ');
     const groups=[
       ['Čekaju odobrenje', pending],
       ['Aktivni', team.filter(p=>p.role==='admin'||p.role==='kuvar')],
@@ -578,7 +587,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
     ev.preventDefault();
     const m=$('s-msg'); m.className='msg'; m.textContent='';
     const full_name=$('s-name').value.trim(), email=$('s-email').value.trim(), password=$('s-pass').value;
-    if(!full_name){ m.classList.add('err'); m.textContent='Upiši ime i prezime.'; return; }
+    if(full_name.split(/\s+/).filter(w=>w.length>=2).length<2){ m.classList.add('err'); m.textContent='Upiši i ime i prezime (npr. Marko Petrović).'; return; }
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ m.classList.add('err'); m.textContent='Upiši ispravan email.'; return; }
     if(password.length<8){ m.classList.add('err'); m.textContent='Lozinka mora imati najmanje 8 znakova.'; return; }
     $('s-btn').disabled=true;
@@ -608,6 +617,7 @@ td .note{color:var(--muted);font-size:13px;max-width:28ch}
   $('logout').addEventListener('click',()=>sb.auth.signOut());
 
   $('pend-logout').addEventListener('click',()=>sb.auth.signOut());
+  $('pendbar-go').addEventListener('click',()=>tab('tim'));
 
   async function enter(session){
     stopChannels();
