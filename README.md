@@ -1,6 +1,6 @@
-# Smoker Yield Log — In Smoke We Trust
+# Kitchen Control — In Smoke We Trust
 
-Interni alat kuhinje za upis yielda sa smokera. Statičan sajt (GitHub Pages) + Supabase baza sa prijavama.
+Interna platforma kuhinje: yield sa smokera i otpis po smenama (kuhinja i šank). Statičan sajt (GitHub Pages) + Supabase baza sa prijavama.
 
 ## Sadržaj
 
