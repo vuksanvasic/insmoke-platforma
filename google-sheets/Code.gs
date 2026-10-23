@@ -13,7 +13,7 @@ const TAJNI_KLJUC = 'OVDE-IDE-TAJNI-KLJUC';
 const ID_KOLONA = 20; // kolona T: "ID ciklusa"
 const ZONA = 'Europe/Belgrade';
 const OBAVESTENJE_NA = 'office@nutribox.rs'; // ko dobija mejl za svaki nov ciklus (više adresa: odvojiti zarezom)
-const ADRESA_SAJTA = 'https://vuksanvasic.github.io/insmoke-platforma/';
+const ADRESA_SAJTA = 'https://insmoke.rs/kitchen/';
 
 function doPost(e) {
   const token = (e && e.parameter && e.parameter.token) || '';
