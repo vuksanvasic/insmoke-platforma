@@ -64,15 +64,15 @@ Ako neko zaboravi lozinku: Supabase → **Authentication → Users** → izaberi
 
 Repozitorijum može biti javan: u kodu je samo javni ključ, a podatke čuvaju pravila u bazi — bez prijave se ne vidi ništa.
 
-### 4. Kad se kupi domen
+### 4. Adresa na domenu restorana
 
-1. U repozitorijum dodaj fajl `CNAME` sa jednim redom, npr. `yield.insmoke.rs`.
-2. Kod registra domena dodaj DNS zapis:
-   - poddomen (`yield.insmoke.rs`): **CNAME** → `<tvoj-github-nalog>.github.io`
-   - ceo domen (`insmoke.rs`): četiri **A** zapisa → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-3. **Settings → Pages → Custom domain** → upiši domen → uključi **Enforce HTTPS**.
+Sajt radi na **https://insmoke.rs/kitchen/** (hosting Telekom / Plesk, webhosting08.oblaci.rs).
 
-Stara github.io adresa automatski preusmerava na novu.
+- Plesk → insmoke.rs → **Git**: repozitorijum `kitchen-control.git` povlači ovaj GitHub repo u `/httpdocs/kitchen`.
+  Posle izmene na GitHub-u: Plesk → Git → **Pull now** (ili Deploy now).
+- Stara github.io adresa automatski prebacuje na novu (skripta na vrhu `index.html`).
+- Supabase → Authentication → URL Configuration: Site URL = `https://insmoke.rs/kitchen/`.
+- Poddomen `kitchen.insmoke.rs` postoji u Plesku, ali radi tek kad Telekom doda DNS zapis `kitchen A 212.200.255.43`.
 
 ---
 
