@@ -85,3 +85,23 @@ Sajt radi na **https://insmoke.rs/kitchen/** (hosting Telekom / Plesk, webhostin
 - **Stvarna cena po kg** = sirovo × nabavna cena ÷ kg za prodaju
 - Prosek po mesu je ponderisan kilogramima (veliki komadi teže više od malih).
 - Boja kartice: zeleno do 1 pp ispod cilja, žuto do 4 pp ispod, crveno preko toga.
+
+---
+
+## Management Control (uprava · rad)
+
+Stranica `management.html` (https://insmoke.rs/kitchen/management.html), ista prijava i baza kao Kitchen Control.
+
+| Tab | Ko | Šta |
+|---|---|---|
+| Pregled | svi sa pristupom | labor %, promet, sati, sektori, upozorenja (troškove vidi samo administrator) |
+| Zatvaranje dana | šef smene, menadžer, administrator | promet po kanalu iz POS-a + potvrda ko je radio |
+| Raspored | šef smene, menadžer, administrator | smene po nedeljama |
+| Zaposleni | administrator menja, ostali vide bez plata | pozicija, sektor, angažovanje, plata, prava cena sata |
+| Obračun, Podešavanja | administrator | stvarne plate po mesecu, cilj, PDV, uvećanja, kanali |
+
+Uloge: `menadzer` (F&B menadžer) i `sef` unose, ali ne vide plate — to čuva baza (RLS), ne samo izgled stranice. `kuvar` nema pristup.
+
+Baza: `supabase/10_management.sql` (tabele `mc_*`, uloga menadžer), `supabase/11_mc_izvestaji.sql` (proračun i mejlovi).
+
+Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče, nedeljni ponedeljkom u 9h. Šalju se tek kad postoji bar jedan zaposleni. Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`

@@ -730,10 +730,10 @@ a.linkbtn{color:var(--ink)}
       $('p-chart-title').textContent='Labor % po danima'; $('p-chart-legend').textContent=target?`isprekidana linija = cilj ${fmt(target,0)} %`:'';
       const vals=days.map(d=>{ const c=withOwners?d.cost:d.cost-d.ownersCost; return d.net>0?c/d.net*100:null; });
       const max=Math.max(target*1.6||50, ...vals.filter(v=>v!=null).map(v=>Math.min(v,150)));
-      const top=Math.ceil(max/10)*10, y=v=>padT+(H-padT-padB)*(1-Math.min(v,top)/top);
+      const step=[5,10,20,25,50,100].find(st=>Math.ceil(max/st)<=5)||100, top=Math.ceil(max/step)*step, y=v=>padT+(H-padT-padB)*(1-Math.min(v,top)/top);
       const bw=(W-padL-padR)/n;
       let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Labor procenat po danima">`;
-      for(let g=0; g<=top; g+=top/4){ s+=`<line x1="${padL}" x2="${W-padR}" y1="${y(g)}" y2="${y(g)}" stroke="var(--line)" stroke-width="1"/><text x="${padL-6}" y="${y(g)+4}" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">${fmt(g,0)}</text>`; }
+      for(let g=0; g<=top; g+=step){ s+=`<line x1="${padL}" x2="${W-padR}" y1="${y(g)}" y2="${y(g)}" stroke="var(--line)" stroke-width="1"/><text x="${padL-6}" y="${y(g)+4}" text-anchor="end" font-size="11" font-family="var(--f-mono)" fill="var(--muted)">${fmt(g,0)}</text>`; }
       days.forEach((d,i)=>{
         const v=vals[i], x=padL+i*bw+bw*0.15, w=bw*0.7;
         if(v!=null){ const cls=!target?'var(--ember)':(v<=target?'var(--good)':(v<=target+2?'var(--warn)':'var(--bad)'));
@@ -788,6 +788,7 @@ a.linkbtn{color:var(--ink)}
   function loadDay(d, force){
     if(!d) return;
     const changed = d!==D.date; D.date=d;
+    if(changed||force){ $('d-sales-msg').textContent=''; $('d-att-msg').textContent=''; }
     if(changed||force||!D.salesDirty) fillSales(d);
     if(changed||force||!D.attDirty) fillAtt(d);
     renderDayCalc();
@@ -799,7 +800,6 @@ a.linkbtn{color:var(--ink)}
     for(const c of ch){ const v=(doc.ch||{})[c.id]||{}; h+=`<tr><td>${esc(c.name)}</td><td><input class="num" inputmode="decimal" id="ch-${esc(c.id)}-f" data-ch="${esc(c.id)}" data-k="f" value="${esc(inp(v.f))}" placeholder="0" aria-label="${esc(c.name)} hrana"></td><td><input class="num" inputmode="decimal" id="ch-${esc(c.id)}-d" data-ch="${esc(c.id)}" data-k="d" value="${esc(inp(v.d))}" placeholder="0" aria-label="${esc(c.name)} piće"></td></tr>`; }
     h+='</tbody></table>'; $('d-channels').innerHTML=h;
     $('d-receipts').value=inp(doc.receipts); $('d-guests').value=inp(doc.guests); $('d-note').value=doc.note||'';
-    $('d-sales-msg').textContent='';
     if(!S.canWrite) document.querySelectorAll('#d-sales input').forEach(i=>i.disabled=true);
   }
   function readSales(){
@@ -812,7 +812,6 @@ a.linkbtn{color:var(--ink)}
     else { const wk=S.schedule[weekStart(d)]; D.rows=((wk&&wk.shifts)||[]).filter(s=>s.date===d).map(s=>({staffId:s.staffId,status:'radio',start:s.start,end:s.end,note:s.note||''})); D.holiday=!!(day&&day.holiday); }
     $('d-holiday').checked=D.holiday;
     $('d-state').textContent = day&&day.confirmed ? `Dan je potvrđen ${day.at?new Date(day.at).toLocaleString('sr-Latn-RS',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}` : (D.rows.length?'Dan još nije potvrđen · spisak iz rasporeda':'Za ovaj dan nema rasporeda');
-    $('d-att-msg').textContent='';
     renderRows();
   }
   function renderRows(){
