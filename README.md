@@ -88,7 +88,7 @@ Sajt radi na **https://insmoke.rs/kitchen/** (hosting Telekom / Plesk, webhostin
 
 ---
 
-## Management Control (uprava · rad)
+## Management Control (uprava · rad i food cost)
 
 Stranica `management.html` (https://insmoke.rs/kitchen/management.html), ista prijava i baza kao Kitchen Control.
 
@@ -98,10 +98,15 @@ Stranica `management.html` (https://insmoke.rs/kitchen/management.html), ista pr
 | Zatvaranje dana | šef smene, menadžer, administrator | promet po kanalu iz POS-a + potvrda ko je radio |
 | Raspored | šef smene, menadžer, administrator | smene po nedeljama |
 | Zaposleni | administrator menja, ostali vide bez plata | pozicija, sektor, angažovanje, plata, prava cena sata |
-| Obračun, Podešavanja | administrator | stvarne plate po mesecu, cilj, PDV, uvećanja, kanali |
+| Food cost | šef smene, menadžer, administrator | stvarni food cost (kuhinja ÷ hrana) i beverage cost (šank ÷ piće) između dva popisa, utrošak po namirnici, poskupljenja |
+| Popis | šef smene, menadžer, administrator | nedeljni/mesečni popis na telefonu; dimljeno meso: sirovo, u smokeru, gotovo; zaključava se (ponovo otvara samo administrator) |
+| Fakture | šef smene, menadžer, administrator | e-faktura sa SEF-a (XML) ili ručni unos; povezivanje stavki sa namirnicama (pamti se po dobavljaču); cena namirnice = poslednja faktura |
+| Obračun, Podešavanja | administrator | stvarne plate po mesecu, ciljevi (labor, food, beverage), PDV, uvećanja, kanali |
 
 Uloge: `menadzer` (F&B menadžer) i `sef` unose, ali ne vide plate — to čuva baza (RLS), ne samo izgled stranice. `kuvar` nema pristup.
 
-Baza: `supabase/10_management.sql` (tabele `mc_*`, uloga menadžer), `supabase/11_mc_izvestaji.sql` (proračun i mejlovi).
+Baza: `supabase/10_management.sql` (tabele `mc_*`, uloga menadžer), `supabase/11_mc_izvestaji.sql` (proračun i mejlovi), `supabase/12_food_cost.sql` (fakture `fc_invoices`/`fc_invoice_lines`, veze `fc_map`, popis `fc_counts`/`fc_count_lines`, `fc_summary`, food cost u nedeljnom mejlu).
 
-Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče, nedeljni ponedeljkom u 9h. Šalju se tek kad postoji bar jedan zaposleni. Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`
+Food cost: utrošeno = početno stanje (prethodni popis) + nabavka (stavke faktura sa datumom isporuke posle prethodnog popisa, zaključno sa danom ovog popisa) − krajnje stanje. Nepopisana stavka preuzima količinu iz prethodnog popisa (meso u smokeru ne). Popis vredi po nabavnoj ceni; gotovo dimljeno meso po stvarnoj ceni iz yield loga (60 dana). Cilj food cost-a je isti kao u Normativima (`app_settings.fc_target`).
+
+Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče (kad postoji bar jedan zaposleni), nedeljni ponedeljkom u 9h (rad + food cost iz popisa iz noći sa nedelje na ponedeljak + poskupljenja). Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`
