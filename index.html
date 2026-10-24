@@ -243,7 +243,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       <h1>Kitchen Control</h1>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><button class="linkbtn" id="change-pass">Promeni lozinku</button><button class="linkbtn" id="logout">Odjavi se</button></div>
+      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><a class="linkbtn" id="mc-link" href="management.html" hidden>Management Control</a><button class="linkbtn" id="change-pass">Promeni lozinku</button><button class="linkbtn" id="logout">Odjavi se</button></div>
       <div class="status" id="status">Učitavanje…</div>
     </div>
   </header>
@@ -536,7 +536,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   const VIEWS = ['unos','pregled','istorija','otpis','otpis-pregled','normativi','namirnice','tim'];
   const ADMIN_VIEWS = ['namirnice','tim'];
   const SEF_VIEWS = ['normativi'];
-  const ROLE_LABEL = {admin:'administrator', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
+  const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
   const REASONS = {visak:'Višak na kraju dana', prekuvano:'Prekuvano / presušeno', rok:'Istekao rok / pokvareno', greska:'Greška u pripremi', vraceno:'Vraćeno od gosta', ostecenje:'Pad / oštećenje / razbijeno', osoblje:'Osoblje / degustacija', ostalo:'Ostalo'};
   const STAGES = {sirovo:'sirovo', pripremljeno:'pripremljeno', gotovo:'gotovo jelo'};
   const AREAS = {kuhinja:'Kuhinja', sank:'Šank'};
@@ -752,7 +752,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     $('pendbar-names').textContent=pending.map(p=>p.full_name||p.email).join(', ');
     const groups=[
       ['Čekaju odobrenje', pending],
-      ['Aktivni', team.filter(p=>p.role==='admin'||p.role==='sef'||p.role==='kuvar')],
+      ['Aktivni', team.filter(p=>p.role==='admin'||p.role==='menadzer'||p.role==='sef'||p.role==='kuvar')],
       ['Odbijeni', team.filter(p=>p.role==='odbijen')]
     ];
     let html='';
@@ -763,13 +763,13 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
         const self=p.id===me.id;
         let acts='';
         if(self) acts=`<span class="role">${ROLE_LABEL[p.role]} · ti</span>`;
-        else if(p.role==='ceka') acts=`<button class="sbtn go" data-id="${p.id}" data-role="kuvar">Odobri — kuhinja</button><button class="sbtn" data-id="${p.id}" data-role="sef">Odobri — šef smene</button><button class="sbtn" data-id="${p.id}" data-role="admin">Odobri — administrator</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Odbij</button>`;
+        else if(p.role==='ceka') acts=`<button class="sbtn go" data-id="${p.id}" data-role="kuvar">Odobri — kuhinja</button><button class="sbtn" data-id="${p.id}" data-role="sef">Odobri — šef smene</button><button class="sbtn" data-id="${p.id}" data-role="menadzer">Odobri — menadžer</button><button class="sbtn" data-id="${p.id}" data-role="admin">Odobri — administrator</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Odbij</button>`;
         else if(p.role==='odbijen') acts=`<button class="sbtn" data-id="${p.id}" data-role="kuvar">Vrati pristup</button>`;
         else {
-          const sel=`<select class="cell-input" data-rolesel="${p.id}" aria-label="Uloga za ${esc(p.full_name||p.email)}">${['kuvar','sef','admin'].map(r=>`<option value="${r}"${r===p.role?' selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>`;
+          const sel=`<select class="cell-input" data-rolesel="${p.id}" aria-label="Uloga za ${esc(p.full_name||p.email)}">${['kuvar','sef','menadzer','admin'].map(r=>`<option value="${r}"${r===p.role?' selected':''}>${ROLE_LABEL[r]}</option>`).join('')}</select>`;
           acts=`${sel}<button class="sbtn" data-pw="${p.id}" type="button">Nova lozinka</button><button class="sbtn no" data-id="${p.id}" data-role="odbijen">Ukini pristup</button>`;
         }
-        const pwForm = (!self && ['kuvar','sef','admin'].includes(p.role)) ? `<form class="pwform" data-for="${p.id}" hidden novalidate><label>Nova lozinka za ${esc(p.full_name||p.email)}<span class="hint">najmanje 8 znakova — javi mu je lično</span><input type="text" autocomplete="off" minlength="8"></label><button class="sbtn go" type="submit">Sačuvaj</button><span class="msg"></span></form>` : '';
+        const pwForm = (!self && ['kuvar','sef','menadzer','admin'].includes(p.role)) ? `<form class="pwform" data-for="${p.id}" hidden novalidate><label>Nova lozinka za ${esc(p.full_name||p.email)}<span class="hint">najmanje 8 znakova — javi mu je lično</span><input type="text" autocomplete="off" minlength="8"></label><button class="sbtn go" type="submit">Sačuvaj</button><span class="msg"></span></form>` : '';
         html+=`<div class="member"><div class="who2"><b>${esc(p.full_name||'—')}</b><span>${esc(p.email||'')}</span></div><div class="acts">${acts}</div>${pwForm}</div>`;
       });
       html+='</div></div>';
@@ -1360,7 +1360,8 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     }
 
     $('me-name').textContent=me.full_name; $('me-role').textContent=ROLE_LABEL[me.role];
-    isSef = me.role==='sef' || isAdmin;
+    isSef = me.role==='sef' || me.role==='menadzer' || isAdmin;
+    $('mc-link').hidden=!isSef;
     $('nav-admin').hidden=!isAdmin;
     $('nav-sef').hidden=!isSef;
     if(!W('date').value) W('date').value=today();
