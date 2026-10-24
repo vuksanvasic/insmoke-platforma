@@ -367,19 +367,68 @@ function posaljiMcDnevni_(p) {
   if (Number(m.needed_net) > 0) blokovi[1][1].push(['Promet potreban za cilj', mcRsd_(m.needed_net)]);
   mcPosalji_(subjekt, blokovi, mcUpozorenja_(m), 'In Smoke We Trust · rad · ' + mcDatum_(d.from));
 }
+function mcMn_(n, jedan, dva, pet) { const a = Math.abs(n) % 100, b = a % 10; return (b === 1 && a !== 11) ? jedan : (b >= 2 && b <= 4 && (a < 12 || a > 14)) ? dva : pet; }
+function mcFoodCost_(fc) {
+  // vraća [blokovi, upozorenja, deo naslova]
+  if (!fc) return [[], [], ''];
+  const blokovi = [], upoz = [];
+  let naslov = '';
+  if (fc.missing) {
+    upoz.push(fc.open_count ? 'Popis od ' + mcDatum_(fc.open_count) + ' nije zaključen, food cost za prošlu nedelju nije izračunat.'
+                            : 'Prošle nedelje nije rađen popis' + (fc.last ? ' (poslednji zaključen: ' + mcDatum_(fc.last) + ')' : '') + ', food cost nije izračunat.');
+  } else if (fc.no_prev) {
+    blokovi.push(['Food cost', [['Status', 'Popis od ' + mcDatum_(fc.to) + ' je početno stanje. Food cost stiže posle sledećeg popisa.']]]);
+  } else if (fc.areas) {
+    const k = fc.areas.kuhinja || {}, s = fc.areas.sank || {}, n = fc.areas.nepovezano || {};
+    const ok = mcOcena_(k.pct, fc.food_target), os = mcOcena_(s.pct, fc.bev_target);
+    blokovi.push(['Food cost (' + mcKratko_(fc.from) + '–' + mcKratko_(fc.to) + ', popis ' + mcKratko_(fc.from_count) + ' → ' + mcKratko_(fc.to) + ')', [
+      ['Food cost % (kuhinja ÷ hrana)', mcPct_(k.pct) + (ok.tekst ? ' · ' + ok.tekst : ''), true, ok.boja],
+      ['Beverage cost % (šank ÷ piće)', mcPct_(s.pct) + (os.tekst ? ' · ' + os.tekst : ''), true, os.boja],
+      ['Ukupno roba ÷ promet', mcPct_(fc.total_pct)],
+      ['Utrošeno robe', mcRsd_(fc.used) + ' (početno ' + mcRsd_(fc.open) + ' + nabavka ' + mcRsd_(fc.purchases) + ' − krajnje ' + mcRsd_(fc.close) + ')'],
+      ['Otpis u periodu', mcRsd_(Number(k.waste || 0) + Number(s.waste || 0))]
+    ]]);
+    const top = (fc.top || []).filter(function (t) { return Number(t.used) > 0; }).slice(0, 5)
+      .map(function (t) { return [t.name, broj_sr_(Number(t.qty), Number(t.qty) % 1 ? 1 : 0) + ' ' + t.unit + ' · ' + mcRsd_(t.used)]; });
+    if (top.length) blokovi.push(['Najveći utrošak', top]);
+    naslov = 'food cost ' + mcPct_(k.pct);
+    if (fc.unmapped && Number(fc.unmapped.lines) > 0) upoz.push(fc.unmapped.lines + ' ' + mcMn_(Number(fc.unmapped.lines), 'stavka sa faktura nije povezana', 'stavke sa faktura nisu povezane', 'stavki sa faktura nije povezano') + ' sa namirnicom (' + mcRsd_(fc.unmapped.net) + ').');
+    if (fc.no_price && fc.no_price.length) upoz.push('Bez nabavne cene: ' + fc.no_price.slice(0, 6).join(', '));
+    if (Number(fc.carried) > 0) upoz.push(fc.carried + ' ' + mcMn_(Number(fc.carried), 'stavka nije popisana', 'stavke nisu popisane', 'stavki nije popisano') + ', količina je preuzeta iz prethodnog popisa.');
+    if (fc.missing_sales && fc.missing_sales.length) upoz.push('Fali promet za ' + fc.missing_sales.map(mcKratko_).join(', ') + ' (food cost je zato previsok).');
+  }
+  const j = fc.price_jumps || [];
+  if (j.length) blokovi.push(['Poskupljenja prošle nedelje', j.slice(0, 8).map(function (x) {
+    return [x.name, broj_sr_(Number(x.old), 2) + ' → ' + broj_sr_(Number(x.new), 2) + ' RSD/' + x.unit + ' (+' + broj_sr_(Number(x.pct), 1) + ' %, ' + x.supplier + ')', false, Number(x.pct) >= 10 ? '#b0322a' : '#a86a10'];
+  })]);
+  if (Number(fc.week_invoices) > 0) blokovi.push(['Nabavka prošle nedelje', [['Fakture', fc.week_invoices + ' · roba ' + mcRsd_(fc.week_purchases) + ' bez PDV-a']]]);
+  return [blokovi, upoz, naslov];
+}
 function posaljiMcNedeljni_(p) {
-  const w = p.week || {}, pr = p.prev || {};
-  const promena = (w.labor_pct !== null && w.labor_pct !== undefined && pr.labor_pct !== null && pr.labor_pct !== undefined)
-    ? (Number(w.labor_pct) - Number(pr.labor_pct) >= 0 ? '+' : '') + broj_sr_(Number(w.labor_pct) - Number(pr.labor_pct), 1) + ' pp u odnosu na nedelju ranije' : '';
-  const subjekt = 'Nedelja ' + mcKratko_(w.from) + '–' + mcDatum_(w.to) + ': labor ' + mcPct_(w.labor_pct) + ' · promet ' + mcRsd_(w.net);
-  const red = mcRedovi_(w);
-  if (promena) red.push(['Promena', promena]);
-  if (Number(w.needed_net) > 0) red.push(['Promet potreban za cilj', mcRsd_(w.needed_net)]);
-  const blokovi = [['Prošla nedelja (' + mcKratko_(w.from) + '–' + mcKratko_(w.to) + ')', red]];
-  const sek = mcSektori_(w);
-  if (sek.length) blokovi.push(['Po sektorima', sek]);
-  blokovi.push(['Nedelja pre toga (' + mcKratko_(pr.from) + '–' + mcKratko_(pr.to) + ')', [['Promet bez PDV-a', mcRsd_(pr.net)], ['Trošak rada', mcRsd_(pr.cost)], ['Labor %', mcPct_(pr.labor_pct)]]]);
-  mcPosalji_(subjekt, blokovi, mcUpozorenja_(w), 'In Smoke We Trust · nedeljni izveštaj o radu');
+  const w = p.week, pr = p.prev || {};
+  const f = mcFoodCost_(p.fc);
+  let blokovi = [], upoz = [], delovi = [];
+  if (w && Number(w.staff) > 0) {
+    const promena = (w.labor_pct !== null && w.labor_pct !== undefined && pr.labor_pct !== null && pr.labor_pct !== undefined)
+      ? (Number(w.labor_pct) - Number(pr.labor_pct) >= 0 ? '+' : '') + broj_sr_(Number(w.labor_pct) - Number(pr.labor_pct), 1) + ' pp u odnosu na nedelju ranije' : '';
+    const red = mcRedovi_(w);
+    if (promena) red.push(['Promena', promena]);
+    if (Number(w.needed_net) > 0) red.push(['Promet potreban za cilj', mcRsd_(w.needed_net)]);
+    blokovi.push(['Rad, prošla nedelja (' + mcKratko_(w.from) + '–' + mcKratko_(w.to) + ')', red]);
+    const sek = mcSektori_(w);
+    if (sek.length) blokovi.push(['Po sektorima', sek]);
+    blokovi.push(['Nedelja pre toga (' + mcKratko_(pr.from) + '–' + mcKratko_(pr.to) + ')', [['Promet bez PDV-a', mcRsd_(pr.net)], ['Trošak rada', mcRsd_(pr.cost)], ['Labor %', mcPct_(pr.labor_pct)]]]);
+    upoz = mcUpozorenja_(w);
+    delovi.push('labor ' + mcPct_(w.labor_pct));
+  }
+  blokovi = blokovi.concat(f[0]); upoz = upoz.concat(f[1]);
+  if (f[2]) delovi.push(f[2]);
+  if (!blokovi.length && !upoz.length) return;
+  const fc = p.fc || {};
+  const od = w ? w.from : (fc.week_from || fc.from), dO = w ? w.to : (fc.week_to || fc.to);
+  const promet = w ? w.net : fc.net;
+  const subjekt = 'Nedelja ' + (od ? mcKratko_(od) + '–' + mcDatum_(dO) : '') + (delovi.length ? ': ' + delovi.join(' · ') : '') + (promet !== undefined && promet !== null ? ' · promet ' + mcRsd_(promet) : '');
+  mcPosalji_(subjekt, blokovi, upoz, 'In Smoke We Trust · nedeljni izveštaj');
 }
 function probniMcIzvestaj() {
   posaljiMcDnevni_({ day: { from: '2026-10-23', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 }, mtd: { from: '2026-10-01', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 } });
