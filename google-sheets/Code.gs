@@ -31,6 +31,8 @@ function doPost(e) {
     if (OBAVESTENJE_NA && poruka.summary) posaljiDnevniOtpis_(poruka.summary);
     return odgovor_({ ok: true });
   }
+  if (poruka.kind === 'mc_daily') { posaljiMcDnevni_(poruka); return odgovor_({ ok: true }); }
+  if (poruka.kind === 'mc_weekly') { posaljiMcNedeljni_(poruka); return odgovor_({ ok: true }); }
   if (poruka.kind === 'waste') {
     const l = LockService.getScriptLock();
     l.waitLock(20000);
@@ -292,4 +294,93 @@ function odgovor_(o) {
 
 function posaljiProbniMejl() {
   MailApp.sendEmail(OBAVESTENJE_NA, 'In Smoke We Trust · Kitchen Control — obaveštenja su uključena', 'Od sada za svaki nov ciklus sa smokera stiže mejl na ovu adresu.\n\nPlatforma: ' + ADRESA_SAJTA, { name: 'In Smoke We Trust · Kitchen Control' });
+}
+
+
+// ===================== MANAGEMENT CONTROL · izveštaji o radu =====================
+const MC_PRIMAOCI = 'office@nutribox.rs, ilija.nikolic.sf.bg@gmail.com';
+const MC_ADRESA = 'https://insmoke.rs/kitchen/management.html';
+const MC_SEKTORI = { pit: 'Pit / smoker', kuhinja: 'Kuhinja', pranje: 'Pranje', sala: 'Sala', sank: 'Šank', uprava: 'Uprava restorana' };
+
+function mcEsc_(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function mcDatum_(s) { return s ? String(s).split('-').reverse().join('.') + '.' : ''; }
+function mcKratko_(s) { const p = String(s).split('-'); return p[2] + '.' + p[1] + '.'; }
+function mcRsd_(v) { return v === null || v === undefined ? '—' : broj_sr_(Number(v), 0) + ' RSD'; }
+function mcPct_(v) { return v === null || v === undefined ? '—' : broj_sr_(Number(v), 1) + ' %'; }
+function mcOcena_(pct, cilj) {
+  if (pct === null || pct === undefined || !cilj) return { boja: '#6d625b', tekst: '' };
+  const r = Number(pct) - Number(cilj);
+  if (r <= 0) return { boja: '#2f7a4b', tekst: 'u okviru cilja ' + broj_sr_(Number(cilj), 0) + ' %' };
+  return { boja: r <= 2 ? '#a86a10' : '#b0322a', tekst: '+' + broj_sr_(r, 1) + ' pp iznad cilja ' + broj_sr_(Number(cilj), 0) + ' %' };
+}
+function mcRedovi_(s) {
+  const o = mcOcena_(s.labor_pct, s.target);
+  const r = [
+    ['Promet bez PDV-a', mcRsd_(s.net), true],
+    ['Trošak rada', mcRsd_(s.cost) + (Number(s.overtime_cost) > 0 ? ' (prekovremeni ' + mcRsd_(s.overtime_cost) + ')' : '')],
+    ['Labor %', mcPct_(s.labor_pct) + (o.tekst ? ' · ' + o.tekst : ''), true, o.boja],
+    ['Odrađeno sati', broj_sr_(Number(s.hours || 0), 1) + ' h (plan ' + broj_sr_(Number(s.planned_hours || 0), 1) + ' h)'],
+    ['Promet po radnom satu', mcRsd_(s.sales_per_hour)]
+  ];
+  if (Number(s.owners_cost) > 0) r.splice(3, 0, ['Labor bez vlasnika', mcPct_(s.labor_pct_no_owners)]);
+  return r;
+}
+function mcTabela_(redovi) {
+  return '<table style="border-collapse:collapse">' + redovi.map(function (x) {
+    return '<tr><td style="padding:4px 16px 4px 0;color:#6d625b">' + mcEsc_(x[0]) + '</td><td style="padding:4px 0' + (x[3] ? ';color:' + x[3] : '') + '">' + (x[2] ? '<b>' + mcEsc_(x[1]) + '</b>' : mcEsc_(x[1])) + '</td></tr>';
+  }).join('') + '</table>';
+}
+function mcSektori_(s) {
+  const net = Number(s.net || 0);
+  return Object.keys(s.by_sector || {}).map(function (k) { return [k, s.by_sector[k]]; })
+    .sort(function (a, b) { return Number(b[1].cost) - Number(a[1].cost); })
+    .map(function (x) { return [MC_SEKTORI[x[0]] || x[0], broj_sr_(Number(x[1].hours || 0), 1) + ' h · ' + mcRsd_(x[1].cost) + (net > 0 ? ' · ' + broj_sr_(Number(x[1].cost) / net * 100, 1) + ' % prometa' : '')]; });
+}
+function mcUpozorenja_(s) {
+  const u = [];
+  const m = s.missing_sales || [], n = s.unconfirmed || [], ot = s.overtime || [];
+  if (m.length) u.push('Fali promet za ' + m.length + (m.length === 1 ? ' dan: ' : ' dana: ') + m.slice(0, 10).map(mcKratko_).join(', '));
+  if (n.length) u.push('Nije potvrđeno ko je radio (računa se po rasporedu): ' + n.slice(0, 10).map(mcKratko_).join(', '));
+  ot.forEach(function (x) { u.push(x.name + ': ' + broj_sr_(Number(x.hours), 1) + ' h preko ugovorenih u nedelji od ' + mcKratko_(x.week)); });
+  return u;
+}
+function mcPosalji_(subjekt, blokovi, upozorenja, naslov) {
+  let tekst = naslov + '\n';
+  let html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#211c19">' +
+    '<p style="margin:0 0 4px;color:#b4401e;font-size:12px;letter-spacing:1px">' + mcEsc_(naslov.toUpperCase()) + '</p>';
+  if (upozorenja.length) {
+    html += '<div style="background:#f3dfd5;border-left:4px solid #b4401e;padding:10px 12px;margin:10px 0 4px">' + upozorenja.map(mcEsc_).join('<br>') + '</div>';
+  }
+  blokovi.forEach(function (b) {
+    html += '<h3 style="margin:18px 0 6px">' + mcEsc_(b[0]) + '</h3>' + mcTabela_(b[1]);
+    tekst += '\n' + b[0] + '\n' + b[1].map(function (x) { return '  ' + x[0] + ': ' + x[1]; }).join('\n') + '\n';
+  });
+  if (upozorenja.length) tekst += '\nPažnja:\n' + upozorenja.map(function (x) { return '  ' + x; }).join('\n') + '\n';
+  tekst += '\nDetalji: ' + MC_ADRESA;
+  html += '<p style="margin:18px 0 0"><a href="' + MC_ADRESA + '" style="background:#b4401e;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Otvori Management Control</a></p></div>';
+  MailApp.sendEmail({ to: MC_PRIMAOCI, subject: subjekt, body: tekst, htmlBody: html, name: 'In Smoke We Trust · Management Control' });
+}
+function posaljiMcDnevni_(p) {
+  const d = p.day || {}, m = p.mtd || {};
+  const subjekt = 'Rad ' + mcDatum_(d.from) + ': labor ' + mcPct_(d.labor_pct) + ' · promet ' + mcRsd_(d.net) + ' · mesec ' + mcPct_(m.labor_pct);
+  const blokovi = [['Juče, ' + mcDatum_(d.from), mcRedovi_(d)], ['Od početka meseca (' + mcKratko_(m.from) + '–' + mcKratko_(m.to) + ')', mcRedovi_(m)]];
+  if (Number(m.needed_net) > 0) blokovi[1][1].push(['Promet potreban za cilj', mcRsd_(m.needed_net)]);
+  mcPosalji_(subjekt, blokovi, mcUpozorenja_(m), 'In Smoke We Trust · rad · ' + mcDatum_(d.from));
+}
+function posaljiMcNedeljni_(p) {
+  const w = p.week || {}, pr = p.prev || {};
+  const promena = (w.labor_pct !== null && w.labor_pct !== undefined && pr.labor_pct !== null && pr.labor_pct !== undefined)
+    ? (Number(w.labor_pct) - Number(pr.labor_pct) >= 0 ? '+' : '') + broj_sr_(Number(w.labor_pct) - Number(pr.labor_pct), 1) + ' pp u odnosu na nedelju ranije' : '';
+  const subjekt = 'Nedelja ' + mcKratko_(w.from) + '–' + mcDatum_(w.to) + ': labor ' + mcPct_(w.labor_pct) + ' · promet ' + mcRsd_(w.net);
+  const red = mcRedovi_(w);
+  if (promena) red.push(['Promena', promena]);
+  if (Number(w.needed_net) > 0) red.push(['Promet potreban za cilj', mcRsd_(w.needed_net)]);
+  const blokovi = [['Prošla nedelja (' + mcKratko_(w.from) + '–' + mcKratko_(w.to) + ')', red]];
+  const sek = mcSektori_(w);
+  if (sek.length) blokovi.push(['Po sektorima', sek]);
+  blokovi.push(['Nedelja pre toga (' + mcKratko_(pr.from) + '–' + mcKratko_(pr.to) + ')', [['Promet bez PDV-a', mcRsd_(pr.net)], ['Trošak rada', mcRsd_(pr.cost)], ['Labor %', mcPct_(pr.labor_pct)]]]);
+  mcPosalji_(subjekt, blokovi, mcUpozorenja_(w), 'In Smoke We Trust · nedeljni izveštaj o radu');
+}
+function probniMcIzvestaj() {
+  posaljiMcDnevni_({ day: { from: '2026-10-23', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 }, mtd: { from: '2026-10-01', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 } });
 }
