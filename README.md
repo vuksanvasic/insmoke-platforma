@@ -101,6 +101,7 @@ Stranica `management.html` (https://insmoke.rs/kitchen/management.html), ista pr
 | Food cost | šef smene, menadžer, administrator | stvarni food cost (kuhinja ÷ hrana) i beverage cost (šank ÷ piće) između dva popisa, utrošak po namirnici, poskupljenja |
 | Popis | šef smene, menadžer, administrator | nedeljni/mesečni popis na telefonu; dimljeno meso: sirovo, u smokeru, gotovo; zaključava se (ponovo otvara samo administrator) |
 | Fakture | šef smene, menadžer, administrator | e-faktura sa SEF-a (XML) ili ručni unos; povezivanje stavki sa namirnicama (pamti se po dobavljaču); cena namirnice = poslednja faktura |
+| Prodaja artikala | šef smene, menadžer, administrator | prodaja po artiklima iz bMaster-a (Excel/CSV, kolone se biraju i pamte) ili ručno po jelu; artikal se povezuje sa jelom iz normativa ili direktno sa namirnicom (piće) |
 | Obračun, Podešavanja | administrator | stvarne plate po mesecu, ciljevi (labor, food, beverage), PDV, uvećanja, kanali |
 
 Uloge: `menadzer` (F&B menadžer) i `sef` unose, ali ne vide plate — to čuva baza (RLS), ne samo izgled stranice. `kuvar` nema pristup.
@@ -108,5 +109,7 @@ Uloge: `menadzer` (F&B menadžer) i `sef` unose, ali ne vide plate — to čuva 
 Baza: `supabase/10_management.sql` (tabele `mc_*`, uloga menadžer), `supabase/11_mc_izvestaji.sql` (proračun i mejlovi), `supabase/12_food_cost.sql` (fakture `fc_invoices`/`fc_invoice_lines`, veze `fc_map`, popis `fc_counts`/`fc_count_lines`, `fc_summary`, food cost u nedeljnom mejlu).
 
 Food cost: utrošeno = početno stanje (prethodni popis) + nabavka (stavke faktura sa datumom isporuke posle prethodnog popisa, zaključno sa danom ovog popisa) − krajnje stanje. Nepopisana stavka preuzima količinu iz prethodnog popisa (meso u smokeru ne). Popis vredi po nabavnoj ceni; gotovo dimljeno meso po stvarnoj ceni iz yield loga (60 dana). Cilj food cost-a je isti kao u Normativima (`app_settings.fc_target`).
+
+Teorijski food cost (`supabase/13_teorijski_food_cost.sql`, `fc_theory`): prodato po artiklima × normativ (`dish_lines`). Normativ za dimljeno meso je gotovo meso i vredi po stvarnoj ceni gotovog mesa iz yield loga; ako u poslednjih 60 dana nema ciklusa sa cenom, po nabavnoj ÷ ciljni yield (`products.target_yield`). Prodaja se uzima samo ako je ceo uvoz unutar perioda između dva popisa. Razlika stvarno − teorijski po namirnici je u Food cost tabu i u nedeljnom mejlu.
 
 Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče (kad postoji bar jedan zaposleni), nedeljni ponedeljkom u 9h (rad + food cost iz popisa iz noći sa nedelje na ponedeljak + poskupljenja). Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`

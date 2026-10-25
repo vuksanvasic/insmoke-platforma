@@ -276,6 +276,7 @@ a.linkbtn{color:var(--ink)}
     <button role="tab" aria-selected="false" data-view="foodcost">Food cost</button>
     <button role="tab" aria-selected="false" data-view="popis">Popis</button>
     <button role="tab" aria-selected="false" data-view="fakture">Fakture</button>
+    <button role="tab" aria-selected="false" data-view="prodaja">Prodaja artikala</button>
     <button role="tab" aria-selected="false" data-view="obracun" class="adminonly">Obračun</button>
     <button role="tab" aria-selected="false" data-view="podesavanja" class="adminonly">Podešavanja</button>
   </nav>
@@ -488,6 +489,12 @@ a.linkbtn{color:var(--ink)}
     <div class="status" id="f-range"></div>
     <div class="cards" id="f-cards"></div>
     <div id="f-areas"></div>
+    <div class="panel" id="f-theory-panel">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+        <h3>Stvarno ili po normativu</h3><span class="tag" id="f-theory-tag"></span>
+      </div>
+      <div id="f-theory"></div>
+    </div>
     <div class="panel" id="f-top-panel">
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
         <h3>Gde je otišla roba</h3><span class="tag">najveći utrošak u periodu</span>
@@ -502,6 +509,7 @@ a.linkbtn{color:var(--ink)}
       <h3>Na šta obratiti pažnju</h3>
       <ul class="alerts" id="f-alerts"></ul>
     </div>
+    <p class="foot">Teorijski trošak = prodato po artiklima (tab „Prodaja artikala“) × normativ iz Kitchen Control-a. Dimljeno meso u normativu je gotovo meso, pa se računa po stvarnoj ceni gotovog mesa (sa kalom). Razlika između stvarnog i teorijskog je roba koja je otišla, a nije prodata: porcije veće od normativa, neupisan otpis, greške na prijemu, krađa. Prilozi i sosevi koji se prave u kuhinji porede se kao celina dok ne dobiju svoj normativ od sirovina.</p>
     <p class="foot">Food cost % = utrošena roba kuhinje ÷ promet hrane bez PDV-a. Beverage cost % = utrošena roba šanka ÷ promet pića bez PDV-a. Nabavka su stavke ulaznih faktura (bez PDV-a) sa datumom isporuke posle prethodnog popisa, zaključno sa danom ovog popisa. Popis vredi po nabavnoj ceni iz poslednje fakture. Dimljeno meso u smokeru vredi kao sirovo, a gotovo dimljeno meso po stvarnoj ceni iz yield loga u Kitchen Control-u (sirovo × nabavna ÷ kg za prodaju, poslednjih 60 dana). Otpis je deo utroška i prikazan je da se vidi koliko od utroška je bačeno.</p>
   </section>
 
@@ -587,6 +595,56 @@ a.linkbtn{color:var(--ink)}
       <span class="status" id="i-month-sum"></span>
     </div>
     <div id="i-list"></div>
+  </section>
+
+  <!-- PRODAJA ARTIKALA -->
+  <section class="view" id="view-prodaja" hidden>
+    <div>
+      <h2>Prodaja po artiklima</h2>
+      <p class="lede">Za poređenje stvarnog i teorijskog food cost-a. Svake nedelje ubaci izveštaj „prodaja po artiklima“ iz bMaster-a za istu nedelju kao popis (ponedeljak–nedelja). Artikal se jednom poveže sa jelom iz normativa, posle ide samo.</p>
+    </div>
+    <div class="panel">
+      <fieldset style="max-width:440px">
+        <label>Prodaja od<input type="date" id="sp-from"></label>
+        <label>do<input type="date" id="sp-to"></label>
+      </fieldset>
+      <div class="toolbar">
+        <label class="filebtn">Ubaci Excel ili CSV iz bMaster-a<input type="file" id="sp-file" accept=".xlsx,.xls,.csv,.txt,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"></label>
+        <button class="btn ghost" type="button" id="sp-manual">Ručni unos po jelima</button>
+        <span class="msg" id="sp-upmsg" role="status"></span>
+      </div>
+      <p class="note" style="margin:0">U bMaster-u: izveštaj prodaje po artiklima za izabrani period → izvoz u Excel. PDF za sada nije podržan.</p>
+    </div>
+    <div class="panel" id="sp-cols" hidden>
+      <h3>Koje kolone su šta</h3>
+      <p class="note" style="margin:0">Alat je pogodio kolone. Proveri na primeru ispod i ispravi ako treba. Izbor se pamti za sledeći put.</p>
+      <fieldset>
+        <label>Naziv artikla<select id="sp-c-name"></select></label>
+        <label>Količina<select id="sp-c-qty"></select></label>
+        <label>Iznos <span class="hint">nije obavezno</span><select id="sp-c-amount"></select></label>
+        <label>Šifra <span class="hint">nije obavezno</span><select id="sp-c-code"></select></label>
+      </fieldset>
+      <div class="tablewrap" id="sp-preview"></div>
+      <div class="actions"><button class="btn ember" type="button" id="sp-cols-ok">Učitaj artikle</button><button class="btn ghost" type="button" id="sp-cols-no">Odustani</button><span class="msg" id="sp-cols-msg" role="status"></span></div>
+    </div>
+    <form class="panel" id="sp-editor" novalidate hidden>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+        <h3 id="sp-title">Prodaja</h3><span class="tag" id="sp-period"></span>
+      </div>
+      <div class="toolbar">
+        <label style="flex:1 1 220px;width:auto">Traži<input id="sp-search" type="search" autocomplete="off" placeholder="npr. burger"></label>
+        <label>Prikaži<select id="sp-filter"><option value="">Sve</option><option value="nepovezano">Nepovezano</option></select></label>
+      </div>
+      <div id="sp-lines"></div>
+      <div class="status" id="sp-sum"></div>
+      <div class="actions">
+        <button class="btn ember" type="submit" id="sp-save">Sačuvaj prodaju</button>
+        <button class="btn ghost" type="button" id="sp-cancel">Odustani</button>
+        <button class="btn ghost" type="button" id="sp-del" hidden>Obriši</button>
+        <span class="msg" id="sp-msg" role="status"></span>
+      </div>
+    </form>
+    <div id="sp-list"></div>
   </section>
 
   <!-- OBRAČUN -->
@@ -704,7 +762,8 @@ a.linkbtn{color:var(--ink)}
     channels:[{id:'sala',name:'Sala'},{id:'poneti',name:'Za poneti'},{id:'wolt',name:'Wolt'},{id:'glovo',name:'Glovo'},{id:'kg',name:'Meso na kg'},{id:'catering',name:'Catering'}]};
 
   const S = {db:null,user:null,uid:null,name:'',admin:false,canWrite:true,settings:{...DEF},staff:[],pay:{},schedule:{},days:{},sales:{},payroll:{},
-    items:[],itemMap:new Map(),cooks:[],waste:[],inv:[],counts:[],map:{},fct:null};
+    items:[],itemMap:new Map(),cooks:[],waste:[],inv:[],counts:[],map:{},fct:null,
+    dishes:[],dishMap:new Map(),dlByDish:new Map(),salesImp:[],posMap:{},targetYield:{}};
   const cfg = () => ({...DEF,...S.settings, channels:(S.settings.channels&&S.settings.channels.length)?S.settings.channels:DEF.channels});
 
   // ---- obračun ----
@@ -820,7 +879,7 @@ a.linkbtn{color:var(--ink)}
   }
 
   // ---- tabovi ----
-  const VIEWS=['pregled','dan','raspored','zaposleni','foodcost','popis','fakture','obracun','podesavanja'];
+  const VIEWS=['pregled','dan','raspored','zaposleni','foodcost','popis','fakture','prodaja','obracun','podesavanja'];
   document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
   function show(v){
     if(!S.admin && (v==='obracun'||v==='podesavanja')) v='pregled';
@@ -1300,9 +1359,12 @@ a.linkbtn{color:var(--ink)}
     for(const c of S.cooks){ if(c.pid===pid && c.price>0 && c.date>=f && c.date<=d){ a+=c.raw*c.price; b+=(c.sell>0?c.sell:c.cooked); } }
     return b>0 ? Math.round(a/b*100)/100 : null;
   }
+  // gotovo dimljeno meso: stvarna cena iz yield loga; ako nema ciklusa sa cenom, nabavna ÷ ciljni yield; tek onda nabavna
+  const yieldBasis = (it,d) => !it||!it.smoked ? null : realCost(it.smoked,d)!=null ? 'log' : (S.targetYield[it.smoked]>0 ? 'cilj' : 'bez');
   function unitCostAt(it, stage, d){
     if(!it) return null;
-    if(stage==='gotovo' && it.smoked){ const r=realCost(it.smoked,d); if(r!=null) return r; }
+    if(stage==='gotovo' && it.smoked){ const r=realCost(it.smoked,d); if(r!=null) return r;
+      const t=S.targetYield[it.smoked]; if(t>0 && it.price!=null) return Math.round(it.price/t*100*100)/100; }
     return it.price;
   }
   const lineCost = (l,cnt) => l.cost!=null ? l.cost : unitCostAt(itemOf(l.item), l.stage, cnt.date);
@@ -1372,7 +1434,7 @@ a.linkbtn{color:var(--ink)}
     if(cc.length<2){
       $('f-toolbar').hidden=true; $('f-range').textContent='';
       ['f-areas','f-top','f-jumps'].forEach(id=>$(id).innerHTML='');
-      $('f-top-panel').hidden=true;
+      $('f-top-panel').hidden=true; $('f-theory-panel').hidden=true;
       const first=cc[0];
       $('f-cards').innerHTML=`<div class="empty" style="grid-column:1/-1"><strong>${first?'Još jedan popis do prvog food cost-a':'Food cost počinje prvim popisom'}</strong>${first
         ?`Popis od ${esc(fmtDY(first.date))} je početno stanje. Posle sledećeg zaključenog popisa ovde se vidi stvarni food cost za period između njih. U međuvremenu ubacuj ulazne fakture u tabu „Fakture“.`
@@ -1413,6 +1475,7 @@ a.linkbtn{color:var(--ink)}
       h+=`<tr><td>${esc(AREAS[a])}${a==='kuhinja'?' <span class="note">÷ hrana</span>':a==='sank'?' <span class="note">÷ piće</span>':' <span class="note">stavke bez namirnice</span>'}</td><td class="n">${rsd(x.open)}</td><td class="n">${rsd(x.purchases)}</td><td class="n">${rsd(x.close)}</td><td class="n"><b>${rsd(x.used)}</b></td><td class="n">${x.sales==null?'—':rsd(x.sales)}</td><td class="n">${x.pct==null?'—':pct(x.pct)}</td><td class="n">${a==='nepovezano'?'—':rsd(x.waste)}</td></tr>`; }
     h+=`</tbody><tfoot><tr><td>Ukupno</td><td class="n">${rsd(r.open)}</td><td class="n">${rsd(r.purchases)}</td><td class="n">${rsd(r.close)}</td><td class="n">${rsd(r.used)}</td><td class="n">${rsd(r.net)}</td><td class="n">${r.totalPct==null?'—':pct(r.totalPct)}</td><td class="n">${rsd(wst)}</td></tr></tfoot></table></div>`;
     $('f-areas').innerHTML=h;
+    renderTheory(A,B,r);
     const top=r.top.filter(t=>Math.abs(t.used)>=0.5).slice(0,10);
     $('f-top').innerHTML = top.length ? `<div class="tablewrap"><table><thead><tr><th>Namirnica</th><th>Deo</th><th class="n">Utrošeno</th><th class="n">Vrednost</th><th class="n">Udeo</th></tr></thead><tbody>${top.map(t=>`<tr><td>${esc(t.name)}</td><td>${esc(AREAS[t.area])}</td><td class="n">${qtyFmt(t.qty)} ${esc(UNIT[t.unit]||t.unit)}</td><td class="n">${rsd(t.used)}</td><td class="n">${r.used>0?pct(t.used/r.used*100,0):'—'}</td></tr>`).join('')}</tbody></table></div>`
       : '<p class="note" style="margin:0">Nema utroška u ovom periodu.</p>';
@@ -1803,6 +1866,284 @@ a.linkbtn{color:var(--ink)}
   $('i-list').addEventListener('click',e=>{ const r=e.target.closest('[data-inv]'); if(r) openInvoice(r.dataset.inv); });
   $('i-list').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const r=e.target.closest('[data-inv]'); if(r) openInvoice(r.dataset.inv); } });
 
+  // ===== TEORIJSKI FOOD COST =====
+  const dishOf = id => id ? S.dishMap.get(id) : null;
+  const dishLinesOf = id => S.dlByDish.get(id) || [];
+  // teorijska cena jedinice: normativ za dimljeno meso je gotovo meso → stvarna cena gotovog mesa
+  const theoryUnit = (it,d) => it ? unitCostAt(it, it.smoked ? 'gotovo' : 'sirovo', d) : null;
+  const portionCost = (dishId,d) => { let c=0, miss=false; for(const l of dishLinesOf(dishId)){ const u=theoryUnit(itemOf(l.item),d); if(u==null) miss=true; else c+=l.qty*u; } return {c, miss, empty:!dishLinesOf(dishId).length}; };
+  function theoryCalc(A,B,r){
+    const imps=S.salesImp.filter(i=>i.from>A.date && i.to<=B.date);
+    if(!imps.length) return null;
+    const cov=new Set(); for(const i of imps) for(const d of range(i.from,i.to)) cov.add(d);
+    const tq={}, dishAgg={}; let unm=0; const noRec=new Set();
+    for(const imp of imps) for(const l of imp.lines){
+      if(l.ignore) continue; const q=l.qty*(l.factor||1);
+      if(l.dish){ const dl=dishLinesOf(l.dish), dd=dishOf(l.dish); if(!dl.length && dd) noRec.add(dd.name);
+        for(const x of dl) tq[x.item]=(tq[x.item]||0)+q*x.qty;
+        const a=dishAgg[l.dish]||(dishAgg[l.dish]={qty:0,amount:0,hasAmount:false}); a.qty+=q; if(l.amount!=null){ a.amount+=l.amount; a.hasAmount=true; } }
+      else if(l.item) tq[l.item]=(tq[l.item]||0)+q;
+      else unm++;
+    }
+    const act={}; for(const t of r.top) act[t.id]=t.used;
+    const wst={}; for(const w of S.waste) if(w.date>A.date && w.date<=B.date) wst[w.item]=(wst[w.item]||0)+w.value;
+    const ids=new Set([...Object.keys(tq),...Object.keys(act)]);
+    const per=[], noPrice=new Set(), tot={kuhinja:{t:0,a:0},sank:{t:0,a:0}};
+    for(const id of ids){ const it=itemOf(id); if(!it) continue;
+      const u=theoryUnit(it,B.date); if(tq[id]!=null && u==null) noPrice.add(it.name);
+      const tv=(tq[id]||0)*(u||0), av=act[id]||0;
+      if(tot[it.area]){ tot[it.area].t+=tv; tot[it.area].a+=av; }
+      per.push({id,name:it.name,area:it.area,unit:it.unit,smoked:!!it.smoked,tq:tq[id]||0,tv,av,diff:av-tv,waste:wst[id]||0}); }
+    const dishes=Object.entries(dishAgg).map(([id,a])=>{ const d=dishOf(id), pc=portionCost(id,B.date), net=d&&d.price!=null?d.price/(1+val(d.vat)/100):null;
+      return {id,name:d?d.name:'—',qty:a.qty,portion:pc.c,empty:pc.empty,miss:pc.miss,total:a.qty*pc.c,priceNet:net,fc:net>0&&!pc.empty?pc.c/net*100:null}; }).sort((x,y)=>y.total-x.total);
+    const k=tot.kuhinja, s=tot.sank;
+    return {imps, covered:cov.size, days:r.days, per:per.sort((x,y)=>y.diff-x.diff), dishes, unm, noRec:[...noRec], noPrice:[...noPrice],
+      kuhinja:{t:k.t,a:k.a,tpct:r.food>0?k.t/r.food*100:null,apct:r.areas.kuhinja.pct}, sank:{t:s.t,a:s.a,tpct:r.drink>0?s.t/r.drink*100:null,apct:r.areas.sank.pct}};
+  }
+  function renderTheory(A,B,r){
+    const box=$('f-theory'), t=theoryCalc(A,B,r);
+    $('f-theory-panel').hidden=false;
+    if(!t){ $('f-theory-tag').textContent=''; box.innerHTML=`<p class="note" style="margin:0">Za ovaj period nema unete prodaje po artiklima. Ubaci izveštaj iz bMaster-a za ${esc(fmtD(addDays(A.date,1)))}–${esc(fmtD(B.date))} u tabu „Prodaja artikala“ i ovde se vidi koliko je robe trebalo da ode po normativima.</p>`; return; }
+    $('f-theory-tag').textContent=`prodaja za ${t.covered} od ${t.days} ${pl(t.days,'dana','dana','dana')}`;
+    const pp=(a,b)=>a==null||b==null?'—':`${a-b>=0?'+':''}${fmt(a-b,1)} pp`;
+    const card=(lbl,x)=>{ const d=x.a-x.t; const cls=x.t<=0?'none':(d<=x.t*0.03?'good':d<=x.t*0.08?'warn':'bad');
+      return `<article class="card"><span class="k">${lbl}</span><span class="v">${x.tpct==null?'—':fmt(x.tpct,1)}<small> %</small></span><span class="sub">po normativu · stvarno ${x.apct==null?'—':fmt(x.apct,1)+' %'}</span><span class="pill ${cls}">${d>=0?'+':''}${esc(rsd(d))} · ${esc(pp(x.apct,x.tpct))}</span></article>`; };
+    let h=`<div class="cards">${card('Kuhinja po normativu',t.kuhinja)}${t.sank.t>0||t.sank.a>0?card('Šank po normativu',t.sank):''}</div>`;
+    const rows=t.per.filter(x=>Math.abs(x.diff)>=1||x.tv>=1);
+    if(rows.length){
+      h+=`<div class="tablewrap"><table style="min-width:720px"><thead><tr><th>Namirnica</th><th class="n">Po normativu</th><th class="n">Stvarno</th><th class="n">Razlika</th><th class="n">Od toga otpis</th><th class="n">%</th></tr></thead><tbody>`;
+      for(const x of rows.slice(0,15)){ const pc=x.tv>0?x.diff/x.tv*100:null;
+        h+=`<tr><td>${esc(x.name)}${x.smoked?' <span class="note">gotovo meso</span>':''}</td><td class="n">${x.tq?`${qtyFmt(x.tq)} ${esc(UNIT[x.unit]||x.unit)} · `:''}${rsd(x.tv)}</td><td class="n">${rsd(x.av)}</td><td class="n"><b>${x.diff>=0?'+':''}${rsd(x.diff)}</b></td><td class="n">${x.waste?rsd(x.waste):'—'}</td><td class="n">${pc==null?(x.av>0?'<span class="pill warn">nema u normativu</span>':'—'):`<span class="pill ${pc<=3?'good':pc<=8?'warn':'bad'}">${pc>=0?'+':''}${fmt(pc,0)} %</span>`}</td></tr>`; }
+      h+=`</tbody></table></div>`;
+    }
+    if(t.dishes.length){
+      h+=`<h3 style="margin-top:6px">Po jelu</h3><div class="tablewrap"><table style="min-width:640px"><thead><tr><th>Jelo</th><th class="n">Prodato</th><th class="n">Trošak porcije</th><th class="n">Cena bez PDV-a</th><th class="n">Food cost</th><th class="n">Ukupno po normativu</th></tr></thead><tbody>`;
+      const tgt=S.fct;
+      for(const d of t.dishes.slice(0,15)) h+=`<tr><td>${esc(d.name)}${d.empty?' <span class="pill warn">nema normativ</span>':d.miss?' <span class="pill warn">sastojak bez cene</span>':''}</td><td class="n">${qtyFmt(d.qty)}</td><td class="n">${d.empty?'—':fmt(d.portion,0)}</td><td class="n">${d.priceNet==null?'—':fmt(d.priceNet,0)}</td><td class="n">${d.fc==null?'—':`<span class="pill ${!tgt?'none':d.fc<=tgt?'good':d.fc<=tgt+2?'warn':'bad'}">${fmt(d.fc,1)} %</span>`}</td><td class="n">${rsd(d.total)}</td></tr>`;
+      h+=`</tbody></table></div>`;
+    }
+    const al=[];
+    if(t.covered<t.days) al.push(`Prodaja je uneta za ${t.covered} od ${t.days} dana perioda, pa je teorijski trošak manji nego što bi trebalo.`);
+    if(t.unm) al.push(`${t.unm} ${pl(t.unm,'artikal nije povezan','artikla nisu povezana','artikala nije povezano')} sa jelom (tab „Prodaja artikala“).`);
+    if(t.noRec.length) al.push(`Jela bez normativa (ne ulaze u teorijski trošak): ${t.noRec.slice(0,8).join(', ')}${t.noRec.length>8?'…':''}. Normativ se upisuje u Kitchen Control-u.`);
+    if(t.noPrice.length) al.push(`Namirnice iz normativa bez cene: ${t.noPrice.slice(0,8).join(', ')}.`);
+    const nb=t.per.filter(x=>x.smoked&&x.tq>0&&yieldBasis(itemOf(x.id),B.date)!=='log');
+    for(const x of nb){ const b=yieldBasis(itemOf(x.id),B.date); al.push(b==='cilj' ? `${x.name}: u yield logu nema ciklusa sa cenom za poslednjih 60 dana, gotovo meso se računa po ciljnom yield-u (${fmt(S.targetYield[itemOf(x.id).smoked],0)} %).` : `${x.name}: nema ni ciklusa u yield logu ni ciljnog yield-a, gotovo meso se računa po ceni sirovog (bez kala), pa je teorijski trošak prenizak. Upiši cilj u Kitchen Control-u.`); }
+    if(al.length) h+=`<ul class="alerts">${al.map(x=>`<li><span class="pill warn">pažnja</span><span>${esc(x)}</span></li>`).join('')}</ul>`;
+    box.innerHTML=h;
+  }
+
+  // ===== PRODAJA ARTIKALA =====
+  const P={draft:null, raw:null, file:'', confirmDel:0};
+  let xlsxP=null;
+  function loadXlsx(){
+    if(window.XLSX) return Promise.resolve(window.XLSX);
+    if(!xlsxP) xlsxP=new Promise((res,rej)=>{ const sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload=()=>res(window.XLSX); sc.onerror=()=>{ xlsxP=null; rej(new Error('alat za čitanje Excel-a nije učitan, proveri internet')); }; document.head.appendChild(sc); });
+    return xlsxP;
+  }
+  function parseCSV(text){
+    const first=(text.split(/\r?\n/).find(l=>l.trim())||'');
+    const dl=[';','\t',','].map(c=>[c,first.split(c).length]).sort((a,b)=>b[1]-a[1])[0][0];
+    const rows=[]; let row=[], cell='', q=false;
+    for(let i=0;i<text.length;i++){ const ch=text[i];
+      if(q){ if(ch==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=ch; }
+      else if(ch==='"') q=true; else if(ch===dl){ row.push(cell); cell=''; }
+      else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+      else cell+=ch; }
+    if(cell||row.length){ row.push(cell); rows.push(row); }
+    return rows;
+  }
+  const cellNum = v => typeof v==='number' ? v : num(v);
+  const COLRX={name:/naziv|artik|proizvod|opis|name/i, qty:/koli|kol\.|qty|kom|broj/i, amount:/iznos|vrednost|ukupno|promet|total|sa pdv|bruto|cena uk/i, code:/šifra|sifra|code|plu|ean/i};
+  function guessCols(rows){
+    let h=-1;
+    for(let i=0;i<Math.min(rows.length,20);i++){ const r=rows[i].map(x=>String(x??'')); if(r.some(x=>COLRX.name.test(x)) && r.some(x=>COLRX.qty.test(x))){ h=i; break; } }
+    const head=h>=0?rows[h].map(x=>String(x??'')):[];
+    const width=Math.max(...rows.slice(0,40).map(r=>r.length),1);
+    const find=(rx,not)=>head.findIndex((x,i)=>rx.test(x)&&!(not||[]).includes(i));
+    let saved=null; try{ saved=JSON.parse(localStorage.getItem('mc-sp-cols')||'null'); }catch(_){}
+    let c={name:find(COLRX.name), qty:-1, amount:-1, code:-1};
+    c.code=find(COLRX.code,[c.name]); c.qty=find(COLRX.qty,[c.name,c.code]); c.amount=find(COLRX.amount,[c.name,c.code,c.qty]);
+    if(saved && saved.head && head.length && saved.head.join('|')===head.join('|')) c=saved.c;
+    if(c.name<0){ // bez zaglavlja: prva tekstualna i prva brojčana kolona
+      const sample=rows.find(r=>r.some(x=>typeof x==='string'&&x.trim()) && r.some(x=>Number.isFinite(cellNum(x))))||[];
+      c.name=sample.findIndex(x=>typeof x==='string'&&x.trim()&&!Number.isFinite(cellNum(x)));
+      c.qty=sample.findIndex((x,i)=>i!==c.name&&Number.isFinite(cellNum(x)));
+    }
+    return {h, head, width, c};
+  }
+  $('sp-file').addEventListener('change',async e=>{
+    const f=e.target.files[0]; e.target.value=''; const m=$('sp-upmsg'); m.className='msg'; m.textContent=''; if(!f) return;
+    try{
+      let rows;
+      if(/\.(csv|txt)$/i.test(f.name)) rows=parseCSV(await f.text());
+      else { const X=await loadXlsx(); const wb=X.read(await f.arrayBuffer(),{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; rows=X.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}); }
+      rows=rows.filter(r=>r&&r.some(x=>String(x??'').trim()));
+      if(!rows.length) throw new Error('fajl je prazan');
+      P.raw={rows, g:guessCols(rows)}; P.file=f.name; showCols();
+    }catch(x){ m.classList.add('err'); m.textContent=`Fajl nije učitan: ${x.message}`; }
+  });
+  function showCols(){
+    const {rows,g}=P.raw;
+    const opts=sel=>`<option value="-1">—</option>`+[...Array(g.width).keys()].map(i=>`<option value="${i}"${i===sel?' selected':''}>${esc(g.head[i]?`${i+1}. ${g.head[i]}`:`Kolona ${i+1}`)}</option>`).join('');
+    $('sp-c-name').innerHTML=opts(g.c.name); $('sp-c-qty').innerHTML=opts(g.c.qty); $('sp-c-amount').innerHTML=opts(g.c.amount); $('sp-c-code').innerHTML=opts(g.c.code);
+    const pv=rows.slice(Math.max(0,g.h),Math.max(0,g.h)+8);
+    $('sp-preview').innerHTML=`<table><tbody>${pv.map((r,i)=>`<tr>${[...Array(g.width).keys()].map(c=>`<td${i===0&&g.h>=0?' style="font-weight:600"':''}>${esc(String(r[c]??''))}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    $('sp-cols').hidden=false; $('sp-cols-msg').textContent=''; $('sp-cols').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  $('sp-cols-no').addEventListener('click',()=>{ $('sp-cols').hidden=true; P.raw=null; });
+  $('sp-cols-ok').addEventListener('click',()=>{
+    const {rows,g}=P.raw, m=$('sp-cols-msg'); m.className='msg';
+    const c={name:Number($('sp-c-name').value), qty:Number($('sp-c-qty').value), amount:Number($('sp-c-amount').value), code:Number($('sp-c-code').value)};
+    if(c.name<0||c.qty<0){ m.classList.add('err'); m.textContent='Izaberi kolonu za naziv i za količinu.'; return; }
+    try{ localStorage.setItem('mc-sp-cols',JSON.stringify({head:g.head,c})); }catch(_){}
+    const agg=new Map();
+    for(const r of rows.slice(g.h+1)){
+      const name=String(r[c.name]??'').trim(), q=cellNum(r[c.qty]);
+      if(!name||!Number.isFinite(q)||q===0||/^(ukupno|total|svega|zbir)/i.test(name)) continue;
+      const code=c.code>=0?String(r[c.code]??'').trim():'', amt=c.amount>=0?cellNum(r[c.amount]):null;
+      const key=code?'c:'+code:'n:'+normName(name);
+      const x=agg.get(key)||{code,name,qty:0,amount:null,key}; x.qty+=q; if(Number.isFinite(amt)) x.amount=(x.amount||0)+amt; agg.set(key,x);
+    }
+    if(!agg.size){ m.classList.add('err'); m.textContent='U izabranim kolonama nema artikala sa količinom. Proveri izbor kolona.'; return; }
+    const lines=[...agg.values()].map((x,i)=>autoMapSale({...x,pos:i+1,dish:null,item:null,ignore:false,factor:1}));
+    $('sp-cols').hidden=true;
+    openSales({id:null, source:'fajl', file:P.file, from:$('sp-from').value, to:$('sp-to').value, lines});
+  });
+  function autoMapSale(l){
+    const mp=S.posMap[l.key];
+    if(mp && (mp.ignore || dishOf(mp.dish) || itemOf(mp.item))){ l.dish=mp.dish||null; l.item=mp.item||null; l.ignore=!!mp.ignore; l.factor=mp.factor||1; l.auto='zapamćeno'; return l; }
+    const n=normName(l.name);
+    const d=S.dishes.find(x=>normName(x.name)===n); if(d){ l.dish=d.id; l.auto='isti naziv'; return l; }
+    const it=S.items.find(x=>normName(x.name)===n); if(it){ l.item=it.id; l.auto='isti naziv'; }
+    return l;
+  }
+  $('sp-manual').addEventListener('click',()=>{
+    const ds=S.dishes.filter(d=>d.active).sort((a,b)=>(a.sort||0)-(b.sort||0)||a.name.localeCompare(b.name,'sr'));
+    if(!ds.length){ const m=$('sp-upmsg'); m.className='msg err'; m.textContent='Nema jela u normativima. Jela se dodaju u Kitchen Control-u (Normativi i zarada).'; return; }
+    openSales({id:null, source:'rucno', file:'', from:$('sp-from').value, to:$('sp-to').value, lines:ds.map((d,i)=>({pos:i+1,code:'',name:d.name,qty:null,amount:null,dish:d.id,item:null,ignore:false,factor:1,key:'n:'+normName(d.name)}))});
+  });
+  function openSales(dr){
+    P.draft=dr; P.confirmDel=0; $('sp-msg').textContent=''; $('sp-msg').className='msg';
+    $('sp-editor').hidden=false; $('sp-del').hidden=!dr.id; $('sp-del').textContent='Obriši';
+    $('sp-title').textContent = dr.id ? 'Prodaja' : (dr.source==='rucno'?'Ručni unos prodaje':'Uvoz prodaje');
+    if(dr.from) $('sp-from').value=dr.from; if(dr.to) $('sp-to').value=dr.to;
+    $('sp-search').value=''; $('sp-filter').value='';
+    renderSalesLines(); $('sp-editor').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function saleOptions(l){
+    const sel=l.ignore?'__ignore':l.dish?'d:'+l.dish:l.item?'i:'+l.item:'';
+    let h=`<option value="">— izaberi jelo —</option><option value="__ignore"${sel==='__ignore'?' selected':''}>Ne računa se (npr. usluga, dostava)</option>`;
+    const ds=S.dishes.filter(d=>d.active||('d:'+d.id)===sel).sort((a,b)=>(a.sort||0)-(b.sort||0)||a.name.localeCompare(b.name,'sr'));
+    let g='';
+    for(const d of ds){ if(d.cat!==g){ if(g) h+='</optgroup>'; h+=`<optgroup label="Jela · ${esc(d.cat)}">`; g=d.cat; } h+=`<option value="d:${d.id}"${sel==='d:'+d.id?' selected':''}>${esc(d.name)}${dishLinesOf(d.id).length?'':' (bez normativa)'}</option>`; }
+    if(g) h+='</optgroup>';
+    const its=sortItems(S.items.filter(i=>i.active||('i:'+i.id)===sel)); g='';
+    for(const it of its){ const gg='Namirnica direktno · '+AREAS[it.area]; if(gg!==g){ if(g) h+='</optgroup>'; h+=`<optgroup label="${esc(gg)}">`; g=gg; } h+=`<option value="i:${it.id}"${sel==='i:'+it.id?' selected':''}>${esc(it.name)} (${esc(UNIT[it.unit]||it.unit)})</option>`; }
+    return h+(g?'</optgroup>':'');
+  }
+  function salePieceCost(l){
+    const d=$('sp-to').value||today();
+    if(l.dish){ const pc=portionCost(l.dish,d); return pc.empty?null:pc.c*(l.factor||1); }
+    if(l.item){ const u=theoryUnit(itemOf(l.item),d); return u==null?null:u*(l.factor||1); }
+    return null;
+  }
+  function renderSalesLines(){
+    const dr=P.draft, man=dr.source==='rucno', qs=normName($('sp-search').value), f=$('sp-filter').value;
+    let h='';
+    dr.lines.forEach((l,i)=>{
+      if(qs && !normName(l.name).includes(qs)) return;
+      if(f==='nepovezano' && (l.dish||l.item||l.ignore)) return;
+      const pc=salePieceCost(l);
+      h+=`<div class="ln${!l.dish&&!l.item&&!l.ignore?' unmapped':''}${l.ignore?' ignored':''}" data-si="${i}">
+        <div class="ln-name"><b>${esc(l.name)}</b><span>${l.code?'šifra '+esc(l.code):''}${l.auto&&(l.dish||l.item||l.ignore)?(l.code?' · ':'')+esc(l.auto):''}</span></div>
+        ${man?`<label>Prodato<input class="num" data-sf="qty" inputmode="decimal" value="${esc(inp(l.qty))}" placeholder="0"></label>`:`<div class="fig">${qtyFmt(l.qty)}<small>prodato</small></div>`}
+        <div class="fig">${l.amount==null?'—':rsd(l.amount)}<small>iznos</small></div>
+        ${man?'<span></span>':`<label class="ln-item">Jelo<select data-sf="map">${saleOptions(l)}</select></label>`}
+        ${(l.dish||l.item)&&!man?`<label>${l.dish?'Porcija po komadu':'Jedinica po komadu'}<input class="num" data-sf="factor" inputmode="decimal" value="${esc(inp(l.factor))}"></label>`:'<span></span>'}
+        <div class="fig" data-spc="${i}">${pc==null?(l.dish||l.item?'<span class="pill warn">nema normativ</span>':'—'):fmt(pc,0)}<small>${pc==null?'':'trošak po komadu'}</small></div>
+      </div>`;
+    });
+    $('sp-lines').innerHTML=`<div class="ln-head"><span>Artikal sa POS-a</span><span style="text-align:right">Prodato</span><span style="text-align:right">Iznos</span><span>Jelo iz normativa</span><span>Količina</span><span style="text-align:right">Po normativu</span></div>`+(h||'<p class="note">Nema artikala za ovaj prikaz.</p>');
+    updateSalesSum();
+  }
+  function updateSalesSum(){
+    const dr=P.draft; if(!dr) return;
+    const act=dr.lines.filter(l=>l.qty), unm=act.filter(l=>!l.dish&&!l.item&&!l.ignore).length;
+    let tc=0; for(const l of act){ if(l.ignore) continue; const pc=salePieceCost(l); if(pc) tc+=pc*l.qty; }
+    const amt=act.reduce((s,l)=>s+(l.amount||0),0);
+    $('sp-period').textContent = $('sp-from').value&&$('sp-to').value ? `${fmtDY($('sp-from').value)} – ${fmtDY($('sp-to').value)}` : 'izaberi period';
+    $('sp-sum').innerHTML=`Artikala: ${act.length} · prodato ${esc(fmt(act.reduce((s,l)=>s+l.qty,0),0))} kom${amt?` · iznos ${esc(rsd(amt))}`:''} · trošak po normativu ${esc(rsd(tc))}${unm?` · <span class="pill warn">${unm} nepovezano</span>`:' · <span class="pill good">sve povezano</span>'}`;
+  }
+  $('sp-search').addEventListener('input',()=>P.draft&&renderSalesLines());
+  $('sp-filter').addEventListener('change',()=>P.draft&&renderSalesLines());
+  ['sp-from','sp-to'].forEach(id=>$(id).addEventListener('change',()=>{ if(P.draft) renderSalesLines(); }));
+  $('sp-lines').addEventListener('input',e=>{
+    const row=e.target.closest('[data-si]'); if(!row||!P.draft) return; const i=Number(row.dataset.si), l=P.draft.lines[i], f=e.target.dataset.sf;
+    if(f==='qty'){ const n=num(e.target.value); l.qty=Number.isFinite(n)?n:null; updateSalesSum(); }
+    else if(f==='factor'){ const n=num(e.target.value); if(Number.isFinite(n)&&n>0){ l.factor=n; const el=$('sp-lines').querySelector(`[data-spc="${i}"]`); const pc=salePieceCost(l); if(el) el.innerHTML=pc==null?'—':`${fmt(pc,0)}<small>trošak po komadu</small>`; updateSalesSum(); } }
+  });
+  $('sp-lines').addEventListener('change',e=>{
+    const row=e.target.closest('[data-si]'); if(!row||!P.draft) return; const l=P.draft.lines[Number(row.dataset.si)];
+    if(e.target.dataset.sf==='map'){ const v=e.target.value; l.dish=null; l.item=null; l.ignore=false; l.auto=''; l.factor=1;
+      if(v==='__ignore') l.ignore=true; else if(v.startsWith('d:')) l.dish=v.slice(2); else if(v.startsWith('i:')) l.item=v.slice(2);
+      renderSalesLines(); }
+  });
+  $('sp-cancel').addEventListener('click',()=>{ P.draft=null; $('sp-editor').hidden=true; });
+  $('sp-del').addEventListener('click',async()=>{
+    const dr=P.draft, m=$('sp-msg'); if(!dr||!dr.id) return;
+    if(Date.now()-P.confirmDel>6000){ P.confirmDel=Date.now(); $('sp-del').textContent='Sigurno obriši?'; setTimeout(()=>{ $('sp-del').textContent='Obriši'; },6000); return; }
+    try{ await q(S.db.from('fc_sales_imports').delete().eq('id',dr.id)); await reload('sales_imp'); P.draft=null; $('sp-editor').hidden=true; const um=$('sp-upmsg'); um.className='msg ok'; um.textContent='Prodaja je obrisana.'; renderProdaja(); }
+    catch(x){ writeErr(m,x); }
+  });
+  $('sp-editor').addEventListener('submit',async e=>{
+    e.preventDefault(); const dr=P.draft, m=$('sp-msg'); m.className='msg'; m.textContent=''; if(!dr) return;
+    const err=t=>{ m.classList.add('err'); m.textContent=t; };
+    if(!S.db) return err('Nisi prijavljen/a. Osveži stranicu i prijavi se.');
+    const from=$('sp-from').value, to=$('sp-to').value;
+    if(!from||!to) return err('Upiši period prodaje (od – do), isti kao nedelja popisa.');
+    if(to<from) return err('Datum „do“ je pre datuma „od“.');
+    if(to>today()) return err('Period prodaje ne može da ide u budućnost.');
+    const lines=dr.lines.filter(l=>l.qty!=null&&Number.isFinite(l.qty)&&l.qty!==0);
+    if(!lines.length) return err(dr.source==='rucno'?'Upiši koliko je prodato bar za jedno jelo.':'Nema artikala sa količinom.');
+    const over=S.salesImp.find(i=>i.id!==dr.id && i.from<=to && i.to>=from);
+    if(over) return err(`Za deo ovog perioda prodaja je već uneta (${fmtDY(over.from)} – ${fmtDY(over.to)}). Obriši ili izmeni taj unos.`);
+    $('sp-save').disabled=true;
+    try{
+      let id=dr.id;
+      const head={date_from:from, date_to:to, source:dr.source, file_name:dr.file||null};
+      if(id){ await q(S.db.from('fc_sales_imports').update(head).eq('id',id)); await q(S.db.from('fc_sales_lines').delete().eq('import_id',id)); }
+      else { const r=await q(S.db.from('fc_sales_imports').insert({...head, created_by_name:S.name||null}).select().single()); id=r.id; }
+      await q(S.db.from('fc_sales_lines').insert(lines.map((l,i)=>({import_id:id, pos:i+1, pos_code:l.code||null, pos_name:l.name, qty:l.qty, amount:l.amount, dish_id:l.dish||null, item_id:l.item||null, ignore:!!l.ignore, factor:l.factor||1}))));
+      if(dr.source==='fajl'){ const seen=new Set(); const mrows=lines.filter(l=>(l.dish||l.item||l.ignore)&&l.key&&!seen.has(l.key)&&seen.add(l.key)).map(l=>({pos_key:l.key, dish_id:l.dish||null, item_id:l.item||null, ignore:!!l.ignore, factor:l.factor||1, updated_at:new Date().toISOString()}));
+        if(mrows.length) await q(S.db.from('fc_pos_map').upsert(mrows,{onConflict:'pos_key'})); }
+      await Promise.all(['sales_imp','pos_map'].map(reload));
+      const unm=lines.filter(l=>!l.dish&&!l.item&&!l.ignore).length;
+      const um=$('sp-upmsg'); um.className='msg ok'; um.textContent=`Prodaja za ${fmtDY(from)} – ${fmtDY(to)} je sačuvana.${unm?` ${unm} ${pl(unm,'artikal nije povezan','artikla nisu povezana','artikala nije povezano')}.`:''}`;
+      P.draft=null; $('sp-editor').hidden=true; renderProdaja();
+    }catch(x){ writeErr(m,x); } finally{ $('sp-save').disabled=false; }
+  });
+  function renderProdaja(){
+    if(!$('sp-from').value||!$('sp-to').value){ // podrazumevano: period poslednjeg popisa bez unete prodaje, inače prošla nedelja
+      const cc=closedCounts(); let a=addDays(weekStart(today()),-7), b=addDays(a,6);
+      for(let i=cc.length-1;i>0;i--){ const f=addDays(cc[i-1].date,1), t=cc[i].date; if(!S.salesImp.some(x=>x.from<=t&&x.to>=f)){ a=f; b=t; break; } }
+      $('sp-from').value=a; $('sp-to').value=b; }
+    const list=S.salesImp.slice().sort((a,b)=>b.to.localeCompare(a.to));
+    if(!list.length){ $('sp-list').innerHTML='<div class="empty"><strong>Još nema unete prodaje</strong>Ubaci izveštaj iz bMaster-a ili upiši ručno koliko je prodato po jelu.</div>'; return; }
+    $('sp-list').innerHTML=`<div class="tablewrap"><table style="min-width:620px"><thead><tr><th>Period</th><th>Izvor</th><th class="n">Artikala</th><th class="n">Prodato</th><th>Status</th></tr></thead><tbody>${list.slice(0,20).map(i=>{
+      const u=i.lines.filter(l=>!l.dish&&!l.item&&!l.ignore).length;
+      return `<tr class="rowlink" data-sim="${i.id}" tabindex="0"><td>${esc(fmtDY(i.from))} – ${esc(fmtDY(i.to))}</td><td>${i.source==='rucno'?'ručno':esc(i.file||'fajl')}</td><td class="n">${i.lines.length}</td><td class="n">${fmt(i.lines.reduce((s,l)=>s+l.qty,0),0)}</td><td>${u?`<span class="pill warn">${u} nepovezano</span>`:'<span class="pill good">povezano</span>'}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+  function openSalesImp(id){
+    const i=S.salesImp.find(x=>x.id===id); if(!i) return;
+    let lines=i.lines.slice().sort((a,b)=>a.pos-b.pos).map(l=>({pos:l.pos,code:l.code,name:l.name,qty:l.qty,amount:l.amount,dish:l.dish,item:l.item,ignore:l.ignore,factor:l.factor,key:l.code?'c:'+l.code:'n:'+normName(l.name)}));
+    if(i.source==='rucno'){ const have=new Set(lines.map(l=>l.dish)); for(const d of S.dishes.filter(d=>d.active&&!have.has(d.id))) lines.push({pos:900,code:'',name:d.name,qty:null,amount:null,dish:d.id,item:null,ignore:false,factor:1,key:'n:'+normName(d.name)}); }
+    openSales({id:i.id, source:i.source, file:i.file, from:i.from, to:i.to, lines});
+  }
+  $('sp-list').addEventListener('click',e=>{ const r=e.target.closest('[data-sim]'); if(r) openSalesImp(r.dataset.sim); });
+  $('sp-list').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const r=e.target.closest('[data-sim]'); if(r) openSalesImp(r.dataset.sim); } });
+
   // ===== render =====
   function current(){ const b=document.querySelector('nav button[aria-selected="true"]'); return b?b.dataset.view:'pregled'; }
   let raf=0;
@@ -1816,6 +2157,7 @@ a.linkbtn{color:var(--ink)}
     else if(v==='foodcost') renderFoodcost();
     else if(v==='popis') renderPopis();
     else if(v==='fakture') renderFakture();
+    else if(v==='prodaja') renderProdaja();
     else if(v==='obracun') renderObracun();
     else if(v==='podesavanja') renderPodesavanja();
   }); }
@@ -1848,6 +2190,7 @@ a.linkbtn{color:var(--ink)}
       else if(what==='sales'){ const r=await fetchAll(()=>sb.from('mc_sales').select('*').gte('day',SINCE).order('day')); S.sales={}; for(const x of r) S.sales[x.day]={closed:x.closed,ch:x.channels||{},receipts:n0(x.receipts),guests:n0(x.guests),note:x.note||''}; if(current()==='dan'&&!D.salesDirty&&D.date) fillSales(D.date); }
       else if(what==='payroll'){ if(!S.admin){ S.payroll={}; return; } const r=await q(sb.from('mc_payroll').select('*')); S.payroll={}; for(const x of r||[]) S.payroll[x.month]={amounts:x.amounts||{},locked:x.locked}; }
       else if(what==='items'){ const r=await fetchAll(()=>sb.from('waste_items').select('*').order('sort').order('id')); S.items=r.map(mapItem); S.itemMap=new Map(S.items.map(i=>[i.id,i])); }
+      else if(what==='products'){ const r=await q(sb.from('products').select('id,target_yield')); S.targetYield={}; for(const x of r||[]) S.targetYield[x.id]=n0(x.target_yield); }
       else if(what==='cooks'){ const r=await fetchAll(()=>sb.from('cooks').select('product_id,cook_date,raw_kg,cooked_kg,sellable_kg,price_per_kg').gte('cook_date',SINCE).order('cook_date').order('id')); S.cooks=r.map(x=>({pid:x.product_id,date:x.cook_date,raw:Number(x.raw_kg),cooked:Number(x.cooked_kg),sell:n0(x.sellable_kg),price:n0(x.price_per_kg)})); }
       else if(what==='waste'){ const r=await fetchAll(()=>sb.from('waste').select('id,waste_date,item_id,value_rsd').gte('waste_date',SINCE).order('waste_date').order('id')); S.waste=r.map(x=>({date:x.waste_date,item:x.item_id,value:Number(x.value_rsd)||0})); }
       else if(what==='invoices'){
@@ -1861,6 +2204,17 @@ a.linkbtn{color:var(--ink)}
         S.counts=hs.map(x=>({id:x.id,date:x.count_date,kind:x.kind,closed:!!x.closed,closedAt:x.closed_at,closedBy:x.closed_by_name||'',lines:by[x.id]||[]}));
       }
       else if(what==='map'){ const r=await fetchAll(()=>sb.from('fc_map').select('*').order('supplier_key').order('code')); S.map={}; for(const x of r) S.map[x.supplier_key+'|'+x.code]={item:x.item_id,ignore:!!x.ignore,factor:Number(x.factor)||1}; }
+      else if(what==='dishes'){
+        const [ds,ls]=await Promise.all([fetchAll(()=>sb.from('dishes').select('*').order('sort').order('id')), fetchAll(()=>sb.from('dish_lines').select('*').order('dish_id').order('id'))]);
+        S.dishes=ds.map(x=>({id:x.id,name:x.name,cat:x.category||'Ostalo',price:n0(x.price),vat:n0(x.vat)??20,active:x.active!==false,sort:x.sort||0})); S.dishMap=new Map(S.dishes.map(d=>[d.id,d]));
+        S.dlByDish=new Map(); for(const l of ls){ const a=S.dlByDish.get(l.dish_id)||[]; a.push({dish:l.dish_id,item:l.item_id,qty:Number(l.qty)}); S.dlByDish.set(l.dish_id,a); }
+      }
+      else if(what==='sales_imp'){
+        const [hs,ls]=await Promise.all([fetchAll(()=>sb.from('fc_sales_imports').select('*').gte('date_to',SINCE).order('date_to').order('id')), fetchAll(()=>sb.from('fc_sales_lines').select('*').order('import_id').order('pos').order('id'))]);
+        const by={}; for(const l of ls) (by[l.import_id]=by[l.import_id]||[]).push({pos:l.pos||0,code:l.pos_code||'',name:l.pos_name,qty:Number(l.qty),amount:n0(l.amount),dish:l.dish_id,item:l.item_id,ignore:!!l.ignore,factor:Number(l.factor)||1});
+        S.salesImp=hs.map(x=>({id:x.id,from:x.date_from,to:x.date_to,source:x.source,file:x.file_name||'',createdAt:x.created_at||'',lines:by[x.id]||[]}));
+      }
+      else if(what==='pos_map'){ const r=await fetchAll(()=>sb.from('fc_pos_map').select('*').order('pos_key')); S.posMap={}; for(const x of r) S.posMap[x.pos_key]={dish:x.dish_id,item:x.item_id,ignore:!!x.ignore,factor:Number(x.factor)||1}; }
       else if(what==='fct'){ const r=await q(sb.from('app_settings').select('*').eq('key','fc_target').maybeSingle()); const v=r?Number(r.value):NaN; S.fct=Number.isFinite(v)&&v>0?v:null; if(current()==='podesavanja') renderPodesavanja(true); }
       render(); live();
     }catch(e){ $('status').textContent='Podaci nisu učitani: '+((e&&e.message)||e); }
@@ -1870,7 +2224,8 @@ a.linkbtn{color:var(--ink)}
   function subscribe(){
     if(chan){ sb.removeChannel(chan); chan=null; }
     const map={mc_settings:'settings',mc_staff:'staff',mc_pay:'pay',mc_shifts:'shifts',mc_days:'days',mc_sales:'sales',mc_payroll:'payroll',
-      waste_items:'items',cooks:'cooks',waste:'waste',fc_invoices:'invoices',fc_invoice_lines:'invoices',fc_counts:'counts',fc_count_lines:'counts',fc_map:'map',app_settings:'fct'}, timers={};
+      waste_items:'items',cooks:'cooks',waste:'waste',fc_invoices:'invoices',fc_invoice_lines:'invoices',fc_counts:'counts',fc_count_lines:'counts',fc_map:'map',app_settings:'fct',
+      dishes:'dishes',dish_lines:'dishes',fc_sales_imports:'sales_imp',fc_sales_lines:'sales_imp',products:'products'}, timers={};
     chan=sb.channel('mc-live');
     for(const [t,w] of Object.entries(map)){
       if(!S.admin && (w==='pay'||w==='payroll')) continue;
@@ -1894,7 +2249,7 @@ a.linkbtn{color:var(--ink)}
     $('me-name').textContent=name; $('me-role').textContent=ROLE_LABEL[role];
     showV('app-view'); applyRole(); D.date=null;
     { let t=null; const h=(location.hash||'').slice(1); if(VIEWS.includes(h)) t=h; else { try{ t=localStorage.getItem('mc-tab'); }catch(_){} } show(t&&VIEWS.includes(t)?t:'pregled'); }
-    await Promise.all(['settings','staff','pay','shifts','days','sales','payroll','items','cooks','waste','invoices','counts','map','fct'].map(reload));
+    await Promise.all(['settings','staff','pay','shifts','days','sales','payroll','items','cooks','waste','invoices','counts','map','fct','dishes','sales_imp','pos_map','products'].map(reload));
     editStaff(null); subscribe();
   }
   $('login-form').addEventListener('submit',async ev=>{
