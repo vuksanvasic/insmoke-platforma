@@ -388,6 +388,22 @@ function mcFoodCost_(fc) {
       ['Utrošeno robe', mcRsd_(fc.used) + ' (početno ' + mcRsd_(fc.open) + ' + nabavka ' + mcRsd_(fc.purchases) + ' − krajnje ' + mcRsd_(fc.close) + ')'],
       ['Otpis u periodu', mcRsd_(Number(k.waste || 0) + Number(s.waste || 0))]
     ]]);
+    const th = fc.theory;
+    if (th && !th.no_sales && th.kuhinja) {
+      const tk = th.kuhinja, razlika = Number(tk.actual) - Number(tk.theory);
+      const r = [
+        ['Kuhinja po normativu', mcPct_(tk.theory_pct) + ' (' + mcRsd_(tk.theory) + ')'],
+        ['Stvarno', mcPct_(k.pct) + ' (' + mcRsd_(tk.actual) + ')'],
+        ['Razlika', (razlika >= 0 ? '+' : '') + mcRsd_(razlika) + ' robe koja nije prodata', true, razlika > Number(tk.theory) * 0.08 ? '#b0322a' : razlika > Number(tk.theory) * 0.03 ? '#a86a10' : '#2f7a4b']
+      ];
+      (th.over || []).slice(0, 5).forEach(function (x) { r.push([x.name, '+' + mcRsd_(x.diff) + ' (po normativu ' + mcRsd_(x.theory) + ', stvarno ' + mcRsd_(x.actual) + (Number(x.waste) > 0 ? ', otpis ' + mcRsd_(x.waste) : '') + ')']); });
+      blokovi.push(['Stvarno ili po normativu', r]);
+      if (Number(th.covered_days) < Number(th.days)) upoz.push('Prodaja po artiklima je uneta za ' + th.covered_days + ' od ' + th.days + ' dana, pa je trošak po normativu manji nego što bi trebalo.');
+      if (Number(th.unmapped) > 0) upoz.push(th.unmapped + ' ' + mcMn_(Number(th.unmapped), 'artikal nije povezan', 'artikla nisu povezana', 'artikala nije povezano') + ' sa jelom.');
+      if (th.no_recipe && th.no_recipe.length) upoz.push('Jela bez normativa: ' + th.no_recipe.slice(0, 6).join(', '));
+    } else if (th && th.no_sales) {
+      upoz.push('Nije uneta prodaja po artiklima za ovaj period, pa nema poređenja sa normativima.');
+    }
     const top = (fc.top || []).filter(function (t) { return Number(t.used) > 0; }).slice(0, 5)
       .map(function (t) { return [t.name, broj_sr_(Number(t.qty), Number(t.qty) % 1 ? 1 : 0) + ' ' + t.unit + ' · ' + mcRsd_(t.used)]; });
     if (top.length) blokovi.push(['Najveći utrošak', top]);
