@@ -14,6 +14,7 @@ const ID_KOLONA = 20; // kolona T: "ID ciklusa"
 const ZONA = 'Europe/Belgrade';
 const OBAVESTENJE_NA = 'office@nutribox.rs'; // ko dobija mejl za svaki nov ciklus (više adresa: odvojiti zarezom)
 const ADRESA_SAJTA = 'https://insmoke.rs/aplikacija/';
+const UPRAVA = 'office@nutribox.rs, ilija.nikolic.sf.bg@gmail.com'; // dnevni otpis i novi nalozi za odobrenje
 
 function doPost(e) {
   const token = (e && e.parameter && e.parameter.token) || '';
@@ -171,7 +172,7 @@ function posaljiNoviNalog_(r) {
   const link = ADRESA_SAJTA + '#tim';
   const esc = function (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
   MailApp.sendEmail({
-    to: OBAVESTENJE_NA,
+    to: UPRAVA,
     subject: 'Nov nalog čeka odobrenje: ' + ime,
     body: 'Neko je napravio nalog na platformi In Smoke We Trust · Kitchen Control i čeka tvoje odobrenje.\n\n' +
       'Ime i prezime: ' + ime + '\nEmail: ' + email + '\nVreme: ' + vreme +
@@ -285,7 +286,7 @@ function posaljiDnevniOtpis_(s) {
     (razlozi.length ? '<h3 style="margin:14px 0 6px">Najčešći razlozi</h3><table style="border-collapse:collapse">' + razlozi.map(function (x) { return red2(x[0], x[1]); }).join('') + '</table>' : '') +
     (artikli.length ? '<h3 style="margin:14px 0 6px">Najviše otpisano</h3><table style="border-collapse:collapse">' + artikli.map(function (x) { return red2(x[0], x[1]); }).join('') + '</table>' : '') +
     '<p style="margin:18px 0 0"><a href="' + ADRESA_SAJTA + '#otpis-pregled" style="background:#b4401e;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Otvori pregled otpisa</a></p></div>';
-  MailApp.sendEmail({ to: OBAVESTENJE_NA, subject: subjekt, body: tekst, htmlBody: html, name: 'In Smoke We Trust · Kitchen Control' });
+  MailApp.sendEmail({ to: UPRAVA, subject: subjekt, body: tekst, htmlBody: html, name: 'In Smoke We Trust · Kitchen Control' });
 }
 
 function odgovor_(o) {
