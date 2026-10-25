@@ -13,7 +13,7 @@ const TAJNI_KLJUC = 'OVDE-IDE-TAJNI-KLJUC';
 const ID_KOLONA = 20; // kolona T: "ID ciklusa"
 const ZONA = 'Europe/Belgrade';
 const OBAVESTENJE_NA = 'office@nutribox.rs'; // ko dobija mejl za svaki nov ciklus (više adresa: odvojiti zarezom)
-const ADRESA_SAJTA = 'https://insmoke.rs/kitchen/';
+const ADRESA_SAJTA = 'https://insmoke.rs/aplikacija/';
 
 function doPost(e) {
   const token = (e && e.parameter && e.parameter.token) || '';
@@ -299,7 +299,7 @@ function posaljiProbniMejl() {
 
 // ===================== MANAGEMENT CONTROL · izveštaji o radu =====================
 const MC_PRIMAOCI = 'office@nutribox.rs, ilija.nikolic.sf.bg@gmail.com';
-const MC_ADRESA = 'https://insmoke.rs/kitchen/management.html';
+const MC_ADRESA = 'https://insmoke.rs/aplikacija/management.html';
 const MC_SEKTORI = { pit: 'Pit / smoker', kuhinja: 'Kuhinja', pranje: 'Pranje', sala: 'Sala', sank: 'Šank', uprava: 'Uprava restorana' };
 
 function mcEsc_(x) { return String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
