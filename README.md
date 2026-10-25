@@ -66,13 +66,13 @@ Repozitorijum može biti javan: u kodu je samo javni ključ, a podatke čuvaju p
 
 ### 4. Adresa na domenu restorana
 
-Sajt radi na **https://insmoke.rs/kitchen/** (hosting Telekom / Plesk, webhosting08.oblaci.rs).
+Sajt radi na **https://insmoke.rs/aplikacija/** (hosting Telekom / Plesk, webhosting08.oblaci.rs).
 
-- Plesk → insmoke.rs → **Git**: repozitorijum `kitchen-control.git` povlači ovaj GitHub repo u `/httpdocs/kitchen`.
+- Plesk → insmoke.rs → **Git**: repozitorijum `kitchen-control.git` povlači ovaj GitHub repo u `/httpdocs/aplikacija` (stari `/httpdocs/kitchen` samo preusmerava na novu adresu).
   Posle izmene na GitHub-u: Plesk → Git → **Pull now** (ili Deploy now).
 - Stara github.io adresa automatski prebacuje na novu (skripta na vrhu `index.html`).
-- Supabase → Authentication → URL Configuration: Site URL = `https://insmoke.rs/kitchen/`.
-- Poddomen `kitchen.insmoke.rs` postoji u Plesku, ali radi tek kad Telekom doda DNS zapis `kitchen A 212.200.255.43`.
+- Supabase → Authentication → URL Configuration: Site URL = `https://insmoke.rs/aplikacija/`.
+- Poddomeni `kitchen.insmoke.rs` i `app.insmoke.rs` postoje u Plesku, ali rade tek kad Telekom doda DNS zapis (`app A 212.200.255.43`). Do tada se koristi `/aplikacija`.
 
 ---
 
@@ -90,7 +90,7 @@ Sajt radi na **https://insmoke.rs/kitchen/** (hosting Telekom / Plesk, webhostin
 
 ## Management Control (uprava · rad i food cost)
 
-Stranica `management.html` (https://insmoke.rs/kitchen/management.html), ista prijava i baza kao Kitchen Control.
+Stranica `management.html` (https://insmoke.rs/aplikacija/management.html), ista prijava i baza kao Kitchen Control.
 
 | Tab | Ko | Šta |
 |---|---|---|
