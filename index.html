@@ -264,7 +264,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       <button role="tab" aria-selected="false" data-view="otpis-pregled">Pregled otpisa</button>
     </div>
     <div class="navgroup" id="nav-sef" hidden><span class="navlabel">Proizvodi</span>
-      <button role="tab" aria-selected="false" data-view="normativi">Normativi i zarada</button>
+      <button role="tab" aria-selected="false" data-view="normativi" title="Normativi su u Management Control-u">Normativi ↗</button>
     </div>
     <div class="navgroup" id="nav-admin" hidden><span class="navlabel">Administracija</span>
       <button role="tab" aria-selected="false" data-view="namirnice">Namirnice</button>
@@ -641,7 +641,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   });
 
   // ---------- tabovi ----------
-  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.view)));
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.view==='normativi'){ location.href='management.html#normativi'; return; } tab(b.dataset.view); }));
   function tab(v){
     if(!VIEWS.includes(v) || (ADMIN_VIEWS.includes(v) && !isAdmin) || (SEF_VIEWS.includes(v) && !isSef)) v='unos';
     document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
@@ -651,7 +651,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   const startHash = (location.hash||'').slice(1);
   function restoreTab(){
     if(VIEWS.includes(startHash)){ tab(startHash); return; }
-    let t='unos'; try{ t=localStorage.getItem('syl-tab')||'unos'; }catch(_){} tab(t);
+    let t='unos'; try{ t=localStorage.getItem('syl-tab')||'unos'; }catch(_){} if(t==='normativi') t='unos'; tab(t);
   }
 
   // ---------- prikaz ----------

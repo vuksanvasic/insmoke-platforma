@@ -101,6 +101,7 @@ Stranica `management.html` (https://insmoke.rs/aplikacija/management.html), ista
 | Food cost | šef smene, menadžer, administrator | stvarni food cost (kuhinja ÷ hrana) i beverage cost (šank ÷ piće) između dva popisa, utrošak po namirnici, poskupljenja |
 | Popis | šef smene, menadžer, administrator | nedeljni/mesečni popis na telefonu; dimljeno meso: sirovo, u smokeru, gotovo; zaključava se (ponovo otvara samo administrator) |
 | Fakture | šef smene, menadžer, administrator | e-faktura sa SEF-a (XML) ili ručni unos; povezivanje stavki sa namirnicama (pamti se po dobavljaču); cena namirnice = poslednja faktura |
+| Normativi | šef smene, menadžer, administrator | **Jela**: sastojci po porciji, trošak, food cost i marža (cenu jela menja administrator). **Šarže**: osnovne pripreme (džem od luka, sosevi, coleslaw, rub…) sa sastojcima za celu šaržu, izlazom, kalom i postupkom; cena šarže se računa sama. **Namirnice**: cene i gde se koriste |
 | Prodaja artikala | šef smene, menadžer, administrator | prodaja po artiklima iz bMaster-a (Excel/CSV, kolone se biraju i pamte) ili ručno po jelu; artikal se povezuje sa jelom iz normativa ili direktno sa namirnicom (piće) |
 | Obračun, Podešavanja | administrator | stvarne plate po mesecu, ciljevi (labor, food, beverage), PDV, uvećanja, kanali |
 
@@ -113,3 +114,5 @@ Food cost: utrošeno = početno stanje (prethodni popis) + nabavka (stavke faktu
 Teorijski food cost (`supabase/13_teorijski_food_cost.sql`, `fc_theory`): prodato po artiklima × normativ (`dish_lines`). Normativ za dimljeno meso je gotovo meso i vredi po stvarnoj ceni gotovog mesa iz yield loga; ako u poslednjih 60 dana nema ciklusa sa cenom, po nabavnoj ÷ ciljni yield (`products.target_yield`). Prodaja se uzima samo ako je ceo uvoz unutar perioda između dva popisa. Razlika stvarno − teorijski po namirnici je u Food cost tabu i u nedeljnom mejlu.
 
 Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče (kad postoji bar jedan zaposleni), nedeljni ponedeljkom u 9h (rad + food cost iz popisa iz noći sa nedelje na ponedeljak + poskupljenja). Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`
+
+Normativi (`supabase/14_sarze.sql`): namirnica može biti šarža (`waste_items.is_prep`, `batch_out`, `method`, sastojci u `prep_lines`). Cena šarže = Σ (količina × cena sastojka) ÷ izlaz; računa je baza (`prep_unit_cost`) i preračunava kad se promeni cena sastojka, lančano (šarža u šarži). Faktura ne prepisuje cenu šarže. Upis ide preko `prep_save`, `prep_new`, `prep_unset` i `dish_lines_save` (provera kruga, sve odjednom). Teorijski food cost razlaže šarže na sirovine. Tab „Normativi“ u Kitchen Control-u sada vodi ovde.

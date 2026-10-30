@@ -204,6 +204,31 @@ tfoot td{font-weight:600;background:var(--bg)}
 .ln.unmapped{box-shadow:inset 3px 0 0 var(--warn);padding-left:10px}
 .ln.ignored{opacity:.6}
 .ln-head{display:grid;grid-template-columns:minmax(160px,1.4fr) 110px 120px minmax(170px,1.3fr) 150px 120px;gap:12px;font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
+/* normativi */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px;background:var(--surface);flex-wrap:wrap}
+.seg button{font:600 14px var(--f-body);border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.rl{display:grid;grid-template-columns:minmax(180px,2fr) 200px 120px 100px minmax(120px,1fr) 64px;gap:8px 12px}
+.rl{align-items:end;padding:10px 0;border-bottom:1px solid var(--line)}
+.rl-head{font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
+.rl label{font-size:12px}
+.rl .qty{display:flex;gap:4px}
+.rl .qty select{width:92px;flex:0 0 92px}
+.rl .fig{display:flex;flex-direction:column;align-items:flex-end;font:500 14px var(--f-mono);font-variant-numeric:tabular-nums;padding-bottom:8px}
+.rl .fig small{font:400 11px var(--f-body);color:var(--muted);text-align:right}
+.rl .rm{padding-bottom:9px;text-align:right}
+.rl.newone{box-shadow:inset 3px 0 0 var(--warn);padding-left:10px}
+.rsum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.rsum div{background:var(--bg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.rsum .k{font:500 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rsum .v{font:600 20px var(--f-mono);font-variant-numeric:tabular-nums}
+.rsum .s{font-size:12px;color:var(--muted)}
+.cell-num{width:110px;font-family:var(--f-mono);text-align:right;padding:5px 8px}
+@media (max-width:700px){
+  .rl{grid-template-columns:1fr 1fr}
+  .rl .rl-item,.rl .rl-note{grid-column:1/-1}
+  .rl-head{display:none}
+}
 .rowlink{cursor:pointer}
 .rowlink:hover td{background:var(--bg)}
 @media (max-width:700px){
@@ -274,6 +299,7 @@ a.linkbtn{color:var(--ink)}
     <button role="tab" aria-selected="false" data-view="raspored">Raspored</button>
     <button role="tab" aria-selected="false" data-view="zaposleni">Zaposleni</button>
     <button role="tab" aria-selected="false" data-view="foodcost">Food cost</button>
+    <button role="tab" aria-selected="false" data-view="normativi">Normativi</button>
     <button role="tab" aria-selected="false" data-view="popis">Popis</button>
     <button role="tab" aria-selected="false" data-view="fakture">Fakture</button>
     <button role="tab" aria-selected="false" data-view="prodaja">Prodaja artikala</button>
@@ -511,6 +537,76 @@ a.linkbtn{color:var(--ink)}
     </div>
     <p class="foot">Teorijski trošak = prodato po artiklima (tab „Prodaja artikala“) × normativ iz Kitchen Control-a. Dimljeno meso u normativu je gotovo meso, pa se računa po stvarnoj ceni gotovog mesa (sa kalom). Razlika između stvarnog i teorijskog je roba koja je otišla, a nije prodata: porcije veće od normativa, neupisan otpis, greške na prijemu, krađa. Prilozi i sosevi koji se prave u kuhinji porede se kao celina dok ne dobiju svoj normativ od sirovina.</p>
     <p class="foot">Food cost % = utrošena roba kuhinje ÷ promet hrane bez PDV-a. Beverage cost % = utrošena roba šanka ÷ promet pića bez PDV-a. Nabavka su stavke ulaznih faktura (bez PDV-a) sa datumom isporuke posle prethodnog popisa, zaključno sa danom ovog popisa. Popis vredi po nabavnoj ceni iz poslednje fakture. Dimljeno meso u smokeru vredi kao sirovo, a gotovo dimljeno meso po stvarnoj ceni iz yield loga u Kitchen Control-u (sirovo × nabavna ÷ kg za prodaju, poslednjih 60 dana). Otpis je deo utroška i prikazan je da se vidi koliko od utroška je bačeno.</p>
+  </section>
+
+  <!-- NORMATIVI -->
+  <section class="view" id="view-normativi" hidden>
+    <div>
+      <h2>Normativi</h2>
+      <p class="lede">Šta tačno ide u svako jelo i u svaku šaržu (džem od luka, sosevi, coleslaw, rub…). Iz toga se računaju trošak porcije, food cost i marža. Cena šarže se računa sama iz sastojaka i izlaza, a teorijski food cost razlaže šarže na sirovine iz faktura.</p>
+    </div>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Deo normativa" id="nm-seg">
+        <button type="button" data-sub="jela" aria-pressed="true">Jela</button>
+        <button type="button" data-sub="sarze" aria-pressed="false">Šarže</button>
+        <button type="button" data-sub="namirnice" aria-pressed="false">Namirnice</button>
+      </div>
+    </div>
+
+    <div id="nm-jela" style="display:flex;flex-direction:column;gap:20px">
+      <div class="toolbar">
+        <label>Kategorija<select id="nm-cat"><option value="">Sve</option></select></label>
+        <label>Poređaj<select id="nm-sort">
+          <option value="menu">Kao u meniju</option>
+          <option value="fc">Najveći food cost prvo</option>
+          <option value="margin">Najmanja marža prvo</option>
+          <option value="empty">Bez normativa prvo</option>
+        </select></label>
+        <label style="flex:1 1 200px;width:auto">Traži<input type="search" id="nm-q" autocomplete="off" placeholder="npr. burger"></label>
+      </div>
+      <div class="cards" id="nm-cards"></div>
+      <div id="nm-editor"></div>
+      <div id="nm-list"></div>
+      <form class="panel adminonly" id="nm-newdish" novalidate>
+        <h3>Novo jelo</h3>
+        <fieldset>
+          <label>Naziv<input id="nd-name" autocomplete="off"></label>
+          <label>Kategorija<input id="nd-cat" list="nm-cats" autocomplete="off" placeholder="npr. Burgeri"></label>
+          <label>Cena sa PDV-om<input class="num" id="nd-price" inputmode="decimal"></label>
+          <label>PDV %<input class="num" id="nd-vat" inputmode="decimal" value="20"></label>
+        </fieldset>
+        <div class="actions"><button class="btn" type="submit">Dodaj jelo</button><span class="msg" id="nd-msg" role="status"></span></div>
+      </form>
+    </div>
+
+    <div id="nm-sarze" style="display:flex;flex-direction:column;gap:20px" hidden>
+      <div class="cards" id="np-cards"></div>
+      <div id="np-editor"></div>
+      <div id="np-list"></div>
+      <form class="panel" id="np-new" novalidate>
+        <h3>Nova šarža</h3>
+        <p class="note" style="margin:0">Ako namirnica sa tim imenom već postoji (npr. „Džem od luka“ iz otpisa), ona postaje šarža.</p>
+        <fieldset>
+          <label>Naziv<input id="npn-name" list="nm-items" autocomplete="off" placeholder="npr. Rub za brisket"></label>
+          <label>Gotovo se meri u<select id="npn-unit"><option value="kg">kg</option><option value="l">l</option><option value="kom">kom</option><option value="porcija">porcija</option></select></label>
+          <label>Grupa<input id="npn-grp" autocomplete="off" value="Pripreme"></label>
+        </fieldset>
+        <div class="actions"><button class="btn" type="submit">Napravi šaržu</button><span class="msg" id="npn-msg" role="status"></span></div>
+      </form>
+    </div>
+
+    <div id="nm-namirnice" style="display:flex;flex-direction:column;gap:20px" hidden>
+      <div class="toolbar">
+        <label>Deo<select id="ni-area"><option value="">Kuhinja i šank</option><option value="kuhinja">Kuhinja</option><option value="sank">Šank</option></select></label>
+        <label>Prikaži<select id="ni-show"><option value="">Sve namirnice</option><option value="used">Koriste se u normativima</option><option value="noprice">Koriste se, a nemaju cenu</option></select></label>
+        <label style="flex:1 1 200px;width:auto">Traži<input type="search" id="ni-q" autocomplete="off"></label>
+      </div>
+      <div class="status" id="ni-sum"></div>
+      <div id="ni-list"></div>
+      <p class="foot">Cena namirnice dolazi iz poslednje ulazne fakture (tab „Fakture“). Administrator može da je upiše i ručno. Dimljeno meso u normativu vredi po stvarnoj ceni gotovog mesa iz yield loga (60 dana); šarže po svojim sastojcima.</p>
+    </div>
+    <datalist id="nm-items"></datalist>
+    <datalist id="nm-cats"></datalist>
   </section>
 
   <!-- POPIS -->
@@ -763,7 +859,7 @@ a.linkbtn{color:var(--ink)}
 
   const S = {db:null,user:null,uid:null,name:'',admin:false,canWrite:true,settings:{...DEF},staff:[],pay:{},schedule:{},days:{},sales:{},payroll:{},
     items:[],itemMap:new Map(),cooks:[],waste:[],inv:[],counts:[],map:{},fct:null,
-    dishes:[],dishMap:new Map(),dlByDish:new Map(),salesImp:[],posMap:{},targetYield:{}};
+    dishes:[],dishMap:new Map(),dlByDish:new Map(),plByPrep:new Map(),salesImp:[],posMap:{},targetYield:{}};
   const cfg = () => ({...DEF,...S.settings, channels:(S.settings.channels&&S.settings.channels.length)?S.settings.channels:DEF.channels});
 
   // ---- obračun ----
@@ -879,7 +975,7 @@ a.linkbtn{color:var(--ink)}
   }
 
   // ---- tabovi ----
-  const VIEWS=['pregled','dan','raspored','zaposleni','foodcost','popis','fakture','prodaja','obracun','podesavanja'];
+  const VIEWS=['pregled','dan','raspored','zaposleni','foodcost','normativi','popis','fakture','prodaja','obracun','podesavanja'];
   document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
   function show(v){
     if(!S.admin && (v==='obracun'||v==='podesavanja')) v='pregled';
@@ -1885,6 +1981,7 @@ a.linkbtn{color:var(--ink)}
       else if(l.item) tq[l.item]=(tq[l.item]||0)+q;
       else unm++;
     }
+    explodePreps(tq);
     const act={}; for(const t of r.top) act[t.id]=t.used;
     const wst={}; for(const w of S.waste) if(w.date>A.date && w.date<=B.date) wst[w.item]=(wst[w.item]||0)+w.value;
     const ids=new Set([...Object.keys(tq),...Object.keys(act)]);
@@ -2144,6 +2241,360 @@ a.linkbtn{color:var(--ink)}
   $('sp-list').addEventListener('click',e=>{ const r=e.target.closest('[data-sim]'); if(r) openSalesImp(r.dataset.sim); });
   $('sp-list').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const r=e.target.closest('[data-sim]'); if(r) openSalesImp(r.dataset.sim); } });
 
+  // =====================================================================
+  // NORMATIVI · jela, šarže (osnovne pripreme), namirnice
+  // =====================================================================
+  const prepLinesOf = id => S.plByPrep.get(id) || [];
+  const DU = {kg:[['g',0.001],['kg',1]], l:[['ml',0.001],['l',1]], kom:[['kom',1]], porcija:[['porc.',1]]};
+  const DU_ALL = [['g',0.001,'kg'],['kg',1,'kg'],['ml',0.001,'l'],['l',1,'l'],['kom',1,'kom']];
+  const duFactor = du => { const x=DU_ALL.find(d=>d[0]===du); return x?x[1]:1; };
+  const duBase = du => { const x=DU_ALL.find(d=>d[0]===du); return x?x[2]:du==='porc.'?'porcija':du; };
+  const itemByName = s => { const n=normName(s); return n ? S.items.find(i=>normName(i.name)===n) : null; };
+  // šarže se razlažu na sirovine (isto kao fc_theory u bazi)
+  function explodePreps(tq){
+    for(let depth=0; depth<6; depth++){
+      let any=false;
+      for(const id of Object.keys(tq)){
+        const it=itemOf(id); if(!it||!it.prep||!(it.batchOut>0)) continue;
+        const ls=prepLinesOf(id); if(!ls.length) continue;
+        const q=tq[id]; delete tq[id]; any=true;
+        for(const l of ls) tq[l.item]=(tq[l.item]||0)+q*l.qty/it.batchOut;
+      }
+      if(!any) break;
+    }
+    return tq;
+  }
+  // cena jedinice za normativ: šarža iz sastojaka, dimljeno meso gotovo, ostalo nabavna
+  function costOf(it, depth=0){
+    if(!it) return {c:null, why:'namirnica ne postoji'};
+    if(it.prep){
+      if(depth>6) return {c:null, why:'previše nivoa šarži'};
+      const ls=prepLinesOf(it.id);
+      if(!ls.length) return {c:null, why:'šarža nema sastojke'};
+      if(!(it.batchOut>0)) return {c:null, why:'šarži nije upisan izlaz'};
+      let t=0; for(const l of ls){ const r=costOf(itemOf(l.item),depth+1); if(r.c==null) return {c:null, why:'u šarži nema cenu: '+((itemOf(l.item)||{}).name||'?')}; t+=l.qty*r.c; }
+      return {c:t/it.batchOut, why:'šarža · iz sastojaka'};
+    }
+    if(it.smoked){ const c=unitCostAt(it,'gotovo',today()), b=yieldBasis(it,today());
+      return {c, why: c==null?'nema cenu':b==='log'?'gotovo meso · yield log':b==='cilj'?'gotovo · nabavna ÷ ciljni yield':'nabavna (nema yield)'}; }
+    return {c:it.price, why: it.price==null?'nema cenu':(it.priceSrc||'ručno')};
+  }
+  function calcLines(lines){
+    let total=0, miss=0;
+    const parts=lines.map(l=>{ const it=l.item?itemOf(l.item):null, r=it?costOf(it):{c:null,why:l.newName?'nova namirnica, bez cene':'izaberi namirnicu'};
+      const cost=r.c!=null&&l.qty>0 ? l.qty*r.c : null; if(cost==null) miss++; else total+=cost; return {l,it,unit:r.c,why:r.why,cost}; });
+    return {parts,total,miss};
+  }
+  function dishCalc(d, lines){
+    const c=calcLines(lines||dishLinesOf(d.id)), n=c.parts.length;
+    const net=d.price!=null ? d.price/(1+val(d.vat)/100) : null;
+    return {...c, n, net, fc: net>0&&n ? c.total/net*100 : null, margin: net!=null&&n ? net-c.total : null};
+  }
+  function fcPill(c){
+    if(!c.n) return '<span class="pill none">nema normativa</span>';
+    if(c.miss) return `<span class="pill warn">nepotpuno · ${c.miss} bez cene</span>`;
+    if(c.fc==null) return '<span class="pill none">nema cene jela</span>';
+    if(S.fct==null) return `<span class="pill none">${fmt(c.fc,1)} %</span>`;
+    return `<span class="pill ${c.fc<=S.fct?'good':c.fc<=S.fct+3?'warn':'bad'}">${fmt(c.fc,1)} %</span>`;
+  }
+  function usedIn(id){
+    const dishes=S.dishes.filter(d=>dishLinesOf(d.id).some(l=>l.item===id)).map(d=>d.name);
+    const preps=S.items.filter(i=>i.prep&&prepLinesOf(i.id).some(l=>l.item===id)).map(i=>i.name);
+    return {dishes,preps,n:dishes.length+preps.length};
+  }
+  const qtyShow = (q,unit) => unit==='kg'&&q<1 ? fmt(q*1000,(q*1000)%1?1:0)+' g' : unit==='l'&&q<1 ? fmt(q*1000,(q*1000)%1?1:0)+' ml' : fmt(q,q%1?3:0).replace(/,?0+$/,'')+' '+(UNIT[unit]||unit);
+
+  const NM = {sub:'jela', dish:null, prep:null, draft:null};
+  try{ const t=localStorage.getItem('mc-nm-sub'); if(['jela','sarze','namirnice'].includes(t)) NM.sub=t; }catch(_){}
+
+  // ---------- nacrt (jelo ili šarža) ----------
+  function defaultDu(unit, kind, q){
+    if(unit==='kg') return kind==='dish'||(q!=null&&q>0&&q<1) ? 'g' : 'kg';
+    if(unit==='l') return kind==='dish'||(q!=null&&q>0&&q<1) ? 'ml' : 'l';
+    return unit==='porcija' ? 'porc.' : unit;
+  }
+  function makeDraft(kind, id){
+    const src = kind==='dish' ? dishLinesOf(id) : prepLinesOf(id);
+    const lines = src.map(l=>{ const it=itemOf(l.item); const du=defaultDu(it?it.unit:'kg', kind, l.qty);
+      return {item:l.item, name:it?it.name:'', qty:l.qty, du, shown:l.qty/duFactor(du), note:l.note||''}; });
+    const it = kind==='prep' ? itemOf(id) : null;
+    return {kind, id, lines, batchOut: it?it.batchOut:null, method: it?it.method:'', dirty:false};
+  }
+  function confirmLeave(){ return !NM.draft || !NM.draft.dirty || confirm('Normativ nije sačuvan. Da li da odbacim izmene?'); }
+  function openDish(id){ if(NM.draft&&NM.draft.id===id) return; if(!confirmLeave()) return; NM.dish=id; NM.draft=makeDraft('dish',id); renderNormativi(); $('nm-editor').scrollIntoView({behavior:'smooth',block:'start'}); }
+  function openPrep(id){ if(NM.draft&&NM.draft.id===id) return; if(!confirmLeave()) return; NM.prep=id; NM.draft=makeDraft('prep',id); renderNormativi(); $('np-editor').scrollIntoView({behavior:'smooth',block:'start'}); }
+  function closeEditor(){ if(!confirmLeave()) return; NM.draft=null; NM.dish=null; NM.prep=null; renderNormativi(); }
+
+  function renderNormativi(){
+    document.querySelectorAll('#nm-seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.sub===NM.sub)));
+    $('nm-jela').hidden=NM.sub!=='jela'; $('nm-sarze').hidden=NM.sub!=='sarze'; $('nm-namirnice').hidden=NM.sub!=='namirnice';
+    $('nm-items').innerHTML=sortItems(S.items.filter(i=>i.active)).map(i=>`<option value="${esc(i.name)}">${esc(i.prep?'šarža':i.grp)} · ${esc(UNIT[i.unit]||i.unit)}</option>`).join('');
+    $('nm-cats').innerHTML=[...new Set(S.dishes.map(d=>d.cat))].map(c=>`<option value="${esc(c)}">`).join('');
+    // nacrt prati jelo/šaržu koja je obrisana
+    if(NM.draft && (NM.draft.kind==='dish' ? !dishOf(NM.draft.id) : !itemOf(NM.draft.id))){ NM.draft=null; NM.dish=null; NM.prep=null; }
+    if(NM.draft && !NM.draft.dirty){ const k=NM.draft.kind, id=NM.draft.id; if(k==='prep'&&!itemOf(id).prep){ NM.draft=null; NM.prep=null; } else NM.draft=makeDraft(k,id); }
+    if(NM.sub==='jela') renderDishes(); else if(NM.sub==='sarze') renderPreps(); else renderNamirnice();
+  }
+
+  // ---------- JELA ----------
+  function renderDishes(){
+    const catSel=$('nm-cat'), cur=catSel.value, cats=[...new Set(S.dishes.map(d=>d.cat))];
+    catSel.innerHTML='<option value="">Sve</option>'+cats.map(c=>`<option${c===cur?' selected':''}>${esc(c)}</option>`).join('');
+    const all=S.dishes.filter(d=>d.active).map(d=>({d,c:dishCalc(d)}));
+    const withR=all.filter(x=>x.c.n), empty=all.length-withR.length, partial=withR.filter(x=>x.c.miss).length;
+    const done=withR.filter(x=>!x.c.miss&&x.c.fc!=null), worst=done.slice().sort((a,b)=>b.c.fc-a.c.fc)[0];
+    $('nm-cards').innerHTML=`
+      <div class="card"><div class="k">Sa normativom</div><div class="v">${withR.length}<small> / ${all.length}</small></div><div class="sub">aktivnih jela</div></div>
+      <div class="card"><div class="k">Bez normativa</div><div class="v">${empty}</div><div class="sub">jela bez sastojaka</div></div>
+      <div class="card"><div class="k">Nepotpuni</div><div class="v">${partial}</div><div class="sub">sastojak bez cene</div></div>
+      <div class="card"><div class="k">Najveći food cost</div><div class="v">${worst?fmt(worst.c.fc,1)+'<small> %</small>':'—'}</div><div class="sub">${worst?esc(worst.d.name):'kad normativi budu kompletni'}${S.fct!=null?' · cilj '+fmt(S.fct,S.fct%1?1:0)+' %':''}</div></div>`;
+    renderDishEditor();
+    const qv=normName($('nm-q').value), cat=$('nm-cat').value, sort=$('nm-sort').value;
+    let rows=S.dishes.map(d=>({d,c:dishCalc(d)})).filter(x=>(!cat||x.d.cat===cat)&&(!qv||normName(x.d.name).includes(qv)));
+    if(sort==='fc') rows.sort((a,b)=>(b.c.fc??-1)-(a.c.fc??-1));
+    else if(sort==='margin') rows.sort((a,b)=>(a.c.margin??1e12)-(b.c.margin??1e12));
+    else if(sort==='empty') rows.sort((a,b)=>(a.c.n?1:0)-(b.c.n?1:0)||a.d.sort-b.d.sort);
+    if(!rows.length){ $('nm-list').innerHTML='<div class="empty"><strong>Nema jela</strong>Promeni filter ili dodaj jelo.</div>'; return; }
+    $('nm-list').innerHTML=`<div class="tablewrap"><table style="min-width:720px"><thead><tr><th>Jelo</th><th>Kategorija</th><th class="n">Cena</th><th class="n">Trošak porcije</th><th class="n">Food cost</th><th class="n">Marža</th></tr></thead><tbody>${rows.map(({d,c})=>
+      `<tr class="rowlink" data-dish="${d.id}" tabindex="0"${NM.dish===d.id?' style="background:var(--ember-soft)"':''}><td><strong>${esc(d.name)}</strong>${d.active?'':' <span class="pill none">neaktivno</span>'}<div class="note">${c.n?c.n+' '+pl(c.n,'sastojak','sastojka','sastojaka'):'bez normativa'}</div></td><td>${esc(d.cat)}</td><td class="n">${d.price!=null?fmt(d.price,0):'—'}</td><td class="n">${c.n&&c.total>0?fmt(c.total,0)+(c.miss?'*':''):'—'}</td><td class="n">${fcPill(c)}</td><td class="n">${c.margin!=null&&c.total>0?fmt(c.margin,0)+(c.miss?'*':''):'—'}</td></tr>`).join('')}</tbody></table></div>
+      <p class="foot">Cene jela su sa PDV-om; trošak, food cost i marža računaju se od cene bez PDV-a. * = nepotpuno, neki sastojak nema cenu.</p>`;
+  }
+  function recipeRows(dr){
+    const c=calcLines(dr.lines);
+    let h='';
+    c.parts.forEach((p,i)=>{
+      const l=p.l, it=p.it, unit=it?it.unit:duBase(l.du);
+      const opts=(it?DU[it.unit]:DU_ALL.map(d=>[d[0],d[1]])).map(([u])=>`<option${u===l.du?' selected':''}>${u}</option>`).join('');
+      h+=`<div class="rl${!it?' newone':''}" data-i="${i}">
+        <label class="rl-item">Sastojak<input data-f="name" list="nm-items" value="${esc(l.name)}" autocomplete="off" placeholder="npr. Crni luk"></label>
+        <label>Količina<span class="qty"><input class="num" data-f="qty" inputmode="decimal" value="${esc(inp(l.shown))}"><select data-f="du">${opts}</select></span></label>
+        <div class="fig" data-unitc="${i}">${p.unit!=null?fmt(p.unit,p.unit<10?2:0):'—'}<small>${p.unit!=null?'po '+esc(UNIT[unit]||unit)+' · ':''}${esc(p.why)}</small></div>
+        <div class="fig" data-cost="${i}">${p.cost!=null?fmt(p.cost,1):'—'}<small>RSD</small></div>
+        <label class="rl-note">Napomena<input data-f="note" value="${esc(l.note)}" autocomplete="off" placeholder="opciono"></label>
+        <div class="rm"><button type="button" class="link danger" data-rm="${i}">Ukloni</button></div>
+      </div>`;
+    });
+    if(!dr.lines.length) h+=`<div class="empty" style="margin-top:10px"><strong>Još nema sastojaka</strong>${dr.kind==='dish'?'Dodaj sve što ide na tanjir: meso, prilog, sos, hleb, ambalažu ako se računa.':'Dodaj sve sastojke za jednu šaržu, sa količinama kako se stvarno meri.'}</div>`;
+    return h;
+  }
+  function draftSummary(dr){
+    const c=calcLines(dr.lines);
+    if(dr.kind==='dish'){
+      const d=dishOf(dr.id), x=dishCalc(d, dr.lines.map(l=>({item:l.item,qty:l.qty,note:l.note})));
+      return `<div><span class="k">Trošak porcije</span><span class="v">${dr.lines.length?fmt(x.total,0):'—'}</span><span class="s">RSD${x.miss?' · nepotpuno':''}</span></div>
+        <div><span class="k">Food cost</span><span class="v">${x.fc!=null?fmt(x.fc,1)+' %':'—'}</span><span class="s">${S.fct!=null?'cilj '+fmt(S.fct,S.fct%1?1:0)+' %':'cilj nije postavljen'}</span></div>
+        <div><span class="k">Marža</span><span class="v">${x.margin!=null?fmt(x.margin,0):'—'}</span><span class="s">RSD po porciji, bez PDV-a</span></div>
+        <div><span class="k">Cena</span><span class="v">${d.price!=null?fmt(d.price,0):'—'}</span><span class="s">sa PDV-om · bez PDV-a ${x.net!=null?fmt(x.net,0):'—'}</span></div>`;
+    }
+    const it=itemOf(dr.id), u=UNIT[it.unit]||it.unit, out=dr.batchOut;
+    const massLines=dr.lines.filter(l=>{ const b=l.item?(itemOf(l.item)||{}).unit:duBase(l.du); return b==='kg'||b==='l'; });
+    const inMass=massLines.reduce((a,l)=>a+(l.qty||0),0), allMass=massLines.length===dr.lines.length&&dr.lines.length>0;
+    const kalo=allMass&&(it.unit==='kg'||it.unit==='l')&&out>0&&inMass>0 ? (inMass-out)/inMass*100 : null;
+    const per=out>0&&!c.miss&&dr.lines.length ? c.total/out : null;
+    return `<div><span class="k">Ulaz</span><span class="v">${inMass>0?fmt(inMass,inMass%1?2:0)+' kg':'—'}</span><span class="s">${allMass?'zbir sastojaka (1 l ≈ 1 kg)':inMass>0?'samo sastojci u kg i l':''}</span></div>
+      <div><span class="k">Izlaz</span><span class="v">${out>0?fmt(out,out%1?2:0)+' '+esc(u):'—'}</span><span class="s">gotovo, izmereno</span></div>
+      <div><span class="k">Kalo</span><span class="v">${kalo!=null?fmt(kalo,1)+' %':'—'}</span><span class="s">${kalo!=null&&kalo<0?'izlaz veći od ulaza, proveri':'gubitak u pripremi'}</span></div>
+      <div><span class="k">Trošak šarže</span><span class="v">${dr.lines.length?fmt(c.total,0):'—'}</span><span class="s">RSD${c.miss?' · nepotpuno, '+c.miss+' bez cene':''}</span></div>
+      <div><span class="k">Cena po ${esc(u)}</span><span class="v">${per!=null?fmt(per,per<10?2:0):'—'}</span><span class="s">${per!=null?'gotovog':out>0?'kad svi sastojci imaju cenu':'upiši izlaz'}</span></div>`;
+  }
+  function refreshFigs(box){
+    const dr=NM.draft; if(!dr) return; const c=calcLines(dr.lines);
+    c.parts.forEach((p,i)=>{ const u=box.querySelector(`[data-unitc="${i}"]`), k=box.querySelector(`[data-cost="${i}"]`); const unit=p.it?p.it.unit:duBase(p.l.du);
+      if(u) u.innerHTML=`${p.unit!=null?fmt(p.unit,p.unit<10?2:0):'—'}<small>${p.unit!=null?'po '+esc(UNIT[unit]||unit)+' · ':''}${esc(p.why)}</small>`;
+      if(k) k.innerHTML=`${p.cost!=null?fmt(p.cost,1):'—'}<small>RSD</small>`; });
+    const s=box.querySelector('[data-sum]'); if(s) s.innerHTML=draftSummary(dr);
+    const st=box.querySelector('[data-dirty]'); if(st) st.textContent=dr.dirty?'Ima nesačuvanih izmena.':'';
+  }
+  function editorHtml(dr){
+    const isDish=dr.kind==='dish', d=isDish?dishOf(dr.id):null, it=isDish?null:itemOf(dr.id);
+    const title=isDish?d.name:it.name, sub=isDish?d.cat:`šarža · ${it.area==='sank'?'šank':'kuhinja'} · ${it.grp}`;
+    const u=it?(UNIT[it.unit]||it.unit):'';
+    const used=it?usedIn(it.id):null;
+    return `<div class="panel" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start">
+        <div><div class="tag">${esc(sub)}</div><h3 style="font-size:26px;margin-top:2px">${esc(title)}</h3>${isDish?'<p class="note" style="margin:4px 0 0">Količine su za jednu porciju, kako ide na tanjir (meso gotovo).</p>':'<p class="note" style="margin:4px 0 0">Količine su za celu šaržu. Izlaz je koliko gotovog se dobije, izmereno na vagi.</p>'}</div>
+        <button class="btn ghost small" type="button" data-close>Zatvori</button>
+      </div>
+      <div class="rsum" data-sum>${draftSummary(dr)}</div>
+      ${isDish&&S.admin?`<form class="toolbar" data-dishform novalidate>
+        <label>Cena sa PDV-om<input class="num" data-df="price" inputmode="decimal" value="${esc(inp(d.price))}"></label>
+        <label style="width:110px">PDV %<input class="num" data-df="vat" inputmode="decimal" value="${esc(inp(d.vat))}"></label>
+        <label>Kategorija<input data-df="cat" list="nm-cats" value="${esc(d.cat)}"></label>
+        <label class="check" style="width:auto;padding-bottom:9px"><input type="checkbox" data-df="active"${d.active?' checked':''}> aktivno</label>
+        <button class="btn ghost small" type="submit" style="margin-bottom:2px">Sačuvaj cenu</button><span class="msg" data-dmsg></span>
+      </form>`:''}
+      ${!isDish?`<fieldset>
+        <label>Izlaz šarže (${esc(u)})<span class="hint">koliko gotovog se dobije</span><input class="num" data-f="batch" inputmode="decimal" value="${esc(inp(dr.batchOut))}"></label>
+        <label class="wide">Postupak<span class="hint">kako se radi, korak po korak (temperatura, vreme, redosled)</span><textarea data-f="method" rows="3">${esc(dr.method||'')}</textarea></label>
+      </fieldset>`:''}
+      <div data-lines>${recipeRows(dr)}</div>
+      <div class="actions">
+        <button class="btn ghost small" type="button" data-add>Dodaj sastojak</button>
+      </div>
+      <div class="actions" style="border-top:1px solid var(--line);padding-top:14px">
+        <button class="btn ember" type="button" data-save>${isDish?'Sačuvaj normativ':'Sačuvaj šaržu'}</button>
+        <button class="btn ghost" type="button" data-reset>Odbaci izmene</button>
+        ${!isDish?'<button class="link danger" type="button" data-unset>Ovo nije šarža</button>':''}
+        <span class="msg${NM.flash&&NM.flash.id===dr.id?' ok':''}" data-msg role="status">${NM.flash&&NM.flash.id===dr.id?esc(NM.flash.text):''}</span><span class="status" data-dirty>${dr.dirty?'Ima nesačuvanih izmena.':''}</span>
+      </div>
+      ${used?`<p class="note" style="margin:0">${used.n?'Koristi se u: '+esc([...used.dishes,...used.preps].join(', ')):'Još se ne koristi ni u jednom jelu ni šarži.'}</p>`:''}
+      ${!isDish?'<p class="note" style="margin:0">Sastojak koji ne postoji biće dodat kao nova namirnica bez cene. Cenu dobija iz prve fakture (ili je upiše administrator u podtabu Namirnice). Šarža može da sadrži i drugu šaržu.</p>':'<p class="note" style="margin:0">Sastojak može biti šarža (npr. džem od luka), dimljeno meso ili namirnica iz nabavke. Sastojak koji ne postoji biće dodat kao nova namirnica bez cene.</p>'}
+    </div>`;
+  }
+  function bindEditor(box){
+    const dr=NM.draft;
+    const redraw=()=>{ NM.drawing=true; try{ box.innerHTML=editorHtml(dr); } finally{ NM.drawing=false; } bindEditor(box); };
+    box.querySelector('[data-close]').addEventListener('click',closeEditor);
+    box.querySelector('[data-add]').addEventListener('click',()=>{ dr.lines.push({item:null,name:'',qty:null,shown:null,du:dr.kind==='dish'?'g':'kg',note:''}); dr.dirty=true; redraw(); const ins=box.querySelectorAll('[data-f="name"]'); if(ins.length) ins[ins.length-1].focus(); });
+    box.querySelector('[data-reset]').addEventListener('click',()=>{ NM.draft=makeDraft(dr.kind,dr.id); renderNormativi(); });
+    const lb=box.querySelector('[data-lines]');
+    lb.addEventListener('click',e=>{ const b=e.target.closest('[data-rm]'); if(!b) return; dr.lines.splice(Number(b.dataset.rm),1); dr.dirty=true; redraw(); });
+    lb.addEventListener('input',e=>{
+      const row=e.target.closest('[data-i]'); if(!row) return; const l=dr.lines[Number(row.dataset.i)], f=e.target.dataset.f;
+      if(f==='qty'){ const v=num(e.target.value); l.shown=Number.isFinite(v)?v:null; l.qty=l.shown!=null?l.shown*duFactor(l.du):null; }
+      else if(f==='note') l.note=e.target.value;
+      else if(f==='name'){ l.name=e.target.value; const it=itemByName(l.name); if(it&&it.id!==l.item){ l.item=it.id; const du=defaultDu(it.unit,dr.kind,null); if(duBase(l.du)!==it.unit) l.du=du; l.qty=l.shown!=null?l.shown*duFactor(l.du):null; dr.dirty=true; redraw(); const ins=box.querySelectorAll('[data-f="name"]')[Number(row.dataset.i)]; if(ins){ ins.focus(); ins.setSelectionRange(ins.value.length,ins.value.length); } return; } if(!it) l.item=null; }
+      dr.dirty=true; refreshFigs(box);
+    });
+    lb.addEventListener('change',e=>{
+      if(NM.drawing) return;
+      const row=e.target.closest('[data-i]'); if(!row) return; const l=dr.lines[Number(row.dataset.i)], f=e.target.dataset.f;
+      if(f==='du'){ l.du=e.target.value; l.qty=l.shown!=null?l.shown*duFactor(l.du):null; dr.dirty=true; refreshFigs(box); }
+      if(f==='name'){ l.newName=!l.item&&l.name.trim().length>1; dr.dirty=true; redraw(); }
+    });
+    const bi=box.querySelector('[data-f="batch"]'); if(bi) bi.addEventListener('input',()=>{ const v=num(bi.value); dr.batchOut=Number.isFinite(v)&&v>0?v:null; dr.dirty=true; refreshFigs(box); });
+    const mi=box.querySelector('[data-f="method"]'); if(mi) mi.addEventListener('input',()=>{ dr.method=mi.value; dr.dirty=true; refreshFigs(box); });
+    const df=box.querySelector('[data-dishform]');
+    if(df) df.addEventListener('submit',async ev=>{
+      ev.preventDefault(); const m=box.querySelector('[data-dmsg]'); m.className='msg'; m.textContent='';
+      const g=k=>df.querySelector(`[data-df="${k}"]`), price=num(g('price').value), vat=num(g('vat').value);
+      if(Number.isNaN(price)||price!=null&&price<0||vat==null||Number.isNaN(vat)||vat<0||vat>=100){ m.classList.add('err'); m.textContent='Proveri cenu i PDV.'; return; }
+      try{ await q(S.db.from('dishes').update({price, vat, category:g('cat').value.trim()||'Ostalo', active:g('active').checked}).eq('id',dr.id)); m.classList.add('ok'); m.textContent='Sačuvano.'; await reload('dishes'); }
+      catch(e){ writeErr(m,e); }
+    });
+    const un=box.querySelector('[data-unset]');
+    if(un) un.addEventListener('click',async()=>{
+      if(!un.dataset.sure){ un.dataset.sure='1'; un.textContent='Sigurno? Brišu se sastojci šarže'; setTimeout(()=>{ if(un.isConnected){ delete un.dataset.sure; un.textContent='Ovo nije šarža'; } },4000); return; }
+      try{ await q(S.db.rpc('prep_unset',{p_item:dr.id})); NM.draft=null; NM.prep=null; await Promise.all(['items','preps'].map(reload)); }
+      catch(e){ writeErr(box.querySelector('[data-msg]'),e); }
+    });
+    box.querySelector('[data-save]').addEventListener('click',()=>saveDraft(box));
+  }
+  async function saveDraft(box){
+    const dr=NM.draft, m=box.querySelector('[data-msg]'), btn=box.querySelector('[data-save]'); m.className='msg'; m.textContent='';
+    const lines=dr.lines.filter(l=>l.name.trim()||l.qty);
+    for(const l of lines){
+      if(l.name.trim().length<2){ m.classList.add('err'); m.textContent='Svaki sastojak mora imati naziv.'; return; }
+      if(!(l.qty>0)){ m.classList.add('err'); m.textContent=`Upiši količinu za „${l.name.trim()}“.`; return; }
+      const it=l.item?itemOf(l.item):null;
+      if(it && duBase(l.du)!==it.unit){ m.classList.add('err'); m.textContent=`${it.name} se vodi u „${UNIT[it.unit]}“, izaberi odgovarajuću jedinicu.`; return; }
+    }
+    { const seen=new Set(); for(const l of lines){ const k=l.item||normName(l.name); if(seen.has(k)){ m.classList.add('err'); m.textContent=`„${l.name.trim()}“ je upisan dva puta. Spoji u jedan red.`; return; } seen.add(k); } }
+    if(dr.kind==='prep' && lines.length && !(dr.batchOut>0)){ m.classList.add('err'); m.textContent='Upiši izlaz šarže (koliko gotovog se dobije).'; return; }
+    if(dr.kind==='prep' && lines.some(l=>l.item===dr.id)){ m.classList.add('err'); m.textContent='Šarža ne može da sadrži samu sebe.'; return; }
+    btn.disabled=true;
+    try{
+      for(const l of lines){ if(l.item) continue;   // nova namirnica, bez cene
+        const ex=itemByName(l.name); if(ex){ l.item=ex.id; continue; }
+        const r=await q(S.db.from('waste_items').insert({name:l.name.trim().replace(/\s+/g,' '), area:dr.kind==='prep'&&itemOf(dr.id).area==='sank'?'sank':'kuhinja', grp:'Nabavka', unit:duBase(l.du), sort:800}).select().single());
+        S.items.push(mapItem(r)); S.itemMap.set(r.id, mapItem(r)); l.item=r.id; }
+      const payload=lines.map(l=>({item:l.item, qty:l.qty, note:l.note||''}));
+      if(dr.kind==='dish') await q(S.db.rpc('dish_lines_save',{p_dish:dr.id, p_lines:payload}));
+      else await q(S.db.rpc('prep_save',{p_item:dr.id, p_batch_out:dr.batchOut, p_method:dr.method||'', p_lines:payload}));
+      dr.dirty=false; NM.flash={id:dr.id, text:'Sačuvano.'}; m.classList.add('ok'); m.textContent='Sačuvano.'; setTimeout(()=>{ NM.flash=null; },8000);
+      await Promise.all(['items','preps','dishes'].map(reload));
+    }catch(e){ writeErr(m,e); }
+    finally{ btn.disabled=false; }
+  }
+  function renderEditorInto(id, kind){
+    const box=$(id);
+    if(!NM.draft||NM.draft.kind!==kind){ box.innerHTML=''; return; }
+    const active=document.activeElement, inBox=box.contains(active);
+    if(inBox && NM.draft.dirty){ refreshFigs(box); return; }   // ne prekidati kucanje
+    NM.drawing=true; try{ box.innerHTML=editorHtml(NM.draft); } finally{ NM.drawing=false; } bindEditor(box);
+  }
+  const renderDishEditor = () => renderEditorInto('nm-editor','dish');
+
+  // ---------- ŠARŽE ----------
+  function prepInfo(it){
+    const ls=prepLinesOf(it.id), r=costOf(it), used=usedIn(it.id);
+    let kalo=null; if((it.unit==='kg'||it.unit==='l')&&it.batchOut>0&&ls.length&&ls.every(l=>{ const u=(itemOf(l.item)||{}).unit; return u==='kg'||u==='l'; })){ const inn=ls.reduce((a,l)=>a+l.qty,0); if(inn>0) kalo=(inn-it.batchOut)/inn*100; }
+    return {ls,c:r.c,why:r.why,used,kalo};
+  }
+  function renderPreps(){
+    const preps=sortItems(S.items.filter(i=>i.prep)), info=new Map(preps.map(p=>[p.id,prepInfo(p)]));
+    const noLines=preps.filter(p=>!info.get(p.id).ls.length).length, noPrice=preps.filter(p=>info.get(p.id).ls.length&&info.get(p.id).c==null).length;
+    $('np-cards').innerHTML=`
+      <div class="card"><div class="k">Šarže</div><div class="v">${preps.length}</div><div class="sub">osnovne pripreme</div></div>
+      <div class="card"><div class="k">Bez recepta</div><div class="v">${noLines}</div><div class="sub">nemaju sastojke</div></div>
+      <div class="card"><div class="k">Bez cene</div><div class="v">${noPrice}</div><div class="sub">fali izlaz ili cena sastojka</div></div>`;
+    renderEditorInto('np-editor','prep');
+    if(!preps.length){ $('np-list').innerHTML='<div class="empty"><strong>Još nema šarži</strong>Napravi prvu ispod, npr. džem od luka ili BBQ sos.</div>'; return; }
+    $('np-list').innerHTML=`<div class="tablewrap"><table style="min-width:720px"><thead><tr><th>Šarža</th><th class="n">Izlaz</th><th class="n">Sastojaka</th><th class="n">Kalo</th><th class="n">Cena / jed.</th><th>Koristi se u</th></tr></thead><tbody>${preps.map(p=>{ const x=info.get(p.id);
+      return `<tr class="rowlink" data-prep="${p.id}" tabindex="0"${NM.prep===p.id?' style="background:var(--ember-soft)"':''}><td><strong>${esc(p.name)}</strong><div class="note">${esc(p.grp)} · ${p.area==='sank'?'šank':'kuhinja'}</div></td>
+        <td class="n">${p.batchOut>0?qtyShow(p.batchOut,p.unit):'—'}</td><td class="n">${x.ls.length||'—'}</td><td class="n">${x.kalo!=null?fmt(x.kalo,1)+' %':'—'}</td>
+        <td class="n">${x.c!=null?fmt(x.c,x.c<10?2:0)+' / '+esc(UNIT[p.unit]||p.unit):`<span class="pill ${x.ls.length?'warn':'none'}">${x.ls.length?'bez cene':'nema recept'}</span>`}</td>
+        <td>${x.used.n?esc([...x.used.dishes,...x.used.preps].slice(0,3).join(', '))+(x.used.n>3?` <span class="note">+${x.used.n-3}</span>`:''):'<span class="note">nigde</span>'}</td></tr>`; }).join('')}</tbody></table></div>`;
+  }
+
+  // ---------- NAMIRNICE ----------
+  function renderNamirnice(){
+    const area=$('ni-area').value, show=$('ni-show').value, qv=normName($('ni-q').value);
+    const rows=sortItems(S.items.filter(i=>!i.prep && i.active)).map(i=>({i, u:usedIn(i.id), c:costOf(i)}))
+      .filter(x=>(!area||x.i.area===area)&&(!qv||normName(x.i.name).includes(qv))&&(show!=='used'||x.u.n)&&(show!=='noprice'||(x.u.n&&x.c.c==null)));
+    const usedNo=S.items.filter(i=>!i.prep&&i.active).filter(i=>usedIn(i.id).n&&costOf(i).c==null).length;
+    $('ni-sum').textContent=`${rows.length} ${pl(rows.length,'namirnica','namirnice','namirnica')}${usedNo?` · ${usedNo} ${pl(usedNo,'se koristi u normativu, a nema cenu','se koriste u normativima, a nemaju cenu','se koristi u normativima, a nema cenu')}`:''}`;
+    if(!rows.length){ $('ni-list').innerHTML='<div class="empty"><strong>Nema namirnica</strong>Promeni filter.</div>'; return; }
+    $('ni-list').innerHTML=`<div class="tablewrap"><table style="min-width:720px"><thead><tr><th>Namirnica</th><th>Deo</th><th>Jed.</th><th class="n">Cena / jed.</th><th>Odakle je cena</th><th>Koristi se u</th></tr></thead><tbody>${rows.map(({i,u,c})=>
+      `<tr><td><strong>${esc(i.name)}</strong><div class="note">${esc(i.grp)}</div></td><td>${i.area==='sank'?'Šank':'Kuhinja'}</td><td>${esc(UNIT[i.unit]||i.unit)}</td>
+        <td class="n">${S.admin&&!i.smoked?`<input class="cell-num" data-price="${i.id}" inputmode="decimal" value="${esc(inp(i.price))}" aria-label="Cena za ${esc(i.name)}">`:c.c!=null?fmt(c.c,c.c<10?2:0):'<span class="pill '+(u.n?'warn':'none')+'">nema</span>'}</td>
+        <td><span class="note">${esc(i.smoked?c.why:i.price==null?'—':(i.priceSrc||'ručno')+(i.priceDate?' · '+fmtDY(i.priceDate):''))}</span></td>
+        <td>${u.n?esc([...u.dishes,...u.preps].slice(0,3).join(', '))+(u.n>3?` <span class="note">+${u.n-3}</span>`:''):'<span class="note">—</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  $('ni-list').addEventListener('change',async e=>{
+    const el=e.target.closest('[data-price]'); if(!el) return; const v=num(el.value);
+    if(Number.isNaN(v)||v!=null&&v<0){ el.style.borderColor='var(--bad)'; return; }
+    el.disabled=true;
+    try{ await q(S.db.from('waste_items').update({price:v, price_date:today(), price_src:'ručno'}).eq('id',el.dataset.price)); el.style.borderColor='var(--good)'; await reload('items'); }
+    catch(err){ el.style.borderColor='var(--bad)'; const t={className:'',textContent:''}; writeErr(t,err); el.title=t.textContent; el.disabled=false; }
+  });
+  ['ni-area','ni-show'].forEach(id=>$(id).addEventListener('change',renderNamirnice));
+  $('ni-q').addEventListener('input',renderNamirnice);
+
+  // ---------- događaji ----------
+  $('nm-seg').addEventListener('click',e=>{ const b=e.target.closest('[data-sub]'); if(!b) return; NM.sub=b.dataset.sub; try{localStorage.setItem('mc-nm-sub',NM.sub)}catch(_){} renderNormativi(); });
+  ['nm-cat','nm-sort'].forEach(id=>$(id).addEventListener('change',renderDishes));
+  $('nm-q').addEventListener('input',renderDishes);
+  $('nm-list').addEventListener('click',e=>{ const r=e.target.closest('[data-dish]'); if(r) openDish(r.dataset.dish); });
+  $('nm-list').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const r=e.target.closest('[data-dish]'); if(r) openDish(r.dataset.dish); } });
+  $('np-list').addEventListener('click',e=>{ const r=e.target.closest('[data-prep]'); if(r) openPrep(r.dataset.prep); });
+  $('np-list').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const r=e.target.closest('[data-prep]'); if(r) openPrep(r.dataset.prep); } });
+  $('np-new').addEventListener('submit',async ev=>{
+    ev.preventDefault(); const m=$('npn-msg'); m.className='msg'; m.textContent='';
+    const name=$('npn-name').value.trim().replace(/\s+/g,' ');
+    if(name.length<2){ m.classList.add('err'); m.textContent='Upiši naziv šarže.'; return; }
+    const ex=itemByName(name);
+    if(ex&&ex.prep){ openPrep(ex.id); return; }
+    if(!confirmLeave()) return;
+    try{ const id=await q(S.db.rpc('prep_new',{p_name:name, p_unit:$('npn-unit').value, p_grp:$('npn-grp').value.trim()||'Pripreme', p_area:'kuhinja'}));
+      $('npn-name').value=''; m.classList.add('ok'); m.textContent=ex?`${ex.name} je sada šarža. Upiši joj sastojke.`:'Šarža napravljena. Upiši joj sastojke.';
+      await reload('items'); NM.draft=null; openPrep(id); }
+    catch(e){ writeErr(m,e); }
+  });
+  $('nm-newdish').addEventListener('submit',async ev=>{
+    ev.preventDefault(); const m=$('nd-msg'); m.className='msg'; m.textContent='';
+    const name=$('nd-name').value.trim().replace(/\s+/g,' '), price=num($('nd-price').value), vat=num($('nd-vat').value);
+    if(name.length<2){ m.classList.add('err'); m.textContent='Upiši naziv jela.'; return; }
+    if(S.dishes.some(d=>normName(d.name)===normName(name))){ m.classList.add('err'); m.textContent='Jelo sa tim nazivom već postoji.'; return; }
+    if(Number.isNaN(price)||price!=null&&price<0||vat==null||Number.isNaN(vat)||vat<0||vat>=100){ m.classList.add('err'); m.textContent='Proveri cenu i PDV.'; return; }
+    if(!confirmLeave()) return;
+    try{ const r=await q(S.db.from('dishes').insert({name, category:$('nd-cat').value.trim()||'Ostalo', price, vat, sort:900}).select().single());
+      $('nd-name').value=''; $('nd-price').value=''; m.classList.add('ok'); m.textContent='Dodato. Upiši mu normativ.';
+      await reload('dishes'); NM.draft=null; openDish(r.id); }
+    catch(e){ writeErr(m,e); }
+  });
+  addEventListener('beforeunload',e=>{ if(NM.draft&&NM.draft.dirty){ e.preventDefault(); e.returnValue=''; } });
+
   // ===== render =====
   function current(){ const b=document.querySelector('nav button[aria-selected="true"]'); return b?b.dataset.view:'pregled'; }
   let raf=0;
@@ -2155,6 +2606,7 @@ a.linkbtn{color:var(--ink)}
     else if(v==='raspored') renderRaspored();
     else if(v==='zaposleni') renderZaposleni();
     else if(v==='foodcost') renderFoodcost();
+    else if(v==='normativi') renderNormativi();
     else if(v==='popis') renderPopis();
     else if(v==='fakture') renderFakture();
     else if(v==='prodaja') renderProdaja();
@@ -2205,10 +2657,11 @@ a.linkbtn{color:var(--ink)}
       }
       else if(what==='map'){ const r=await fetchAll(()=>sb.from('fc_map').select('*').order('supplier_key').order('code')); S.map={}; for(const x of r) S.map[x.supplier_key+'|'+x.code]={item:x.item_id,ignore:!!x.ignore,factor:Number(x.factor)||1}; }
       else if(what==='dishes'){
-        const [ds,ls]=await Promise.all([fetchAll(()=>sb.from('dishes').select('*').order('sort').order('id')), fetchAll(()=>sb.from('dish_lines').select('*').order('dish_id').order('id'))]);
+        const [ds,ls]=await Promise.all([fetchAll(()=>sb.from('dishes').select('*').order('sort').order('id')), fetchAll(()=>sb.from('dish_lines').select('*').order('dish_id').order('sort').order('id'))]);
         S.dishes=ds.map(x=>({id:x.id,name:x.name,cat:x.category||'Ostalo',price:n0(x.price),vat:n0(x.vat)??20,active:x.active!==false,sort:x.sort||0})); S.dishMap=new Map(S.dishes.map(d=>[d.id,d]));
-        S.dlByDish=new Map(); for(const l of ls){ const a=S.dlByDish.get(l.dish_id)||[]; a.push({dish:l.dish_id,item:l.item_id,qty:Number(l.qty)}); S.dlByDish.set(l.dish_id,a); }
+        S.dlByDish=new Map(); for(const l of ls){ const a=S.dlByDish.get(l.dish_id)||[]; a.push({dish:l.dish_id,item:l.item_id,qty:Number(l.qty),note:l.note||''}); S.dlByDish.set(l.dish_id,a); }
       }
+      else if(what==='preps'){ const r=await fetchAll(()=>sb.from('prep_lines').select('*').order('prep_id').order('sort').order('id')); S.plByPrep=new Map(); for(const l of r){ const a=S.plByPrep.get(l.prep_id)||[]; a.push({prep:l.prep_id,item:l.item_id,qty:Number(l.qty),note:l.note||''}); S.plByPrep.set(l.prep_id,a); } }
       else if(what==='sales_imp'){
         const [hs,ls]=await Promise.all([fetchAll(()=>sb.from('fc_sales_imports').select('*').gte('date_to',SINCE).order('date_to').order('id')), fetchAll(()=>sb.from('fc_sales_lines').select('*').order('import_id').order('pos').order('id'))]);
         const by={}; for(const l of ls) (by[l.import_id]=by[l.import_id]||[]).push({pos:l.pos||0,code:l.pos_code||'',name:l.pos_name,qty:Number(l.qty),amount:n0(l.amount),dish:l.dish_id,item:l.item_id,ignore:!!l.ignore,factor:Number(l.factor)||1});
@@ -2219,13 +2672,13 @@ a.linkbtn{color:var(--ink)}
       render(); live();
     }catch(e){ $('status').textContent='Podaci nisu učitani: '+((e&&e.message)||e); }
   }
-  function mapItem(x){ return {id:x.id,name:x.name,area:x.area,grp:x.grp||'Ostalo',unit:x.unit,price:n0(x.price),smoked:x.smoked_product_id||null,active:x.active!==false,sort:x.sort||0,priceDate:x.price_date||'',priceSrc:x.price_src||''}; }
+  function mapItem(x){ return {id:x.id,name:x.name,area:x.area,grp:x.grp||'Ostalo',unit:x.unit,price:n0(x.price),smoked:x.smoked_product_id||null,active:x.active!==false,sort:x.sort||0,priceDate:x.price_date||'',priceSrc:x.price_src||'',prep:!!x.is_prep,batchOut:n0(x.batch_out),method:x.method||''}; }
   let chan=null;
   function subscribe(){
     if(chan){ sb.removeChannel(chan); chan=null; }
     const map={mc_settings:'settings',mc_staff:'staff',mc_pay:'pay',mc_shifts:'shifts',mc_days:'days',mc_sales:'sales',mc_payroll:'payroll',
       waste_items:'items',cooks:'cooks',waste:'waste',fc_invoices:'invoices',fc_invoice_lines:'invoices',fc_counts:'counts',fc_count_lines:'counts',fc_map:'map',app_settings:'fct',
-      dishes:'dishes',dish_lines:'dishes',fc_sales_imports:'sales_imp',fc_sales_lines:'sales_imp',products:'products'}, timers={};
+      dishes:'dishes',dish_lines:'dishes',prep_lines:'preps',fc_sales_imports:'sales_imp',fc_sales_lines:'sales_imp',products:'products'}, timers={};
     chan=sb.channel('mc-live');
     for(const [t,w] of Object.entries(map)){
       if(!S.admin && (w==='pay'||w==='payroll')) continue;
@@ -2249,7 +2702,7 @@ a.linkbtn{color:var(--ink)}
     $('me-name').textContent=name; $('me-role').textContent=ROLE_LABEL[role];
     showV('app-view'); applyRole(); D.date=null;
     { let t=null; const h=(location.hash||'').slice(1); if(VIEWS.includes(h)) t=h; else { try{ t=localStorage.getItem('mc-tab'); }catch(_){} } show(t&&VIEWS.includes(t)?t:'pregled'); }
-    await Promise.all(['settings','staff','pay','shifts','days','sales','payroll','items','cooks','waste','invoices','counts','map','fct','dishes','sales_imp','pos_map','products'].map(reload));
+    await Promise.all(['settings','staff','pay','shifts','days','sales','payroll','items','cooks','waste','invoices','counts','map','fct','dishes','preps','sales_imp','pos_map','products'].map(reload));
     editStaff(null); subscribe();
   }
   $('login-form').addEventListener('submit',async ev=>{
