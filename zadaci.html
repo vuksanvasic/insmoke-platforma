@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="sr-Latn">
+<head>
+<script>if(/github\.io$/.test(location.hostname)){location.replace('https://insmoke.rs/aplikacija/zadaci.html'+location.hash);}</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Zadaci · In Smoke We Trust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tabla po fazama (kolone), kartice sa rokom i osobom, detalj zadatka u panelu sa desne strane */
+:root{
+  --bg:#efebe7; --surface:#faf8f6; --ink:#211c19; --muted:#6d625b; --line:#d9d1ca;
+  --ember:#b4401e; --ember-soft:#f3dfd5; --char:#2e2724; --char-ink:#f2ebe5; --char-muted:#cfc4bb; --char-line:#4a403b;
+  --good:#2f7a4b; --warn:#a86a10; --bad:#b0322a;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#181412; --surface:#221d1a; --ink:#efe8e2; --muted:#a8998f; --line:#3a312c;
+  --ember:#e2683f; --ember-soft:#3a231a; --char:#0f0c0b; --char-ink:#f2ebe5; --char-muted:#bfb2a8; --char-line:#3a312c;
+  --good:#5fb57f; --warn:#d9a043; --bad:#e2675d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#181412; --surface:#221d1a; --ink:#efe8e2; --muted:#a8998f; --line:#3a312c;
+  --ember:#e2683f; --ember-soft:#3a231a; --char:#0f0c0b; --char-ink:#f2ebe5; --char-muted:#bfb2a8; --char-line:#3a312c;
+  --good:#5fb57f; --warn:#d9a043; --bad:#e2675d; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:3px solid var(--ink);padding-bottom:12px}
+.brand small{display:block;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,6vw,52px);line-height:.95;margin:2px 0 0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.status{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{font:600 14px var(--f-body);background:transparent;color:var(--muted);border:1px solid transparent;border-radius:6px;padding:8px 14px;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+nav button:hover:not([aria-selected="true"]){border-color:var(--line);color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+h2{font-family:var(--f-display);font-weight:600;font-size:26px;text-transform:uppercase;margin:0;letter-spacing:.02em;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;margin:0;letter-spacing:.02em}
+.lede{color:var(--muted);margin:4px 0 0;max-width:68ch}
+section.view{display:flex;flex-direction:column;gap:16px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+fieldset{border:0;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+legend{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin-bottom:8px;padding:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;min-width:0}
+label .hint{font-weight:400;color:var(--muted);font-size:12px}
+label.check{flex-direction:row;align-items:center;gap:8px;font-size:14px}
+label.check input{width:auto}
+input,select,textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+input:disabled,select:disabled,textarea:disabled{opacity:.6}
+textarea{resize:vertical;min-height:56px}
+.wide{grid-column:1/-1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{font:600 15px var(--f-body);border-radius:6px;padding:10px 16px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--bg)}
+.btn.ember{background:var(--ember);border-color:var(--ember);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{font-size:13px;padding:6px 10px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline;padding:0}
+.link.danger{color:var(--bad)}
+.msg{font-size:14px}
+.msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
+.note{color:var(--muted);font-size:13px}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:26px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+.foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;max-width:90ch}
+.tag{font:500 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pill{font:500 12px var(--f-mono);padding:3px 8px;border-radius:99px;white-space:nowrap;display:inline-block;width:max-content}
+.pill.good{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.pill.none{color:var(--muted);background:var(--bg)}
+.login{max-width:380px;margin:8vh auto 0;display:flex;flex-direction:column;gap:16px}
+.login form{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
+.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);justify-content:flex-end}
+.who b{color:var(--ink);font-weight:600}
+.role{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:2px 8px}
+.linkbtn{background:none;border:0;color:var(--ink);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+a.linkbtn{color:var(--ink)}
+.wrap{max-width:1360px}
+
+/* filteri i ljudi */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.toolbar label{width:190px}
+.people{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.person{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.person[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.person b{font-weight:600}
+.person .bar{display:flex;height:6px;border-radius:99px;overflow:hidden;background:var(--bg)}
+.person .bar i{display:block;height:100%}
+.person .nums{font:500 12px var(--f-mono);color:var(--muted);display:flex;gap:10px}
+.person .nums .bad{color:var(--bad)}
+
+/* tabla */
+.board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
+.col{display:flex;flex-direction:column;gap:8px;min-width:0;background:color-mix(in srgb,var(--line) 35%,transparent);border-radius:10px;padding:10px;scroll-snap-align:start;min-height:160px}
+.col.over{outline:2px dashed var(--ember);outline-offset:-2px}
+.col-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:2px 2px 6px;border-bottom:3px solid var(--c,var(--ink))}
+.col-h h3{font-size:17px}
+.col-h span{font:500 12px var(--f-mono);color:var(--muted)}
+.col[data-col="overdue"] .col-h{--c:var(--bad)}
+.col[data-col="followup"] .col-h{--c:var(--warn)}
+.col[data-col="done"] .col-h{--c:var(--ember)}
+.col[data-col="verified"] .col-h{--c:var(--good)}
+.col[data-col="doing"] .col-h{--c:var(--ink)}
+.col[data-col="todo"] .col-h{--c:var(--muted)}
+.col .none{font-size:13px;color:var(--muted);padding:6px 2px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.tcard:hover{border-color:var(--muted)}
+.tcard[aria-current="true"]{border-color:var(--ember);box-shadow:inset 0 0 0 1px var(--ember)}
+.tcard.late{box-shadow:inset 3px 0 0 var(--bad)}
+.tcard b{font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.tcard .meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:12px;color:var(--muted);align-items:center}
+.tcard .meta .due.bad{color:var(--bad);font-weight:600}
+.tcard .meta .due.warn{color:var(--warn);font-weight:600}
+.tcard .wait{font-size:12px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--ink);border-radius:6px;padding:4px 8px}
+.who-chip{font:600 12px var(--f-body);color:var(--ink)}
+.area.eff.e2{color:var(--warn)} .area.eff.e3{color:var(--bad)}
+.area{font:500 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--bg);color:var(--muted)}
+
+/* detalj */
+.drawer-bg{position:fixed;inset:0;background:color-mix(in srgb,var(--char) 45%,transparent);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:21;overflow-y:auto;border-left:1px solid var(--line);
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) 18px;display:flex;flex-direction:column;gap:16px}
+.drawer h2{font-size:28px;line-height:1.05;overflow-wrap:anywhere}
+.drawer .desc{white-space:pre-wrap;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.stages{display:flex;flex-wrap:wrap;gap:6px}
+.stages button{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:7px 12px;cursor:pointer}
+.stages button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.stages button:disabled{opacity:.4;cursor:not-allowed}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks label{flex-direction:row;align-items:flex-start;gap:10px;font-size:14px;font-weight:400;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.checks input{width:18px;height:18px;margin-top:2px;flex:0 0 auto}
+.checks .done span{text-decoration:line-through;color:var(--muted)}
+.feed{display:flex;flex-direction:column;gap:8px}
+.ev{font-size:13px;color:var(--muted);padding-left:12px;border-left:2px solid var(--line)}
+.ev b{color:var(--ink);font-weight:600}
+.cm{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.cm.ret{border-color:var(--bad)}
+.cm .h{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.cm .h b{color:var(--ink)}
+.cm p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.sticky-x{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.modal{max-width:640px}
+@media (max-width:700px){
+  body{font-size:16px}
+  input,select,textarea{font-size:16px}
+  .board{grid-template-columns:1fr;overflow:visible}
+  .col{min-height:0}
+  .col.empty-col{padding-block:8px}
+  .col.empty-col .none{display:none}
+  .col.empty-col .col-h{border-bottom-width:0;padding-bottom:0}
+  .toolbar label{width:auto;flex:1 1 140px}
+  .btn{min-height:44px}
+}
+@media (prefers-reduced-motion:no-preference){.tcard,.person{transition:border-color .12s ease}}
+</style>
+</head>
+<body>
+
+<div class="login" id="login-view" hidden>
+  <div class="brand"><small>In Smoke We Trust</small><h1>Zadaci</h1></div>
+  <form id="login-form" novalidate>
+    <h2>Prijava</h2>
+    <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
+    <label>Lozinka<input type="password" id="l-pass" autocomplete="current-password" required></label>
+    <button class="btn ember" type="submit" id="l-btn">Prijavi se</button>
+    <span class="msg" id="l-msg" role="status"></span>
+  </form>
+  <p class="status">Isti nalog kao za Kitchen Control. Nemaš nalog ili si zaboravio/la lozinku? <a class="linkbtn" href="./">Otvori Kitchen Control</a></p>
+</div>
+<div class="login" id="noaccess-view" hidden>
+  <div class="brand"><small>In Smoke We Trust</small><h1>Zadaci</h1></div>
+  <div class="empty" style="text-align:left"><strong id="na-title">Nemaš pristup</strong><span id="na-text"></span></div>
+  <p class="status" id="na-who"></p>
+  <button class="btn ghost" id="na-logout" type="button">Odjavi se</button>
+</div>
+<div class="login" id="config-view" hidden>
+  <div class="brand"><small>In Smoke We Trust</small><h1>Zadaci</h1></div>
+  <div class="empty" style="text-align:left"><strong>Nedostaje veza sa bazom</strong>Fajl config.js nije učitan.</div>
+</div>
+
+<div class="wrap" id="app-view" hidden>
+  <header>
+    <div class="brand"><small>In Smoke We Trust · tim · 12-mesečni program</small><h1>Zadaci</h1></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><a class="linkbtn" href="./">Kitchen Control</a><a class="linkbtn" id="mc-link" href="management.html" hidden>Management Control</a><button class="linkbtn" id="logout" type="button">Odjavi se</button></div>
+      <div class="status" id="status">Učitavanje…</div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <label>Osoba<select id="f-who"><option value="">Svi</option><option value="me">Moji zadaci</option></select></label>
+    <label>Oblast<select id="f-area"><option value="">Sve oblasti</option><option value="ekonomija">Ekonomija</option><option value="proizvod">Proizvod</option><option value="obuka">Obuka</option><option value="marketing">Marketing</option><option value="ostalo">Ostalo</option></select></label>
+    <label style="flex:1 1 200px;width:auto">Traži<input type="search" id="f-q" autocomplete="off" placeholder="naziv ili opis"></label>
+    <button class="btn ember adminonly" type="button" id="new-task">Nov zadatak</button>
+  </div>
+
+  <div class="people" id="people" aria-label="Ko je dokle stigao"></div>
+  <div class="board" id="board"></div>
+  <p class="foot">Kartice se pomeraju same: kad osoba štiklira prvi korak, zadatak ide u U toku; kad štiklira sve korake (ili klikne „Završio sam“ kod zadatka bez koraka), ide u Urađeno. Kad osoba ne može dalje, klikne „Ne mogu dalje, čekam nekoga ili nešto“ i odgovori šta čeka, od koga i do kada; kartica ide u kolonu Čeka, a ta osoba i administrator dobijaju mejl. Kad prođe rok, a zadatak nije urađen, kartica sama prelazi u Isteklo. Urađeno proverava administrator: potvrdi (Provereno) ili vrati na doradu sa napomenom. Obaveštenja stižu na mejl.</p>
+</div>
+
+<!-- DETALJ ZADATKA -->
+<div class="drawer-bg" id="dr-bg" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dr-title"></aside>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const pad = n => String(n).padStart(2,'0');
+  const ds = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const today = () => ds(new Date());
+  const pd = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+  const dayDiff = (a,b) => Math.round((pd(b)-pd(a))/86400000);
+  const fmtD = s => { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}.${m}.`; };
+  const fmtDY = s => { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}.`; };
+  const DAYS=['ned','pon','uto','sre','čet','pet','sub'];
+  const fmtWhen = iso => { const d=new Date(iso); return `${pad(d.getDate())}.${pad(d.getMonth()+1)}. ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const normName = s => String(s||'').toLowerCase().replace(/đ/g,'dj').normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const STAGE = {todo:'Za uraditi', doing:'U toku', followup:'Čeka', done:'Urađeno', verified:'Provereno'};
+  const COLS = [['todo','Za uraditi'],['doing','U toku'],['followup','Čeka (follow-up)'],['overdue','Isteklo'],['done','Urađeno'],['verified','Provereno']];
+  const AREA = {ekonomija:'Ekonomija', proizvod:'Proizvod', obuka:'Obuka', marketing:'Marketing', ostalo:'Ostalo'};
+  const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
+  const S = {uid:null, admin:false, role:'', name:'', people:[], tasks:[], events:[], open:null, edit:null, waitOpen:null, waitDraft:null};
+  const EFFORT = {1:'lako', 2:'srednje', 3:'teško'};
+  const effortOf = t => Number(t.effort)||1;
+  const OPEN = ['todo','doing','followup'];
+  const isLate = t => OPEN.includes(t.stage) && t.due && t.due < today();
+  const colOf = t => isLate(t) ? 'overdue' : t.stage;
+  const personName = id => { const p=S.people.find(x=>x.id===id); return p ? (p.full_name||p.email||'—') : 'Nije dodeljeno'; };
+  const canMove = t => S.admin || t.assignee===S.uid;
+  const msgErr = (el,e) => { el.className='msg err'; const m=String((e&&e.message)||e||''); el.textContent=/Failed to fetch|network/i.test(m)?'Nema interneta. Proveri vezu i probaj ponovo.':/JWT|session/i.test(m)?'Prijava je istekla. Osveži stranicu.':m; };
+
+  // ---------- filteri ----------
+  function filtered(){
+    const who=$('f-who').value, area=$('f-area').value, q=normName($('f-q').value.trim());
+    return S.tasks.filter(t=>!t.archived && (!who || (who==='me'?t.assignee===S.uid:t.assignee===who)) && (!area||t.area===area)
+      && (!q || normName(t.title+' '+(t.description||'')).includes(q)));
+  }
+  function renderPeople(){
+    const active=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role));
+    const rows=active.map(p=>{ const ts=S.tasks.filter(t=>!t.archived&&t.assignee===p.id);
+      const c={todo:0,doing:0,followup:0,overdue:0,done:0,verified:0}; ts.forEach(t=>c[colOf(t)]++); return {p,c,n:ts.length}; }).filter(x=>x.n>0)
+      .sort((a,b)=>b.c.overdue-a.c.overdue||b.n-a.n);
+    const cur=$('f-who').value;
+    $('people').innerHTML = rows.length ? rows.map(({p,c,n})=>{
+      const seg=(k,col)=>c[k]?`<i style="width:${c[k]/n*100}%;background:${col}"></i>`:'';
+      const fin=c.done+c.verified;
+      return `<button class="person" type="button" data-person="${p.id}" aria-pressed="${cur===p.id}"><b>${esc(p.full_name||p.email)}</b>
+        <span class="bar" aria-hidden="true">${seg('verified','var(--good)')}${seg('done','var(--ember)')}${seg('doing','var(--ink)')}${seg('followup','var(--warn)')}${seg('overdue','var(--bad)')}</span>
+        <span class="nums"><span>${fin}/${n} urađeno</span>${c.overdue?`<span class="bad">${c.overdue} kasni</span>`:''}${c.followup?`<span>${c.followup} čeka</span>`:''}</span></button>`; }).join('')
+      : '';
+  }
+  function cardHtml(t){
+    const late=isLate(t), dd=t.due?dayDiff(today(),t.due):null;
+    const dueCls = late?'bad':(OPEN.includes(t.stage)&&dd!=null&&dd<=1)?'warn':'';
+    const dueTxt = !t.due?'bez roka': late?`kasni ${-dd} ${-dd===1?'dan':'dana'} · ${fmtD(t.due)}`: dd===0&&OPEN.includes(t.stage)?'rok danas': dd===1&&OPEN.includes(t.stage)?'rok sutra':'rok '+DAYS[pd(t.due).getDay()]+' '+fmtD(t.due);
+    const ch=t.checklist||[], chDone=ch.filter(x=>x.d).length, cmts=S.events.filter(e=>e.task_id===t.id&&e.kind==='comment').length;
+    return `<button class="tcard${late?' late':''}" type="button" data-task="${t.id}" draggable="${S.admin}" aria-current="${S.open===t.id}">
+      <b>${esc(t.title)}</b>
+      <span class="meta"><span class="who-chip">${esc(personName(t.assignee))}</span><span class="due ${dueCls}">${esc(dueTxt)}</span></span>
+      ${t.stage==='followup'&&t.waiting_on?`<span class="wait">Čeka ${esc(t.waiting_on.charAt(0).toLowerCase()+t.waiting_on.slice(1))}${t.wait_until&&t.wait_until<today()?' · <b style="color:var(--bad)">kasni odgovor</b>':''}</span>`:''}
+      <span class="meta"><span class="area">${esc(AREA[t.area]||t.area)}</span><span class="area eff e${effortOf(t)}" title="težina">${EFFORT[effortOf(t)]}</span>${ch.length?`<span>${chDone}/${ch.length} koraka</span>`:''}${cmts?`<span>${cmts} ${cmts===1?'komentar':'komentara'}</span>`:''}</span>
+    </button>`;
+  }
+  function renderBoard(){
+    const list=filtered(), lim=addDaysISO(-21);
+    $('board').innerHTML=COLS.map(([k,label])=>{
+      let ts=list.filter(t=>colOf(t)===k);
+      let hiddenOld=0;
+      if(k==='verified'){ const all=ts.length; ts=ts.filter(t=>(t.done_at||t.stage_at||'')>=lim); hiddenOld=all-ts.length; }
+      ts.sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||a.created_at.localeCompare(b.created_at));
+      return `<section class="col${ts.length?'':' empty-col'}" data-col="${k}" aria-label="${label}"><div class="col-h"><h3>${label}</h3><span>${ts.length}</span></div>
+        ${ts.map(cardHtml).join('')||`<div class="none">${k==='overdue'?'Ništa ne kasni.':'Prazno.'}</div>`}
+        ${hiddenOld?`<div class="none">+ ${hiddenOld} starijih od 3 nedelje</div>`:''}</section>`;
+    }).join('');
+  }
+  const addDaysISO = n => { const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString(); };
+  function render(){
+    const sel=$('f-who'), cur=sel.value;
+    const opts=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
+    sel.innerHTML='<option value="">Svi</option><option value="me">Moji zadaci</option>'+opts.map(p=>`<option value="${p.id}">${esc(p.full_name||p.email)}</option>`).join('');
+    sel.value=[...sel.options].some(o=>o.value===cur)?cur:'';
+    renderPeople(); renderBoard();
+    if(S.open && !S.edit) renderDrawer();
+    const n=S.tasks.filter(t=>!t.archived), late=n.filter(isLate).length;
+    $('status').textContent=`${n.length} ${n.length===1?'zadatak':'zadataka'}${late?` · ${late} kasni`:''} · uživo`;
+  }
+
+  // ---------- detalj ----------
+  function openTask(id){ if(S.open!==id){ S.waitOpen=null; } S.open=id; S.edit=null; try{ history.replaceState(null,'','#z-'+id); }catch(_){} renderDrawer(); renderBoard(); }
+  function closeDrawer(){ S.open=null; S.edit=null; $('drawer').hidden=true; $('dr-bg').hidden=true; try{ history.replaceState(null,'',location.pathname); }catch(_){} renderBoard(); }
+  function renderDrawer(){
+    const dr=$('drawer');
+    if(S.edit){ dr.innerHTML=editForm(S.edit); dr.hidden=false; $('dr-bg').hidden=false; bindEdit(); return; }
+    const t=S.tasks.find(x=>x.id===S.open);
+    if(!t){ dr.hidden=true; $('dr-bg').hidden=true; return; }
+    const keepComment = dr.querySelector('#c-body') ? dr.querySelector('#c-body').value : '';
+    const keepNote = dr.querySelector('#mv-note') ? dr.querySelector('#mv-note').value : '';
+    const focusId = document.activeElement && dr.contains(document.activeElement) ? document.activeElement.id : null;
+    const mine=canMove(t), late=isLate(t);
+    const evs=S.events.filter(e=>e.task_id===t.id).sort((a,b)=>a.created_at.localeCompare(b.created_at));
+    const ch=t.checklist||[];
+    // administrator bira bilo koju fazu; osoba samo javlja da čeka nešto ili (bez koraka) da je završila — ostalo se pomera samo
+    let stageBtns='';
+    if(S.admin) stageBtns=['todo','doing','followup','done','verified'].map(s=>s==='followup'&&t.stage!=='followup'?`<button type="button" data-wait-open>${STAGE[s]}</button>`:`<button type="button" data-stage="${s}" aria-pressed="${t.stage===s}">${STAGE[s]}</button>`).join('');
+    else if(mine && t.stage!=='verified'){
+      if(t.stage==='followup') stageBtns+=`<button type="button" data-stage="doing">Dobio/la sam, nastavljam</button>`;
+      else if(t.stage!=='done') stageBtns+=`<button type="button" data-wait-open>Ne mogu dalje, čekam nekoga ili nešto</button>`;
+      if(!ch.length && t.stage!=='done') stageBtns+=`<button type="button" data-stage="done" aria-pressed="false" style="background:var(--good);color:#fff;border-color:var(--good)">Završio sam</button>`;
+    }
+    const autoHint = ch.length ? 'Kartica se pomera sama: prvi štiklirani korak → U toku, svi koraci → Urađeno.' : 'Kad završiš, klikni „Završio sam“. Kartica ide u Urađeno, a administrator proverava.';
+    dr.innerHTML=`<div class="sticky-x"><div><div class="tag">${esc(AREA[t.area]||t.area)} · ${late?'<span style="color:var(--bad)">isteklo</span>':esc(STAGE[t.stage])}</div><h2 id="dr-title">${esc(t.title)}</h2></div>
+        <button class="btn ghost small" type="button" id="dr-close">Zatvori</button></div>
+      <dl class="kv"><dt>Odgovoran</dt><dd><b>${esc(personName(t.assignee))}</b></dd><dt>Težina</dt><dd>${EFFORT[effortOf(t)]}</dd>
+        <dt>Rok</dt><dd>${t.due?`${esc(DAYS[pd(t.due).getDay()])} ${esc(fmtDY(t.due))}${late?' · <span class="pill bad">isteklo</span>':''}`:'bez roka'}</dd>
+        ${t.stage==='followup'&&t.waiting_on?`<dt>Čeka</dt><dd><b>${esc(t.waiting_on)}</b></dd>`:''}</dl>
+      ${t.description?`<div class="desc">${esc(t.description)}</div>`:''}
+      ${ch.length?`<div class="checks" id="checks"><div class="tag">Koraci · ${ch.filter(x=>x.d).length}/${ch.length}</div>${ch.map((c,i)=>`<label class="${c.d?'done':''}"><input type="checkbox" data-ci="${i}"${c.d?' checked':''}${mine?'':' disabled'}><span>${esc(c.t)}</span></label>`).join('')}</div>`:''}
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="tag">Faza · ${esc(late?'Isteklo':STAGE[t.stage])}</div>
+        ${mine&&!S.admin&&t.stage!=='verified'?`<p class="note" style="margin:0">${autoHint}</p>`:''}
+        ${!mine?'<p class="note" style="margin:0">Fazu menja osoba sa zadatkom (štikliranjem koraka) i administrator.</p>':''}
+        ${stageBtns?`<div class="stages" id="stages">${stageBtns}</div>`:''}
+        ${S.admin&&['done','verified'].includes(t.stage)&&t.assignee!==S.uid?`<label>Šta treba doraditi<span class="hint">obavezno kad zadatak vraćaš na doradu (Za uraditi ili U toku)</span><input id="mv-note" autocomplete="off" value="${esc(keepNote)}" placeholder="npr. fali popis šanka, dopuni pa označi ponovo"></label>`:''}
+        ${mine&&t.stage!=='verified'?waitFormHtml(t):''}
+        <span class="msg" id="mv-msg" role="status"></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="tag">Komentari i istorija</div>
+        <div class="feed">${evs.map(evHtml).join('')||'<div class="note">Još nema komentara.</div>'}</div>
+        <form id="c-form" novalidate style="display:flex;flex-direction:column;gap:8px">
+          <label for="c-body" class="tag" style="font-weight:500">Napiši komentar</label>
+          <textarea id="c-body" rows="3" placeholder="Pitanje, odgovor ili dokaz da je urađeno">${esc(keepComment)}</textarea>
+          <div class="actions"><button class="btn small" type="submit" id="c-send">Pošalji</button><span class="msg" id="c-msg" role="status"></span></div>
+        </form>
+      </div>
+      ${S.admin?`<div class="actions" style="border-top:1px solid var(--line);padding-top:14px">
+        <button class="btn ghost small" type="button" id="dr-edit">Izmeni zadatak</button>
+        <button class="link" type="button" id="dr-arch">${t.archived?'Vrati iz arhive':'Arhiviraj'}</button>
+        <button class="link danger" type="button" id="dr-del">Obriši</button><span class="msg" id="dr-msg"></span></div>`:''}`;
+    dr.hidden=false; $('dr-bg').hidden=false;
+    if(focusId && $(focusId)) $(focusId).focus();
+    bindDrawer(t);
+  }
+  const WAIT_KINDS=[['info','Informaciju ili podatak','npr. izvoz prodaje iz bMaster-a'],['odobrenje','Odobrenje','npr. da vlasnik potvrdi novu cenu'],['roba','Robu ili nabavku','npr. vagu, ambalažu, meso od dobavljača'],
+    ['druga_osoba','Da neko završi svoj deo','npr. da šank preda popis'],['majstor','Majstora ili popravku','npr. servis smokera'],['drugo','Nešto drugo','']];
+  function waitFormHtml(t){
+    const ppl=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)&&p.id!==t.assignee).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
+    const W=S.waitDraft&&S.waitDraft.id===t.id?S.waitDraft:{id:t.id};
+    return `<form class="panel" id="wait-form" novalidate ${S.waitOpen===t.id?'':'hidden'} style="gap:12px;padding:14px">
+      <h3 style="font-size:18px">Ne mogu dalje dok ne dobijem…</h3>
+      <fieldset style="display:flex;flex-direction:column;gap:8px"><legend style="font:500 13px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink);margin-bottom:2px">1. Šta čekaš?</legend>
+        ${WAIT_KINDS.map(([k,l,h])=>`<label class="check" style="font-weight:400;align-items:flex-start"><input type="radio" name="wk" value="${k}"${W.kind===k?' checked':''} style="margin-top:3px"><span>${l}${h?`<span class="note" style="display:block">${h}</span>`:''}</span></label>`).join('')}</fieldset>
+      <label>2. Od koga?<select id="w-for"><option value="">Izaberi</option>${ppl.map(p=>`<option value="${p.id}"${W.for===p.id?' selected':''}>${esc(p.full_name||p.email)}</option>`).join('')}<option value="__out"${W.for==='__out'?' selected':''}>Neko van tima (dobavljač, knjigovođa, majstor…)</option></select></label>
+      <label id="w-who-wrap" ${W.for==='__out'?'':'hidden'}>Ko tačno?<input id="w-who" autocomplete="off" value="${esc(W.who||'')}" placeholder="npr. Metro, knjigovođa Jelena"></label>
+      <label>3. Šta tačno čekaš? <span class="hint">jedna rečenica, da svako razume</span><input id="w-note" autocomplete="off" value="${esc(W.note||'')}" placeholder="npr. izvoz prodaje za oktobar iz bMaster-a"></label>
+      <label style="max-width:220px">4. Do kada očekuješ? <span class="hint">nije obavezno</span><input type="date" id="w-until" value="${esc(W.until||'')}"></label>
+      <div class="actions"><button class="btn ember small" type="submit">Pošalji</button><button class="btn ghost small" type="button" id="w-cancel">Odustani</button></div>
+      <p class="note" style="margin:0">Kartica ide u kolonu „Čeka“. Administrator i osoba od koje čekaš dobijaju mejl.</p>
+    </form>`;
+  }
+  function bindWait(t){
+    const f=$('wait-form'); if(!f) return;
+    const save=()=>{ S.waitDraft={id:t.id, kind:(f.querySelector('[name=wk]:checked')||{}).value, for:$('w-for').value, who:$('w-who').value, note:$('w-note').value, until:$('w-until').value}; };
+    f.addEventListener('input',save); f.addEventListener('change',()=>{ save(); $('w-who-wrap').hidden=$('w-for').value!=='__out'; });
+    $('w-cancel').addEventListener('click',()=>{ S.waitOpen=null; S.waitDraft=null; f.hidden=true; });
+    f.addEventListener('submit',async ev=>{ ev.preventDefault(); save(); const W=S.waitDraft, m=$('mv-msg'); m.className='msg'; m.textContent='';
+      const err=x=>{ m.className='msg err'; m.textContent=x; };
+      if(!W.kind) return err('Izaberi šta čekaš.');
+      if(!W.for) return err('Izaberi od koga čekaš.');
+      if(W.for==='__out' && W.who.trim().length<2) return err('Upiši ko tačno (van tima).');
+      if(W.note.trim().length<3) return err('Napiši ukratko šta tačno čekaš.');
+      try{ await q(S.db.rpc('task_move',{p_id:t.id,p_stage:'followup',p_note:W.note.trim(),p_wait_kind:W.kind,p_wait_for:W.for&&W.for!=='__out'?W.for:null,p_wait_who:W.for==='__out'?W.who.trim():null,p_wait_until:W.until||null}));
+        S.waitOpen=null; S.waitDraft=null; await Promise.all([reload('tasks'),reload('events')]);
+        const mm=$('mv-msg'); if(mm){ mm.className='msg ok'; mm.textContent='Kartica je u koloni „Čeka“. Poslato obaveštenje.'; } }
+      catch(x){ msgErr(m,x); } });
+  }
+  function evHtml(e){
+    const who=`<b>${esc(e.author_name||'Neko')}</b>`, when=fmtWhen(e.created_at);
+    if(e.kind==='comment') return `<div class="cm"><div class="h"><b>${esc(e.author_name||'Neko')}</b><span>${when}</span></div><p>${esc(e.body)}</p></div>`;
+    if(e.kind==='returned') return `<div class="cm ret"><div class="h"><span>${who} je vratio/la na doradu</span><span>${when}</span></div><p>${esc(e.body||'')}</p></div>`;
+    if(e.kind==='created') return `<div class="ev">${who} je napravio/la zadatak · ${when}</div>`;
+    if(e.kind==='edit') return `<div class="ev">${who}: ${esc(e.body||'izmena')} · ${when}</div>`;
+    return `<div class="ev">${who}: ${esc(STAGE[e.from_stage]||e.from_stage||'')} → <b>${esc(STAGE[e.to_stage]||e.to_stage)}</b>${e.body?` · „${esc(e.body)}“`:''} · ${when}</div>`;
+  }
+  function bindDrawer(t){
+    $('dr-close').addEventListener('click',closeDrawer);
+    if($('stages')) $('stages').addEventListener('click',e=>{
+      if(e.target.closest('[data-wait-open]')){ S.waitOpen=t.id; const f=$('wait-form'); if(f){ f.hidden=false; f.scrollIntoView({behavior:'smooth',block:'center'}); } return; }
+      const b=e.target.closest('[data-stage]'); if(b&&!b.disabled) move(t,b.dataset.stage); });
+    bindWait(t);
+    const cks=$('checks'); if(cks) cks.addEventListener('change',async e=>{ const i=e.target.dataset.ci; if(i==null) return;
+      try{ await q(S.db.rpc('task_check',{p_id:t.id,p_idx:Number(i),p_done:e.target.checked})); await Promise.all([reload('tasks'),reload('events')]); }catch(x){ e.target.checked=!e.target.checked; msgErr($('mv-msg'),x); } });
+    $('c-form').addEventListener('submit',async ev=>{ ev.preventDefault(); const m=$('c-msg'), body=$('c-body').value.trim(); m.className='msg'; m.textContent='';
+      if(!body){ m.className='msg err'; m.textContent='Komentar je prazan.'; return; }
+      $('c-send').disabled=true;
+      try{ await q(S.db.rpc('task_comment',{p_id:t.id,p_body:body})); $('c-body').value=''; await reload('events'); const m2=$('c-msg'); if(m2){ m2.className='msg ok'; m2.textContent='Poslato.'; } }
+      catch(x){ msgErr(m,x); } finally{ const b=$('c-send'); if(b) b.disabled=false; } });
+    if(S.admin){
+      $('dr-edit').addEventListener('click',()=>{ S.edit={...t, checklistText:(t.checklist||[]).map(c=>c.t).join('\n')}; renderDrawer(); });
+      $('dr-arch').addEventListener('click',async()=>{ try{ await q(S.db.rpc('task_archive',{p_id:t.id,p_archived:!t.archived})); await reload('tasks'); closeDrawer(); }catch(x){ msgErr($('dr-msg'),x); } });
+      const del=$('dr-del'); del.addEventListener('click',async()=>{ if(!del.dataset.sure){ del.dataset.sure='1'; del.textContent='Sigurno? Briše se i istorija'; setTimeout(()=>{ if(del.isConnected){ delete del.dataset.sure; del.textContent='Obriši'; } },4000); return; }
+        try{ await q(S.db.rpc('task_delete',{p_id:t.id})); await reload('tasks'); closeDrawer(); }catch(x){ msgErr($('dr-msg'),x); } });
+    }
+  }
+  async function move(t, stage, viaDrag){
+    const m=$('mv-msg'), note=($('mv-note')&&!viaDrag)?$('mv-note').value.trim():'';
+    if(m){ m.className='msg'; m.textContent=''; }
+    if(stage==='followup'){ if(viaDrag) openTask(t.id); S.waitOpen=t.id; const f=$('wait-form'); if(f){ f.hidden=false; f.scrollIntoView({behavior:'smooth',block:'center'}); } return; }
+    const back = ['done','verified'].includes(t.stage) && OPEN.includes(stage) && S.admin && t.assignee!==S.uid;
+    if(back && !note){ if(viaDrag){ openTask(t.id); } const mm=$('mv-msg'); if(mm){ mm.className='msg err'; mm.textContent='Napiši šta treba doraditi, pa vrati zadatak.'; if($('mv-note')) $('mv-note').focus(); } return; }
+    try{ await q(S.db.rpc('task_move',{p_id:t.id,p_stage:stage,p_note:note||null}));
+      if($('mv-note')) $('mv-note').value='';
+      await Promise.all([reload('tasks'),reload('events')]);
+      const mm=$('mv-msg'); if(mm){ mm.className='msg ok'; mm.textContent='Pomereno u „'+STAGE[stage]+'“.'; } }
+    catch(x){ if(m) msgErr(m,x); else $('status').textContent=String(x.message||x); }
+  }
+
+  // ---------- nov zadatak / izmena (administrator) ----------
+  function editForm(t){
+    const ppl=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
+    return `<div class="sticky-x"><div><div class="tag">${t.id?'izmena':'nov zadatak'}</div><h2 id="dr-title">${t.id?esc(t.title):'Nov zadatak'}</h2></div><button class="btn ghost small" type="button" id="ed-cancel">Zatvori</button></div>
+      <form id="ed-form" novalidate style="display:flex;flex-direction:column;gap:14px">
+        <label>Naziv<input id="ed-title" autocomplete="off" value="${esc(t.title||'')}" placeholder="npr. Prvi popis zaliha"></label>
+        <label>Opis<span class="hint">šta tačno treba uraditi, kako i šta je dokaz da je urađeno</span><textarea id="ed-desc" rows="6">${esc(t.description||'')}</textarea></label>
+        <fieldset>
+          <label>Odgovoran<select id="ed-who"><option value="">Izaberi osobu</option>${ppl.map(p=>`<option value="${p.id}"${p.id===t.assignee?' selected':''}>${esc(p.full_name||p.email)}</option>`).join('')}</select></label>
+          <label>Rok<input type="date" id="ed-due" value="${esc(t.due||'')}"></label>
+          <label>Težina<select id="ed-eff">${[1,2,3].map(v=>`<option value="${v}"${v===(Number(t.effort)||1)?' selected':''}>${EFFORT[v]}</option>`).join('')}</select></label>
+          <label>Oblast<select id="ed-area">${Object.entries(AREA).map(([k,v])=>`<option value="${k}"${k===(t.area||'ostalo')?' selected':''}>${v}</option>`).join('')}</select></label>
+        </fieldset>
+        <label>Koraci<span class="hint">jedan korak u svakom redu; kad osoba štiklira sve, zadatak sam ide u Urađeno</span><textarea id="ed-checks" rows="4">${esc(t.checklistText||'')}</textarea></label>
+        <div class="actions"><button class="btn ember" type="submit" id="ed-save">${t.id?'Sačuvaj izmene':'Napravi zadatak'}</button><span class="msg" id="ed-msg" role="status"></span></div>
+        <p class="note" style="margin:0">Osoba dobija mejl kad joj se dodeli zadatak, dan pre roka i kad rok istekne.</p>
+      </form>`;
+  }
+  function bindEdit(){
+    $('ed-cancel').addEventListener('click',()=>{ const id=S.edit&&S.edit.id; S.edit=null; if(id){ renderDrawer(); } else closeDrawer(); });
+    $('ed-form').addEventListener('submit',async ev=>{ ev.preventDefault(); const m=$('ed-msg'); m.className='msg'; m.textContent='';
+      const title=$('ed-title').value.trim();
+      if(title.length<2){ m.className='msg err'; m.textContent='Upiši naziv zadatka.'; $('ed-title').focus(); return; }
+      if(!$('ed-who').value){ m.className='msg err'; m.textContent='Izaberi ko je odgovoran.'; return; }
+      const old=(S.edit.checklist||[]);
+      const steps=$('ed-checks').value.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>({t:s,d:!!(old.find(o=>o.t===s)||{}).d}));
+      $('ed-save').disabled=true;
+      try{ const id=await q(S.db.rpc('task_save',{p_id:S.edit.id||null,p_title:title,p_description:$('ed-desc').value,p_area:$('ed-area').value,p_assignee:$('ed-who').value,p_due:$('ed-due').value||null,p_checklist:steps,p_effort:Number($('ed-eff').value)||1}));
+        S.edit=null; await Promise.all([reload('tasks'),reload('events')]); openTask(id); }
+      catch(x){ msgErr(m,x); } finally{ const b=$('ed-save'); if(b) b.disabled=false; } });
+    $('ed-title').focus();
+  }
+
+  // ---------- događaji ----------
+  ['f-who','f-area'].forEach(id=>$(id).addEventListener('change',()=>{ renderPeople(); renderBoard(); try{ localStorage.setItem('zad-'+id,$(id).value); }catch(_){} }));
+  $('f-q').addEventListener('input',renderBoard);
+  $('people').addEventListener('click',e=>{ const b=e.target.closest('[data-person]'); if(!b) return; $('f-who').value=$('f-who').value===b.dataset.person?'':b.dataset.person; renderPeople(); renderBoard(); });
+  $('board').addEventListener('click',e=>{ const c=e.target.closest('[data-task]'); if(c) openTask(c.dataset.task); });
+  $('dr-bg').addEventListener('click',()=>{ if(S.edit&&!S.edit.id){ if(!confirmDiscard()) return; } closeDrawer(); });
+  const confirmDiscard = () => true;
+  addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('drawer').hidden) closeDrawer(); });
+  $('new-task').addEventListener('click',()=>{ S.open=null; S.edit={area:'ostalo', due:'', checklistText:''}; renderDrawer(); });
+  // prevlačenje kartica (računar)
+  let dragId=null;
+  $('board').addEventListener('dragstart',e=>{ const c=e.target.closest('[data-task]'); if(!c) return; dragId=c.dataset.task; e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/plain',dragId); }catch(_){} });
+  $('board').addEventListener('dragover',e=>{ const col=e.target.closest('.col'); if(!col||!dragId||col.dataset.col==='overdue') return; e.preventDefault(); document.querySelectorAll('.col.over').forEach(x=>x!==col&&x.classList.remove('over')); col.classList.add('over'); });
+  $('board').addEventListener('dragleave',e=>{ const col=e.target.closest('.col'); if(col&&!col.contains(e.relatedTarget)) col.classList.remove('over'); });
+  $('board').addEventListener('drop',e=>{ const col=e.target.closest('.col'); document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over')); if(!col||!dragId) return; e.preventDefault();
+    const t=S.tasks.find(x=>x.id===dragId); dragId=null; if(!t||col.dataset.col==='overdue'||col.dataset.col===t.stage) return;
+    if(col.dataset.col==='verified'&&!S.admin){ $('status').textContent='Proveru radi administrator.'; return; }
+    move(t,col.dataset.col,true); });
+  $('board').addEventListener('dragend',()=>{ dragId=null; document.querySelectorAll('.col.over').forEach(x=>x.classList.remove('over')); });
+
+  // ---------- baza ----------
+  const showV = id => ['login-view','noaccess-view','config-view','app-view'].forEach(v=>$(v).hidden = v!==id);
+  const appCfg = window.APP_CONFIG || {};
+  if(!window.supabase || !appCfg.SUPABASE_URL){ showV('config-view'); return; }
+  const sb = window.supabase.createClient(appCfg.SUPABASE_URL, appCfg.SUPABASE_ANON_KEY);
+  async function q(p){ const {data,error}=await p; if(error) throw error; return data; }
+  async function fetchAll(build){ let out=[], from=0; for(;;){ const r=await q(build().range(from,from+999)); out=out.concat(r||[]); if(!r||r.length<1000) break; from+=1000; } return out; }
+  async function reload(what){
+    try{
+      if(what==='people'){ S.people=await q(sb.from('profiles').select('id,full_name,email,role').order('full_name')); }
+      else if(what==='tasks'){ S.tasks=(await fetchAll(()=>sb.from('tasks').select('*').order('created_at').order('id'))).map(t=>({...t, due:t.due?String(t.due).slice(0,10):null, checklist:Array.isArray(t.checklist)?t.checklist:[]})); }
+      else if(what==='events'){ S.events=await fetchAll(()=>sb.from('task_events').select('*').order('created_at').order('id')); }
+      render();
+    }catch(e){ $('status').textContent='Podaci nisu učitani: '+((e&&e.message)||e); }
+  }
+  let chan=null;
+  function subscribe(){
+    if(chan){ sb.removeChannel(chan); chan=null; }
+    const timers={};
+    chan=sb.channel('zadaci-live');
+    for(const [tb,w] of [['tasks','tasks'],['task_events','events'],['profiles','people']])
+      chan.on('postgres_changes',{event:'*',schema:'public',table:tb},()=>{ clearTimeout(timers[w]); timers[w]=setTimeout(()=>reload(w),400); });
+    chan.subscribe();
+  }
+  async function enter(session){
+    if(chan){ sb.removeChannel(chan); chan=null; }
+    if(!session){ S.db=null; showV('login-view'); return; }
+    const {data:prof}=await sb.from('profiles').select('full_name,role').eq('id',session.user.id).maybeSingle();
+    const role=(prof&&prof.role)||'ceka', name=(prof&&prof.full_name)||session.user.email;
+    if(!['kuvar','sef','menadzer','admin'].includes(role)){
+      $('na-title').textContent = role==='ceka' ? 'Nalog čeka odobrenje' : 'Nemaš pristup';
+      $('na-text').textContent = role==='ceka' ? 'Administrator treba da odobri tvoj nalog u Kitchen Control-u (tab Tim).' : 'Ako ti treba pristup, javi se administratoru.';
+      $('na-who').textContent=`${name} · ${ROLE_LABEL[role]||role}`; showV('noaccess-view'); return;
+    }
+    S.db=sb; S.uid=session.user.id; S.admin=role==='admin'; S.role=role; S.name=name;
+    $('me-name').textContent=name; $('me-role').textContent=ROLE_LABEL[role]||role;
+    $('mc-link').hidden=!['sef','menadzer','admin'].includes(role);
+    document.querySelectorAll('.adminonly').forEach(el=>el.hidden=!S.admin);
+    showV('app-view');
+    // podrazumevano: administrator vidi sve, ostali svoje zadatke
+    let fw=null; try{ fw=localStorage.getItem('zad-f-who'); }catch(_){}
+    await Promise.all(['people','tasks','events'].map(reload));
+    $('f-who').value = fw!=null && [...$('f-who').options].some(o=>o.value===fw) ? fw : (S.admin?'':'me');
+    let fa=null; try{ fa=localStorage.getItem('zad-f-area'); }catch(_){} if(fa!=null) $('f-area').value=fa;
+    render();
+    const h=(location.hash||'').match(/^#z-([0-9a-f-]{36})$/); if(h && S.tasks.some(t=>t.id===h[1])) openTask(h[1]);
+    subscribe();
+  }
+  $('login-form').addEventListener('submit',async ev=>{
+    ev.preventDefault(); const m=$('l-msg'); m.className='msg'; m.textContent='';
+    const email=$('l-email').value.trim(), password=$('l-pass').value;
+    if(!email||!password){ m.classList.add('err'); m.textContent='Upiši email i lozinku.'; return; }
+    $('l-btn').disabled=true; const {error}=await sb.auth.signInWithPassword({email,password}); $('l-btn').disabled=false;
+    if(error){ m.classList.add('err'); m.textContent='Pogrešan email ili lozinka.'; }
+  });
+  $('logout').addEventListener('click',()=>sb.auth.signOut());
+  $('na-logout').addEventListener('click',()=>sb.auth.signOut());
+  let lastUid;
+  sb.auth.onAuthStateChange((event,session)=>{ const uid=session?session.user.id:null; if(uid===lastUid && event!=='INITIAL_SESSION') return; lastUid=uid; setTimeout(()=>enter(session),0); });
+})();
+</script>
+</body>
+</html>

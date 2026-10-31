@@ -116,3 +116,12 @@ Teorijski food cost (`supabase/13_teorijski_food_cost.sql`, `fc_theory`): prodat
 Mejlovi (Apps Script, `MC_PRIMAOCI` u `google-sheets/Code.gs`): dnevni u 9h za juče (kad postoji bar jedan zaposleni), nedeljni ponedeljkom u 9h (rad + food cost iz popisa iz noći sa nedelje na ponedeljak + poskupljenja). Proba iz SQL Editora: `select public.mc_reports_send('dnevni');`
 
 Normativi (`supabase/14_sarze.sql`): namirnica može biti šarža (`waste_items.is_prep`, `batch_out`, `method`, sastojci u `prep_lines`). Cena šarže = Σ (količina × cena sastojka) ÷ izlaz; računa je baza (`prep_unit_cost`) i preračunava kad se promeni cena sastojka, lančano (šarža u šarži). Faktura ne prepisuje cenu šarže. Upis ide preko `prep_save`, `prep_new`, `prep_unset` i `dish_lines_save` (provera kruga, sve odjednom). Teorijski food cost razlaže šarže na sirovine. Tab „Normativi“ u Kitchen Control-u sada vodi ovde.
+
+## Zadaci (tabla tima)
+
+Stranica `zadaci.html` (https://insmoke.rs/aplikacija/zadaci.html), ista prijava. Vide je svi aktivni članovi (kuhinja, šef smene, menadžer, administrator).
+
+- Faze: Za uraditi → U toku → Follow-up (uz napomenu šta čeka) → Urađeno → Provereno. **Isteklo** se računa samo: rok je prošao, a zadatak nije urađen.
+- Zadatke pravi i menja administrator (naziv, opis, odgovoran, rok, oblast, težina: lako, srednje, teško, koraci). Kartice se pomeraju same: prvi štiklirani korak → U toku, svi koraci → Urađeno; zadatak bez koraka osoba zatvara dugmetom „Završio sam“. Osoba ručno samo stavlja zadatak u Follow-up (uz napomenu šta čeka). „Provereno“ i vraćanje na doradu radi administrator, koji može da pomeri bilo koju karticu.
+- Mejlovi (Apps Script, `posaljiZadatak_` i `posaljiZadatkeNedeljno_` u `google-sheets/Code.gs`): dodela, komentar, follow-up, urađeno (administratoru na proveru), vraćeno na doradu, provereno, podsetnik dan pre roka, isteklo (osobi + `UPRAVA`, posle toga osobi svakog jutra), nedeljni pregled ponedeljkom u 9h za `UPRAVA`.
+- Baza: `supabase/15_zadaci.sql` (`tasks`, `task_events`, funkcije `task_save`, `task_move`, `task_check`, `task_comment`, `task_archive`, `task_delete`, `tasks_notify`). Proba iz SQL Editora: `select public.tasks_notify('dnevni');` ili `('nedeljni')`.
