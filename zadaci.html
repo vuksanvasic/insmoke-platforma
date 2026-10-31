@@ -99,6 +99,21 @@ a.linkbtn{color:var(--ink)}
 .person .nums{font:500 12px var(--f-mono);color:var(--muted);display:flex;gap:10px}
 .person .nums .bad{color:var(--bad)}
 
+/* nedelja */
+.weekbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.weeknav{display:flex;align-items:center;gap:8px}
+.weeknav .btn{font-size:18px;line-height:1;padding:6px 12px}
+.wk{display:flex;flex-direction:column;min-width:150px;text-align:center}
+.wk b{font-family:var(--f-display);font-size:20px;text-transform:uppercase;letter-spacing:.02em;font-weight:600}
+.wk span{font:500 12px var(--f-mono);color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px;background:var(--surface)}
+.seg button{font:600 13px var(--f-body);border:0;background:transparent;color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.wsum{font:500 13px var(--f-mono);color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.wsum b{color:var(--ink)} .wsum .bad{color:var(--bad)}
+.team-list{display:flex;flex-direction:column;gap:6px}
+.team-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:14px}
+.team-row span{color:var(--muted);font-size:12px}
 /* tabla */
 .board{display:grid;grid-template-columns:repeat(6,minmax(200px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity}
 .col{display:flex;flex-direction:column;gap:8px;min-width:0;background:color-mix(in srgb,var(--line) 35%,transparent);border-radius:10px;padding:10px;scroll-snap-align:start;min-height:160px}
@@ -199,10 +214,21 @@ a.linkbtn{color:var(--ink)}
     </div>
   </header>
 
+  <div class="weekbar">
+    <div class="weeknav" role="group" aria-label="Nedelja">
+      <button type="button" class="btn ghost small" id="w-prev" aria-label="Prethodna nedelja">‹</button>
+      <div class="wk"><b id="w-label">Ova nedelja</b><span id="w-range"></span></div>
+      <button type="button" class="btn ghost small" id="w-next" aria-label="Sledeća nedelja">›</button>
+    </div>
+    <div class="seg" role="group" aria-label="Prikaz"><button type="button" id="w-today">Ova nedelja</button><button type="button" id="w-all">Sve nedelje</button></div>
+    <div class="wsum" id="w-sum"></div>
+  </div>
+
   <div class="toolbar">
     <label>Osoba<select id="f-who"><option value="">Svi</option><option value="me">Moji zadaci</option></select></label>
     <label>Oblast<select id="f-area"><option value="">Sve oblasti</option><option value="ekonomija">Ekonomija</option><option value="proizvod">Proizvod</option><option value="obuka">Obuka</option><option value="marketing">Marketing</option><option value="ostalo">Ostalo</option></select></label>
     <label style="flex:1 1 200px;width:auto">Traži<input type="search" id="f-q" autocomplete="off" placeholder="naziv ili opis"></label>
+    <button class="btn ghost adminonly" type="button" id="team-btn">Tim</button>
     <button class="btn ember adminonly" type="button" id="new-task">Nov zadatak</button>
   </div>
 
@@ -230,12 +256,13 @@ a.linkbtn{color:var(--ink)}
   const fmtDY = s => { if(!s) return ''; const [y,m,d]=s.split('-'); return `${d}.${m}.${y}.`; };
   const DAYS=['ned','pon','uto','sre','čet','pet','sub'];
   const fmtWhen = iso => { const d=new Date(iso); return `${pad(d.getDate())}.${pad(d.getMonth()+1)}. ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+  const plZ = n => { const a=Math.abs(n)%100, b=a%10; return (b===1&&a!==11)?'zadatak':(b>=2&&b<=4&&(a<12||a>14))?'zadatka':'zadataka'; };
   const normName = s => String(s||'').toLowerCase().replace(/đ/g,'dj').normalize('NFD').replace(/[̀-ͯ]/g,'');
   const STAGE = {todo:'Za uraditi', doing:'U toku', followup:'Čeka', done:'Urađeno', verified:'Provereno'};
   const COLS = [['todo','Za uraditi'],['doing','U toku'],['followup','Čeka (follow-up)'],['overdue','Isteklo'],['done','Urađeno'],['verified','Provereno']];
   const AREA = {ekonomija:'Ekonomija', proizvod:'Proizvod', obuka:'Obuka', marketing:'Marketing', ostalo:'Ostalo'};
   const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
-  const S = {uid:null, admin:false, role:'', name:'', people:[], tasks:[], events:[], open:null, edit:null, waitOpen:null, waitDraft:null};
+  const S = {uid:null, admin:false, role:'', name:'', people:[], tasks:[], events:[], open:null, edit:null, waitOpen:null, waitDraft:null, week:null, team:false};
   const EFFORT = {1:'lako', 2:'srednje', 3:'teško'};
   const effortOf = t => Number(t.effort)||1;
   const OPEN = ['todo','doing','followup'];
@@ -246,14 +273,40 @@ a.linkbtn{color:var(--ink)}
   const msgErr = (el,e) => { el.className='msg err'; const m=String((e&&e.message)||e||''); el.textContent=/Failed to fetch|network/i.test(m)?'Nema interneta. Proveri vezu i probaj ponovo.':/JWT|session/i.test(m)?'Prijava je istekla. Osveži stranicu.':m; };
 
   // ---------- filteri ----------
+  // ---------- nedelje (ponedeljak–nedelja) ----------
+  const mondayOf = iso => { const d=pd(iso), w=(d.getDay()+6)%7; d.setDate(d.getDate()-w); return ds(d); };
+  const addD = (iso,n) => { const d=pd(iso); d.setDate(d.getDate()+n); return ds(d); };
+  const MON=['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
+  const fmtRange = m => { const e=addD(m,6), a=pd(m), b=pd(e); return a.getMonth()===b.getMonth() ? `${a.getDate()}–${b.getDate()}. ${MON[b.getMonth()]}` : `${a.getDate()}. ${MON[a.getMonth()]} – ${b.getDate()}. ${MON[b.getMonth()]}`; };
+  // zadatak pripada nedelji po roku; u tekućoj nedelji vide se i otvoreni zadaci bez roka i oni koji kasne iz ranijih nedelja
+  function inWeek(t){
+    if(!S.week) return true;
+    const end=addD(S.week,6), cur=mondayOf(today());
+    if(t.due && t.due>=S.week && t.due<=end) return true;
+    if(S.week===cur && OPEN.includes(t.stage) && (!t.due || t.due<S.week)) return true;
+    return false;
+  }
+  function weekTasks(){ return S.tasks.filter(t=>!t.archived && inWeek(t)); }
   function filtered(){
     const who=$('f-who').value, area=$('f-area').value, q=normName($('f-q').value.trim());
-    return S.tasks.filter(t=>!t.archived && (!who || (who==='me'?t.assignee===S.uid:t.assignee===who)) && (!area||t.area===area)
+    return weekTasks().filter(t=>(!who || (who==='me'?t.assignee===S.uid:t.assignee===who)) && (!area||t.area===area)
       && (!q || normName(t.title+' '+(t.description||'')).includes(q)));
+  }
+  function renderWeek(){
+    const cur=mondayOf(today());
+    $('w-today').setAttribute('aria-pressed',String(S.week===cur)); $('w-all').setAttribute('aria-pressed',String(!S.week));
+    $('w-prev').disabled=!S.week; $('w-next').disabled=!S.week;
+    if(!S.week){ $('w-label').textContent='Sve nedelje'; $('w-range').textContent='svi zadaci'; }
+    else { const diff=Math.round((pd(S.week)-pd(cur))/604800000);
+      $('w-label').textContent = diff===0?'Ova nedelja':diff===-1?'Prošla nedelja':diff===1?'Sledeća nedelja':diff<0?`Pre ${-diff} nedelje`:`Za ${diff} nedelje`;
+      $('w-range').textContent = fmtRange(S.week); }
+    const ts=filtered(), c={done:0,late:0,wait:0};
+    ts.forEach(t=>{ if(['done','verified'].includes(t.stage)) c.done++; else if(isLate(t)) c.late++; else if(t.stage==='followup') c.wait++; });
+    $('w-sum').innerHTML = ts.length ? `<span><b>${ts.length}</b> ${plZ(ts.length)}</span><span><b>${c.done}</b> urađeno</span>${c.wait?`<span><b>${c.wait}</b> čeka</span>`:''}${c.late?`<span class="bad"><b>${c.late}</b> kasni</span>`:''}` : '<span>Nema zadataka za ovu nedelju.</span>';
   }
   function renderPeople(){
     const active=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role));
-    const rows=active.map(p=>{ const ts=S.tasks.filter(t=>!t.archived&&t.assignee===p.id);
+    const rows=active.map(p=>{ const ts=weekTasks().filter(t=>t.assignee===p.id);
       const c={todo:0,doing:0,followup:0,overdue:0,done:0,verified:0}; ts.forEach(t=>c[colOf(t)]++); return {p,c,n:ts.length}; }).filter(x=>x.n>0)
       .sort((a,b)=>b.c.overdue-a.c.overdue||b.n-a.n);
     const cur=$('f-who').value;
@@ -295,17 +348,18 @@ a.linkbtn{color:var(--ink)}
     const opts=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
     sel.innerHTML='<option value="">Svi</option><option value="me">Moji zadaci</option>'+opts.map(p=>`<option value="${p.id}">${esc(p.full_name||p.email)}</option>`).join('');
     sel.value=[...sel.options].some(o=>o.value===cur)?cur:'';
-    renderPeople(); renderBoard();
-    if(S.open && !S.edit) renderDrawer();
+    renderWeek(); renderPeople(); renderBoard();
+    if(S.open && !S.edit && !S.team) renderDrawer();
     const n=S.tasks.filter(t=>!t.archived), late=n.filter(isLate).length;
-    $('status').textContent=`${n.length} ${n.length===1?'zadatak':'zadataka'}${late?` · ${late} kasni`:''} · uživo`;
+    $('status').textContent=`${n.length} ${plZ(n.length)}${late?` · ${late} kasni`:''} · uživo`;
   }
 
   // ---------- detalj ----------
-  function openTask(id){ if(S.open!==id){ S.waitOpen=null; } S.open=id; S.edit=null; try{ history.replaceState(null,'','#z-'+id); }catch(_){} renderDrawer(); renderBoard(); }
-  function closeDrawer(){ S.open=null; S.edit=null; $('drawer').hidden=true; $('dr-bg').hidden=true; try{ history.replaceState(null,'',location.pathname); }catch(_){} renderBoard(); }
+  function openTask(id){ if(S.open!==id){ S.waitOpen=null; } S.open=id; S.edit=null; S.team=false; try{ history.replaceState(null,'','#z-'+id); }catch(_){} renderDrawer(); renderBoard(); }
+  function closeDrawer(){ S.open=null; S.edit=null; S.team=false; $('drawer').hidden=true; $('dr-bg').hidden=true; try{ history.replaceState(null,'',location.pathname); }catch(_){} renderBoard(); }
   function renderDrawer(){
     const dr=$('drawer');
+    if(S.team){ dr.innerHTML=teamHtml(); dr.hidden=false; $('dr-bg').hidden=false; bindTeam(); return; }
     if(S.edit){ dr.innerHTML=editForm(S.edit); dr.hidden=false; $('dr-bg').hidden=false; bindEdit(); return; }
     const t=S.tasks.find(x=>x.id===S.open);
     if(!t){ dr.hidden=true; $('dr-bg').hidden=true; return; }
@@ -431,6 +485,41 @@ a.linkbtn{color:var(--ink)}
     catch(x){ if(m) msgErr(m,x); else $('status').textContent=String(x.message||x); }
   }
 
+  // ---------- tim: dodavanje osobe (administrator) ----------
+  const ROLE_PICK = [['kuvar','Kuhinja / šank'],['sef','Šef smene'],['menadzer','Menadžer'],['admin','Administrator (vlasnik)']];
+  function teamHtml(){
+    const act=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
+    const wait=S.people.filter(p=>p.role==='ceka');
+    return `<div class="sticky-x"><div><div class="tag">administracija</div><h2 id="dr-title">Tim</h2></div><button class="btn ghost small" type="button" id="tm-close">Zatvori</button></div>
+      <form class="panel" id="tm-form" novalidate style="gap:12px;padding:16px">
+        <h3 style="font-size:18px">Dodaj osobu</h3>
+        <p class="note" style="margin:0">Nalog je odmah aktivan i osobi možeš da dodeljuješ zadatke. Početnu lozinku joj javi lično; posle je promeni sama u Kitchen Control-u.</p>
+        <label>Ime i prezime<input id="tm-name" autocomplete="off" placeholder="npr. Ivan Petrović"></label>
+        <label>Mejl<span class="hint">na njega stižu obaveštenja o zadacima</span><input id="tm-email" type="email" autocomplete="off" placeholder="ime@primer.com"></label>
+        <fieldset><label>Uloga<select id="tm-role">${ROLE_PICK.map(([k,l])=>`<option value="${k}"${k==='kuvar'?' selected':''}>${l}</option>`).join('')}</select></label>
+          <label>Početna lozinka<span class="hint">najmanje 8 znakova</span><input id="tm-pass" type="text" autocomplete="off"></label></fieldset>
+        <div class="actions"><button class="btn ember small" type="submit" id="tm-save">Dodaj u tim</button><span class="msg" id="tm-msg" role="status"></span></div>
+      </form>
+      ${wait.length?`<div class="tag">Čekaju odobrenje · odobri u Kitchen Control-u, tab Tim</div><div class="team-list">${wait.map(p=>`<div class="team-row"><b>${esc(p.full_name||p.email)}</b><span>${esc(p.email||'')}</span></div>`).join('')}</div>`:''}
+      <div class="tag">U timu · ${act.length}</div>
+      <div class="team-list">${act.map(p=>`<div class="team-row"><div><b>${esc(p.full_name||p.email)}</b><br><span>${esc(p.email||'')}</span></div><span>${esc(ROLE_LABEL[p.role]||p.role)}</span></div>`).join('')}</div>
+      <p class="note" style="margin:0">Uloge, lozinke i odobravanje novih naloga menjaš u <a class="linkbtn" href="./#tim">Kitchen Control-u, tab Tim</a>. Ljudi i dalje mogu i sami da se registruju, pa ih ti odobriš.</p>`;
+  }
+  function bindTeam(){
+    $('tm-close').addEventListener('click',closeDrawer);
+    $('tm-form').addEventListener('submit',async ev=>{ ev.preventDefault(); const m=$('tm-msg'); m.className='msg'; m.textContent='';
+      const name=$('tm-name').value.trim(), email=$('tm-email').value.trim().toLowerCase(), pass=$('tm-pass').value, role=$('tm-role').value;
+      const err=x=>{ m.className='msg err'; m.textContent=x; };
+      if(name.length<2) return err('Upiši ime i prezime.');
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Upiši ispravan mejl.');
+      if(pass.length<8) return err('Lozinka mora imati najmanje 8 znakova.');
+      $('tm-save').disabled=true;
+      try{ await q(S.db.rpc('admin_add_member',{p_name:name,p_email:email,p_role:role,p_password:pass}));
+        await reload('people'); S.team=true; renderDrawer(); const mm=$('tm-msg'); if(mm){ mm.className='msg ok'; mm.textContent=`${name} je u timu. Javi mu/joj mejl i lozinku.`; } }
+      catch(x){ msgErr(m,x); } finally{ const b=$('tm-save'); if(b) b.disabled=false; } });
+    $('tm-name').focus();
+  }
+
   // ---------- nov zadatak / izmena (administrator) ----------
   function editForm(t){
     const ppl=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'','sr'));
@@ -465,14 +554,20 @@ a.linkbtn{color:var(--ink)}
   }
 
   // ---------- događaji ----------
-  ['f-who','f-area'].forEach(id=>$(id).addEventListener('change',()=>{ renderPeople(); renderBoard(); try{ localStorage.setItem('zad-'+id,$(id).value); }catch(_){} }));
-  $('f-q').addEventListener('input',renderBoard);
-  $('people').addEventListener('click',e=>{ const b=e.target.closest('[data-person]'); if(!b) return; $('f-who').value=$('f-who').value===b.dataset.person?'':b.dataset.person; renderPeople(); renderBoard(); });
+  ['f-who','f-area'].forEach(id=>$(id).addEventListener('change',()=>{ renderWeek(); renderPeople(); renderBoard(); try{ localStorage.setItem('zad-'+id,$(id).value); }catch(_){} }));
+  $('f-q').addEventListener('input',()=>{ renderWeek(); renderBoard(); });
+  const setWeek = w => { S.week=w; try{ localStorage.setItem('zad-week', w?'week':'all'); }catch(_){} renderWeek(); renderPeople(); renderBoard(); };
+  $('w-prev').addEventListener('click',()=>setWeek(addD(S.week,-7)));
+  $('w-next').addEventListener('click',()=>setWeek(addD(S.week,7)));
+  $('w-today').addEventListener('click',()=>setWeek(mondayOf(today())));
+  $('w-all').addEventListener('click',()=>setWeek(null));
+  $('people').addEventListener('click',e=>{ const b=e.target.closest('[data-person]'); if(!b) return; $('f-who').value=$('f-who').value===b.dataset.person?'':b.dataset.person; renderWeek(); renderPeople(); renderBoard(); });
   $('board').addEventListener('click',e=>{ const c=e.target.closest('[data-task]'); if(c) openTask(c.dataset.task); });
   $('dr-bg').addEventListener('click',()=>{ if(S.edit&&!S.edit.id){ if(!confirmDiscard()) return; } closeDrawer(); });
   const confirmDiscard = () => true;
   addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('drawer').hidden) closeDrawer(); });
-  $('new-task').addEventListener('click',()=>{ S.open=null; S.edit={area:'ostalo', due:'', checklistText:''}; renderDrawer(); });
+  $('new-task').addEventListener('click',()=>{ S.open=null; S.team=false; S.edit={area:'ostalo', due:'', checklistText:''}; renderDrawer(); });
+  $('team-btn').addEventListener('click',()=>{ S.open=null; S.edit=null; S.team=true; renderDrawer(); });
   // prevlačenje kartica (računar)
   let dragId=null;
   $('board').addEventListener('dragstart',e=>{ const c=e.target.closest('[data-task]'); if(!c) return; dragId=c.dataset.task; e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/plain',dragId); }catch(_){} });
@@ -528,6 +623,7 @@ a.linkbtn{color:var(--ink)}
     await Promise.all(['people','tasks','events'].map(reload));
     $('f-who').value = fw!=null && [...$('f-who').options].some(o=>o.value===fw) ? fw : (S.admin?'':'me');
     let fa=null; try{ fa=localStorage.getItem('zad-f-area'); }catch(_){} if(fa!=null) $('f-area').value=fa;
+    let wk=null; try{ wk=localStorage.getItem('zad-week'); }catch(_){} S.week = wk==='all' ? null : mondayOf(today());
     render();
     const h=(location.hash||'').match(/^#z-([0-9a-f-]{36})$/); if(h && S.tasks.some(t=>t.id===h[1])) openTask(h[1]);
     subscribe();
