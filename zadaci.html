@@ -215,12 +215,12 @@ a.linkbtn{color:var(--ink)}
   </header>
 
   <div class="weekbar">
-    <div class="weeknav" role="group" aria-label="Nedelja">
-      <button type="button" class="btn ghost small" id="w-prev" aria-label="Prethodna nedelja">‹</button>
+    <div class="seg" role="group" aria-label="Prikaz"><button type="button" id="w-today">Nedelja</button><button type="button" id="w-month">Mesec</button><button type="button" id="w-all">Sve</button></div>
+    <div class="weeknav" role="group" aria-label="Period">
+      <button type="button" class="btn ghost small" id="w-prev" aria-label="Prethodni period">‹</button>
       <div class="wk"><b id="w-label">Ova nedelja</b><span id="w-range"></span></div>
-      <button type="button" class="btn ghost small" id="w-next" aria-label="Sledeća nedelja">›</button>
+      <button type="button" class="btn ghost small" id="w-next" aria-label="Sledeći period">›</button>
     </div>
-    <div class="seg" role="group" aria-label="Prikaz"><button type="button" id="w-today">Ova nedelja</button><button type="button" id="w-all">Sve nedelje</button></div>
     <div class="wsum" id="w-sum"></div>
   </div>
 
@@ -228,6 +228,7 @@ a.linkbtn{color:var(--ink)}
     <label>Osoba<select id="f-who"><option value="">Svi</option><option value="me">Moji zadaci</option></select></label>
     <label>Oblast<select id="f-area"><option value="">Sve oblasti</option><option value="ekonomija">Ekonomija</option><option value="proizvod">Proizvod</option><option value="obuka">Obuka</option><option value="marketing">Marketing</option><option value="ostalo">Ostalo</option></select></label>
     <label style="flex:1 1 200px;width:auto">Traži<input type="search" id="f-q" autocomplete="off" placeholder="naziv ili opis"></label>
+    <button class="btn ghost" type="button" id="hist-btn">Istorija</button>
     <button class="btn ghost adminonly" type="button" id="team-btn">Tim</button>
     <button class="btn ember adminonly" type="button" id="new-task">Nov zadatak</button>
   </div>
@@ -262,7 +263,7 @@ a.linkbtn{color:var(--ink)}
   const COLS = [['todo','Za uraditi'],['doing','U toku'],['followup','Čeka (follow-up)'],['overdue','Isteklo'],['done','Urađeno'],['verified','Provereno']];
   const AREA = {ekonomija:'Ekonomija', proizvod:'Proizvod', obuka:'Obuka', marketing:'Marketing', ostalo:'Ostalo'};
   const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
-  const S = {uid:null, admin:false, role:'', name:'', people:[], tasks:[], events:[], open:null, edit:null, waitOpen:null, waitDraft:null, week:null, team:false};
+  const S = {uid:null, admin:false, role:'', name:'', people:[], tasks:[], events:[], open:null, edit:null, waitOpen:null, waitDraft:null, mode:'week', from:null, team:false, hist:false, histMode:'week'};
   const EFFORT = {1:'lako', 2:'srednje', 3:'teško'};
   const effortOf = t => Number(t.effort)||1;
   const OPEN = ['todo','doing','followup'];
@@ -278,31 +279,43 @@ a.linkbtn{color:var(--ink)}
   const addD = (iso,n) => { const d=pd(iso); d.setDate(d.getDate()+n); return ds(d); };
   const MON=['jan','feb','mar','apr','maj','jun','jul','avg','sep','okt','nov','dec'];
   const fmtRange = m => { const e=addD(m,6), a=pd(m), b=pd(e); return a.getMonth()===b.getMonth() ? `${a.getDate()}–${b.getDate()}. ${MON[b.getMonth()]}` : `${a.getDate()}. ${MON[a.getMonth()]} – ${b.getDate()}. ${MON[b.getMonth()]}`; };
-  // zadatak pripada nedelji po roku; u tekućoj nedelji vide se i otvoreni zadaci bez roka i oni koji kasne iz ranijih nedelja
-  function inWeek(t){
-    if(!S.week) return true;
-    const end=addD(S.week,6), cur=mondayOf(today());
-    if(t.due && t.due>=S.week && t.due<=end) return true;
-    if(S.week===cur && OPEN.includes(t.stage) && (!t.due || t.due<S.week)) return true;
+  const MONTHS=['januar','februar','mart','april','maj','jun','jul','avgust','septembar','oktobar','novembar','decembar'];
+  const monthOf = iso => iso.slice(0,7);
+  const addM = (ym,n) => { const [y,m]=ym.split('-').map(Number); const d=new Date(y,m-1+n,1); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
+  const monthEnd = ym => { const [y,m]=ym.split('-').map(Number); return ds(new Date(y,m,0)); };
+  // period: {mode:'week', from:ponedeljak} · {mode:'month', from:'YYYY-MM-01'} · {mode:'all'}
+  function periodBounds(){
+    if(S.mode==='week') return [S.from, addD(S.from,6)];
+    if(S.mode==='month') return [S.from, monthEnd(monthOf(S.from))];
+    return null;
+  }
+  const isCurrent = () => S.mode==='week' ? S.from===mondayOf(today()) : S.mode==='month' ? monthOf(S.from)===monthOf(today()) : false;
+  // zadatak pripada periodu po roku; u tekućem periodu vide se i otvoreni zadaci bez roka i oni koji kasne iz ranijih perioda
+  function inPeriod(t){
+    const b=periodBounds(); if(!b) return true;
+    if(t.due && t.due>=b[0] && t.due<=b[1]) return true;
+    if(isCurrent() && OPEN.includes(t.stage) && (!t.due || t.due<b[0])) return true;
     return false;
   }
-  function weekTasks(){ return S.tasks.filter(t=>!t.archived && inWeek(t)); }
+  function weekTasks(){ return S.tasks.filter(t=>!t.archived && inPeriod(t)); }
   function filtered(){
     const who=$('f-who').value, area=$('f-area').value, q=normName($('f-q').value.trim());
     return weekTasks().filter(t=>(!who || (who==='me'?t.assignee===S.uid:t.assignee===who)) && (!area||t.area===area)
       && (!q || normName(t.title+' '+(t.description||'')).includes(q)));
   }
   function renderWeek(){
-    const cur=mondayOf(today());
-    $('w-today').setAttribute('aria-pressed',String(S.week===cur)); $('w-all').setAttribute('aria-pressed',String(!S.week));
-    $('w-prev').disabled=!S.week; $('w-next').disabled=!S.week;
-    if(!S.week){ $('w-label').textContent='Sve nedelje'; $('w-range').textContent='svi zadaci'; }
-    else { const diff=Math.round((pd(S.week)-pd(cur))/604800000);
+    ['w-today','w-month','w-all'].forEach((id,i)=>$(id).setAttribute('aria-pressed',String(S.mode===['week','month','all'][i])));
+    $('w-prev').disabled=S.mode==='all'; $('w-next').disabled=S.mode==='all';
+    if(S.mode==='all'){ $('w-label').textContent='Svi zadaci'; $('w-range').textContent='bez obzira na rok'; }
+    else if(S.mode==='week'){ const diff=Math.round((pd(S.from)-pd(mondayOf(today())))/604800000);
       $('w-label').textContent = diff===0?'Ova nedelja':diff===-1?'Prošla nedelja':diff===1?'Sledeća nedelja':diff<0?`Pre ${-diff} nedelje`:`Za ${diff} nedelje`;
-      $('w-range').textContent = fmtRange(S.week); }
+      $('w-range').textContent = fmtRange(S.from); }
+    else { const ym=monthOf(S.from), cur=monthOf(today()), [y,m]=ym.split('-').map(Number);
+      $('w-label').textContent = ym===cur?'Ovaj mesec':ym===addM(cur,-1)?'Prošli mesec':ym===addM(cur,1)?'Sledeći mesec':MONTHS[m-1];
+      $('w-range').textContent = `${MONTHS[m-1]} ${y}.`; }
     const ts=filtered(), c={done:0,late:0,wait:0};
     ts.forEach(t=>{ if(['done','verified'].includes(t.stage)) c.done++; else if(isLate(t)) c.late++; else if(t.stage==='followup') c.wait++; });
-    $('w-sum').innerHTML = ts.length ? `<span><b>${ts.length}</b> ${plZ(ts.length)}</span><span><b>${c.done}</b> urađeno</span>${c.wait?`<span><b>${c.wait}</b> čeka</span>`:''}${c.late?`<span class="bad"><b>${c.late}</b> kasni</span>`:''}` : '<span>Nema zadataka za ovu nedelju.</span>';
+    $('w-sum').innerHTML = ts.length ? `<span><b>${ts.length}</b> ${plZ(ts.length)}</span><span><b>${c.done}</b> urađeno</span>${c.wait?`<span><b>${c.wait}</b> čeka</span>`:''}${c.late?`<span class="bad"><b>${c.late}</b> kasni</span>`:''}` : `<span>Nema zadataka ${S.mode==='week'?'za ovu nedelju':S.mode==='month'?'za ovaj mesec':''}.</span>`;
   }
   function renderPeople(){
     const active=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role));
@@ -349,17 +362,18 @@ a.linkbtn{color:var(--ink)}
     sel.innerHTML='<option value="">Svi</option><option value="me">Moji zadaci</option>'+opts.map(p=>`<option value="${p.id}">${esc(p.full_name||p.email)}</option>`).join('');
     sel.value=[...sel.options].some(o=>o.value===cur)?cur:'';
     renderWeek(); renderPeople(); renderBoard();
-    if(S.open && !S.edit && !S.team) renderDrawer();
+    if((S.open && !S.edit && !S.team) || S.hist) renderDrawer();
     const n=S.tasks.filter(t=>!t.archived), late=n.filter(isLate).length;
     $('status').textContent=`${n.length} ${plZ(n.length)}${late?` · ${late} kasni`:''} · uživo`;
   }
 
   // ---------- detalj ----------
-  function openTask(id){ if(S.open!==id){ S.waitOpen=null; } S.open=id; S.edit=null; S.team=false; try{ history.replaceState(null,'','#z-'+id); }catch(_){} renderDrawer(); renderBoard(); }
-  function closeDrawer(){ S.open=null; S.edit=null; S.team=false; $('drawer').hidden=true; $('dr-bg').hidden=true; try{ history.replaceState(null,'',location.pathname); }catch(_){} renderBoard(); }
+  function openTask(id){ if(S.open!==id){ S.waitOpen=null; } S.open=id; S.edit=null; S.team=false; S.hist=false; try{ history.replaceState(null,'','#z-'+id); }catch(_){} renderDrawer(); renderBoard(); }
+  function closeDrawer(){ S.open=null; S.edit=null; S.team=false; S.hist=false; $('drawer').hidden=true; $('dr-bg').hidden=true; try{ history.replaceState(null,'',location.pathname); }catch(_){} renderBoard(); }
   function renderDrawer(){
     const dr=$('drawer');
     if(S.team){ dr.innerHTML=teamHtml(); dr.hidden=false; $('dr-bg').hidden=false; bindTeam(); return; }
+    if(S.hist){ dr.innerHTML=histHtml(); dr.hidden=false; $('dr-bg').hidden=false; bindHist(); return; }
     if(S.edit){ dr.innerHTML=editForm(S.edit); dr.hidden=false; $('dr-bg').hidden=false; bindEdit(); return; }
     const t=S.tasks.find(x=>x.id===S.open);
     if(!t){ dr.hidden=true; $('dr-bg').hidden=true; return; }
@@ -485,6 +499,55 @@ a.linkbtn{color:var(--ink)}
     catch(x){ if(m) msgErr(m,x); else $('status').textContent=String(x.message||x); }
   }
 
+  // ---------- istorija: kako je tim izvršavao zadatke po nedeljama i mesecima ----------
+  // ishod zadatka sa rokom: na vreme (urađeno do roka) · sa kašnjenjem (urađeno posle roka) · nije urađeno (rok prošao, otvoren) · u toku (rok još nije prošao)
+  function outcome(t){
+    const doneDay = t.done_at ? ds(new Date(t.done_at)) : null;
+    if(['done','verified'].includes(t.stage)) return !t.due || (doneDay && doneDay<=t.due) ? 'ontime' : 'late';
+    return t.due && t.due<today() ? 'missed' : 'open';
+  }
+  function histRows(mode){
+    const tasks=S.tasks.filter(t=>!t.archived && t.due), rows=[];
+    const cur = mode==='week' ? mondayOf(today()) : monthOf(today())+'-01';
+    for(let i=0;i<12;i++){
+      const from = mode==='week' ? addD(cur,-7*i) : addM(monthOf(cur),-i)+'-01';
+      const to = mode==='week' ? addD(from,6) : monthEnd(monthOf(from));
+      const ts=tasks.filter(t=>t.due>=from && t.due<=to);
+      const c={ontime:0,late:0,missed:0,open:0}; ts.forEach(t=>c[outcome(t)]++);
+      const closed=c.ontime+c.late+c.missed;
+      rows.push({from, to, n:ts.length, ...c, pct: closed ? Math.round(c.ontime/closed*100) : null});
+    }
+    return rows;
+  }
+  function histPeople(mode){
+    const rows=histRows(mode), from=rows[rows.length-1].from;
+    const ts=S.tasks.filter(t=>!t.archived && t.due && t.due>=from && t.due<=today());
+    const by={}; ts.forEach(t=>{ const k=t.assignee||'—'; const r=by[k]||(by[k]={n:0,ontime:0,late:0,missed:0,open:0}); r.n++; r[outcome(t)]++; });
+    return Object.entries(by).map(([id,r])=>({name:personName(id==='—'?null:id), ...r, pct:(r.ontime+r.late+r.missed)?Math.round(r.ontime/(r.ontime+r.late+r.missed)*100):null}))
+      .sort((a,b)=>(a.pct??101)-(b.pct??101));
+  }
+  const pctPill = p => p==null ? '<span class="pill none">—</span>' : `<span class="pill ${p>=85?'good':p>=60?'warn':'bad'}">${p} %</span>`;
+  function histHtml(){
+    const mode=S.histMode, rows=histRows(mode), ppl=histPeople(mode);
+    const label = r => mode==='week' ? fmtRange(r.from) : (()=>{ const [y,m]=r.from.split('-').map(Number); return `${MONTHS[m-1]} ${y}.`; })();
+    return `<div class="sticky-x"><div><div class="tag">uvid</div><h2 id="dr-title">Istorija</h2></div><button class="btn ghost small" type="button" id="hs-close">Zatvori</button></div>
+      <div class="seg" role="group" aria-label="Istorija po"><button type="button" data-hm="week" aria-pressed="${mode==='week'}">Po nedeljama</button><button type="button" data-hm="month" aria-pressed="${mode==='month'}">Po mesecima</button></div>
+      <p class="note" style="margin:0">Zadatak se računa u ${mode==='week'?'nedelju':'mesec'} u kojoj mu je bio rok. <b>Na vreme</b> = urađeno do roka, <b>sa kašnjenjem</b> = urađeno posle roka, <b>nije urađeno</b> = rok je prošao, a zadatak je i dalje otvoren. Klik na red otvara taj period na tabli.</p>
+      <div class="tablewrap" style="overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)"><table style="border-collapse:collapse;width:100%;font-size:14px;min-width:460px">
+        <thead><tr>${['Period','Zadataka','Na vreme','Kasnilo','Nije urađeno','U toku','Na vreme %'].map((h,i)=>`<th style="padding:8px 10px;text-align:${i?'right':'left'};font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map((r,i)=>`<tr class="rowlink" data-hfrom="${r.from}" style="cursor:pointer"><td style="padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap"><b>${esc(label(r))}</b>${i===0?`<br><span class="note">${mode==='week'?'ova nedelja':'ovaj mesec'}</span>`:''}</td>
+          ${[r.n,r.ontime,r.late,r.missed,r.open].map((v,j)=>`<td style="padding:8px 10px;text-align:right;font-family:var(--f-mono);border-bottom:1px solid var(--line);${j===3&&v?'color:var(--bad);font-weight:600':''}">${v||'·'}</td>`).join('')}
+          <td style="padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)">${r.n?pctPill(r.pct):''}</td></tr>`).join('')}</tbody></table></div>
+      <div class="tag">Po osobi · poslednjih 12 ${mode==='week'?'nedelja':'meseci'}</div>
+      ${ppl.length?`<div class="team-list">${ppl.map(p=>`<div class="team-row"><div><b>${esc(p.name)}</b><br><span>${p.n} ${plZ(p.n)} · na vreme ${p.ontime} · kasnilo ${p.late} · nije urađeno ${p.missed}</span></div>${pctPill(p.pct)}</div>`).join('')}</div>`:'<p class="note" style="margin:0">Još nema zadataka sa rokom koji je prošao.</p>'}
+      <p class="note" style="margin:0">Svaki zadatak čuva i svoju istoriju: ko ga je i kada pomerio, šta je čekao i šta je vraćeno na doradu. Vidi se kad otvoriš zadatak.</p>`;
+  }
+  function bindHist(){
+    $('hs-close').addEventListener('click',closeDrawer);
+    $('drawer').querySelectorAll('[data-hm]').forEach(b=>b.addEventListener('click',()=>{ S.histMode=b.dataset.hm; renderDrawer(); }));
+    $('drawer').querySelectorAll('[data-hfrom]').forEach(r=>r.addEventListener('click',()=>{ const f=r.dataset.hfrom; S.hist=false; closeDrawer(); setPeriod(S.histMode, f); }));
+  }
+
   // ---------- tim: dodavanje osobe (administrator) ----------
   const ROLE_PICK = [['kuvar','Kuhinja / šank'],['sef','Šef smene'],['menadzer','Menadžer'],['admin','Administrator (vlasnik)']];
   function teamHtml(){
@@ -556,18 +619,21 @@ a.linkbtn{color:var(--ink)}
   // ---------- događaji ----------
   ['f-who','f-area'].forEach(id=>$(id).addEventListener('change',()=>{ renderWeek(); renderPeople(); renderBoard(); try{ localStorage.setItem('zad-'+id,$(id).value); }catch(_){} }));
   $('f-q').addEventListener('input',()=>{ renderWeek(); renderBoard(); });
-  const setWeek = w => { S.week=w; try{ localStorage.setItem('zad-week', w?'week':'all'); }catch(_){} renderWeek(); renderPeople(); renderBoard(); };
-  $('w-prev').addEventListener('click',()=>setWeek(addD(S.week,-7)));
-  $('w-next').addEventListener('click',()=>setWeek(addD(S.week,7)));
-  $('w-today').addEventListener('click',()=>setWeek(mondayOf(today())));
-  $('w-all').addEventListener('click',()=>setWeek(null));
+  const setPeriod = (mode, from) => { S.mode=mode; S.from=from||null; try{ localStorage.setItem('zad-period', mode); }catch(_){} renderWeek(); renderPeople(); renderBoard(); };
+  const stepPeriod = n => S.mode==='week' ? setPeriod('week', addD(S.from,7*n)) : S.mode==='month' ? setPeriod('month', addM(monthOf(S.from),n)+'-01') : null;
+  $('w-prev').addEventListener('click',()=>stepPeriod(-1));
+  $('w-next').addEventListener('click',()=>stepPeriod(1));
+  $('w-today').addEventListener('click',()=>setPeriod('week', mondayOf(today())));
+  $('w-month').addEventListener('click',()=>setPeriod('month', monthOf(today())+'-01'));
+  $('w-all').addEventListener('click',()=>setPeriod('all'));
+  $('hist-btn').addEventListener('click',()=>{ S.open=null; S.edit=null; S.team=false; S.hist=true; renderDrawer(); });
   $('people').addEventListener('click',e=>{ const b=e.target.closest('[data-person]'); if(!b) return; $('f-who').value=$('f-who').value===b.dataset.person?'':b.dataset.person; renderWeek(); renderPeople(); renderBoard(); });
   $('board').addEventListener('click',e=>{ const c=e.target.closest('[data-task]'); if(c) openTask(c.dataset.task); });
   $('dr-bg').addEventListener('click',()=>{ if(S.edit&&!S.edit.id){ if(!confirmDiscard()) return; } closeDrawer(); });
   const confirmDiscard = () => true;
   addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('drawer').hidden) closeDrawer(); });
-  $('new-task').addEventListener('click',()=>{ S.open=null; S.team=false; S.edit={area:'ostalo', due:'', checklistText:''}; renderDrawer(); });
-  $('team-btn').addEventListener('click',()=>{ S.open=null; S.edit=null; S.team=true; renderDrawer(); });
+  $('new-task').addEventListener('click',()=>{ S.open=null; S.team=false; S.hist=false; S.edit={area:'ostalo', due:'', checklistText:''}; renderDrawer(); });
+  $('team-btn').addEventListener('click',()=>{ S.open=null; S.edit=null; S.hist=false; S.team=true; renderDrawer(); });
   // prevlačenje kartica (računar)
   let dragId=null;
   $('board').addEventListener('dragstart',e=>{ const c=e.target.closest('[data-task]'); if(!c) return; dragId=c.dataset.task; e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/plain',dragId); }catch(_){} });
@@ -623,7 +689,8 @@ a.linkbtn{color:var(--ink)}
     await Promise.all(['people','tasks','events'].map(reload));
     $('f-who').value = fw!=null && [...$('f-who').options].some(o=>o.value===fw) ? fw : (S.admin?'':'me');
     let fa=null; try{ fa=localStorage.getItem('zad-f-area'); }catch(_){} if(fa!=null) $('f-area').value=fa;
-    let wk=null; try{ wk=localStorage.getItem('zad-week'); }catch(_){} S.week = wk==='all' ? null : mondayOf(today());
+    let pm=null; try{ pm=localStorage.getItem('zad-period'); }catch(_){}
+    if(pm==='month'){ S.mode='month'; S.from=monthOf(today())+'-01'; } else if(pm==='all'){ S.mode='all'; S.from=null; } else { S.mode='week'; S.from=mondayOf(today()); }
     render();
     const h=(location.hash||'').match(/^#z-([0-9a-f-]{36})$/); if(h && S.tasks.some(t=>t.id===h[1])) openTask(h[1]);
     subscribe();
