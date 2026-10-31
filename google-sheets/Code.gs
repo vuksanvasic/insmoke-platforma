@@ -34,6 +34,8 @@ function doPost(e) {
   }
   if (poruka.kind === 'mc_daily') { posaljiMcDnevni_(poruka); return odgovor_({ ok: true }); }
   if (poruka.kind === 'mc_weekly') { posaljiMcNedeljni_(poruka); return odgovor_({ ok: true }); }
+  if (poruka.kind === 'task_mail') { posaljiZadatak_(poruka); return odgovor_({ ok: true }); }
+  if (poruka.kind === 'task_weekly') { posaljiZadatkeNedeljno_(poruka.summary || {}); return odgovor_({ ok: true }); }
   if (poruka.kind === 'waste') {
     const l = LockService.getScriptLock();
     l.waitLock(20000);
@@ -449,4 +451,59 @@ function posaljiMcNedeljni_(p) {
 }
 function probniMcIzvestaj() {
   posaljiMcDnevni_({ day: { from: '2026-10-23', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 }, mtd: { from: '2026-10-01', to: '2026-10-23', net: 0, cost: 0, hours: 0, planned_hours: 0, target: 30 } });
+}
+
+
+// ===================== ZADACI · obaveštenja =====================
+const ZAD_ADRESA = 'https://insmoke.rs/aplikacija/zadaci.html';
+const ZAD_FAZE = { todo: 'Za uraditi', doing: 'U toku', followup: 'Čeka (follow-up)', done: 'Urađeno', verified: 'Provereno' };
+const ZAD_OBLASTI = { ekonomija: 'Ekonomija', proizvod: 'Proizvod', obuka: 'Obuka', marketing: 'Marketing', ostalo: 'Ostalo' };
+
+function zadLink_(t) { return ZAD_ADRESA + '#z-' + t.id; }
+function zadPosalji_(to, subjekt, uvod, redovi, napomena, t) {
+  if (!to) return;
+  const tekst = uvod + '\n\n' + redovi.map(function (x) { return x[0] + ': ' + x[1]; }).join('\n') +
+    (napomena ? '\n\n' + napomena : '') + '\n\nOtvori zadatak: ' + zadLink_(t);
+  const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#211c19;max-width:560px">' +
+    '<p style="margin:0 0 12px">' + mcEsc_(uvod) + '</p>' + mcTabela_(redovi) +
+    (napomena ? '<p style="margin:14px 0 0;padding:10px 12px;background:#f3dfd5;border-radius:6px;white-space:pre-wrap">' + mcEsc_(napomena) + '</p>' : '') +
+    '<p style="margin:18px 0 0"><a href="' + zadLink_(t) + '" style="background:#b4401e;color:#fff;text-decoration:none;padding:10px 16px;border-radius:6px;display:inline-block">Otvori zadatak</a></p></div>';
+  MailApp.sendEmail({ to: to, subject: subjekt, body: tekst, htmlBody: html, name: 'In Smoke We Trust · Zadaci' });
+}
+function posaljiZadatak_(p) {
+  const t = p.task || {}, ko = p.who || '';
+  const rok = t.due ? mcDatum_(t.due) : 'bez roka';
+  const redovi = [['Zadatak', t.title, true], ['Odgovoran', t.assignee || '—'], ['Rok', rok], ['Oblast', ZAD_OBLASTI[t.area] || t.area || '—'], ['Težina', ({ 1: 'lako', 2: 'srednje', 3: 'teško' })[t.effort] || 'lako'], ['Faza', ZAD_FAZE[t.stage] || t.stage]];
+  let to = p.to || '';
+  if (p.uprava) to = [to, UPRAVA].filter(String).join(', ');
+  const e = p.event;
+  if (e === 'assigned') zadPosalji_(to, 'Nov zadatak: ' + t.title + (t.due ? ' (rok ' + rok + ')' : ''), ko + ' ti je dodelio/la zadatak.', redovi, t.description, t);
+  else if (e === 'comment') zadPosalji_(to, 'Komentar: ' + t.title, ko + ' je napisao/la komentar.', redovi, p.note, t);
+  else if (e === 'done') zadPosalji_(to, 'Urađeno, proveri: ' + t.title, ko + ' je označio/la zadatak kao urađen. Proveri i potvrdi ili vrati na doradu.', redovi, p.note, t);
+  else if (e === 'verified') zadPosalji_(to, 'Provereno: ' + t.title, ko + ' je proverio/la i zatvorio/la zadatak. Hvala!', redovi, p.note, t);
+  else if (e === 'returned') zadPosalji_(to, 'Vraćeno na doradu: ' + t.title, ko + ' je vratio/la zadatak na doradu.', redovi, p.note, t);
+  else if (e === 'followup') zadPosalji_(to, 'Čeka: ' + t.title, ko + ' ne može dalje dok ne dobije ovo:', redovi, p.note || '—', t);
+  else if (e === 'wait_late') zadPosalji_(to, 'Još čeka: ' + t.title, 'Zadatak i dalje čeka, a prošao je dan do kog je odgovor očekivan.', redovi, p.note || '—', t);
+  else if (e === 'reminder') zadPosalji_(to, 'Sutra je rok: ' + t.title, 'Podsetnik: rok za ovaj zadatak je sutra.', redovi, null, t);
+  else if (e === 'overdue') zadPosalji_(to, 'Isteklo: ' + t.title, 'Rok je istekao, a zadatak nije urađen.', redovi, null, t);
+  else if (e === 'overdue_again') zadPosalji_(to, 'Još uvek kasni: ' + t.title, 'Ovaj zadatak i dalje kasni. Završi ga ili javi šta te zaustavlja (komentar u zadatku).', redovi, null, t);
+}
+function posaljiZadatkeNedeljno_(s) {
+  const ljudi = s.people || [];
+  if (!ljudi.length) return;
+  const red = function (c) { return '<td style="padding:5px 14px 5px 0;border-bottom:1px solid #e5ddd6">' + c + '</td>'; };
+  const tab = '<table style="border-collapse:collapse"><tr>' + ['Osoba', 'Urađeno', 'Provereno', 'Otvoreno', 'Kasni'].map(function (x) { return '<th style="text-align:left;padding:5px 14px 5px 0;color:#6d625b;font-weight:normal">' + x + '</th>'; }).join('') + '</tr>' +
+    ljudi.map(function (p) { return '<tr>' + red('<b>' + mcEsc_(p.who) + '</b>') + red(p.done) + red(p.verified) + red(p.open) + red(Number(p.overdue) ? '<b style="color:#b0322a">' + p.overdue + '</b>' : '0') + '</tr>'; }).join('') + '</table>';
+  const lista = function (naslov, arr, f) { return arr && arr.length ? '<h3 style="margin:16px 0 6px">' + naslov + '</h3><ul style="margin:0;padding-left:18px">' + arr.map(function (x) { return '<li>' + f(x) + '</li>'; }).join('') + '</ul>' : ''; };
+  const kasni = s.overdue || [], provera = s.to_check || [], nedelja = s.this_week || [];
+  const html = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#211c19;max-width:600px">' +
+    '<h2 style="margin:0 0 10px">Zadaci, prošla nedelja (' + mcKratko_(s.from) + '–' + mcDatum_(s.to) + ')</h2>' + tab +
+    lista('Kasni', kasni, function (x) { return mcEsc_(x.title) + ' · ' + mcEsc_(x.who) + ' · rok ' + mcDatum_(x.due); }) +
+    lista('Čeka tvoju proveru', provera, function (x) { return mcEsc_(x.title) + ' · ' + mcEsc_(x.who); }) +
+    lista('Rok ove nedelje', nedelja, function (x) { return mcEsc_(x.title) + ' · ' + mcEsc_(x.who) + ' · ' + mcDatum_(x.due); }) +
+    '<p style="margin:18px 0 0"><a href="' + ZAD_ADRESA + '">Otvori tablu zadataka</a></p></div>';
+  const tekst = 'Zadaci, prošla nedelja\n\n' + ljudi.map(function (p) { return p.who + ': urađeno ' + p.done + ', otvoreno ' + p.open + ', kasni ' + p.overdue; }).join('\n') +
+    (kasni.length ? '\n\nKasni:\n' + kasni.map(function (x) { return '  ' + x.title + ' (' + x.who + ', rok ' + mcDatum_(x.due) + ')'; }).join('\n') : '') + '\n\n' + ZAD_ADRESA;
+  const ukupnoKasni = kasni.length;
+  MailApp.sendEmail({ to: UPRAVA, subject: 'Zadaci: ' + (ukupnoKasni ? ukupnoKasni + ' kasni · ' : '') + provera.length + ' čeka proveru', body: tekst, htmlBody: html, name: 'In Smoke We Trust · Zadaci' });
 }
