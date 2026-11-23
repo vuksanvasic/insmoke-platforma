@@ -294,7 +294,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       </fieldset>
       <fieldset>
         <legend>Smoker</legend>
-        <label>Nabavna cena (RSD/kg)<input class="num" id="f-price" inputmode="decimal" placeholder="npr. 1450"></label>
+        <label>Nabavna cena bez PDV-a (RSD/kg)<span class="hint">osnovica sa fakture, bez PDV-a</span><input class="num" id="f-price" inputmode="decimal" placeholder="npr. 1350"></label>
         <label>Temperatura (°C)<input class="num" id="f-temp" inputmode="decimal" placeholder="npr. 120"></label>
         <label>Vreme u smokeru (h)<input class="num" id="f-hours" inputmode="decimal" placeholder="npr. 12,5"></label>
         <label>Drvo<input id="f-wood" list="woods" placeholder="npr. hrast" autocomplete="off">
@@ -512,7 +512,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     </div>
   </section>
 
-  <p class="foot">Yield = kg za prodaju ÷ sirovih kg. Ako „za prodaju“ nije upisano, računa se iz težine iz smokera. Stvarna cena po kg = (sirovo × nabavna cena) ÷ kg za prodaju.</p>
+  <p class="foot">Yield = kg za prodaju ÷ sirovih kg. Ako „za prodaju“ nije upisano, računa se iz težine iz smokera. Stvarna cena po kg = (sirovo × nabavna cena bez PDV-a) ÷ kg za prodaju.</p>
 </div>
 
 <div class="login" id="config-view" hidden>
