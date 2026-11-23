@@ -68,6 +68,15 @@ textarea{resize:vertical;min-height:56px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .link{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;text-decoration:underline;padding:0}
 .link.danger{color:var(--bad)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+.btn.danger.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.shift .se,.mshift .se{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.shift .se:hover,.mshift .se:hover{text-decoration:underline}
+.shift.editing,.mshift.editing{outline:2px solid var(--ember);outline-offset:1px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:14px;background:var(--char);color:var(--char-ink);border-radius:8px;padding:10px 12px 10px 16px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);max-width:calc(100vw - 24px)}
+.toast button{background:none;border:0;color:var(--char-ink);cursor:pointer;font:600 14px var(--f-body);padding:4px 6px}
+.toast #undo-btn{color:#fff;background:var(--ember);border-radius:5px;padding:6px 12px}
+.toast #undo-btn:disabled{opacity:.5}
 .msg{font-size:14px}
 .msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -418,8 +427,26 @@ a.linkbtn{color:var(--ink)}
       <strong id="r-week" style="font-family:var(--f-mono);font-size:14px"></strong>
       <button class="btn ghost small" type="button" id="r-next">Sledeća →</button>
       <button class="btn ghost small" type="button" id="r-copy">Kopiraj prethodnu nedelju</button>
+      <button class="btn ghost small danger" type="button" id="r-clear">Obriši nedelju</button>
       <span class="msg" id="r-msg" role="status"></span>
     </div>
+    <p class="note" style="margin:-8px 0 0">Klikni na vreme smene da je izmeniš ili obrišeš. Posle svake promene dole se pojavi „Poništi“.</p>
+    <form class="panel" id="r-edit" hidden novalidate>
+      <h3 id="r-e-title">Izmena smene</h3>
+      <fieldset>
+        <label>Zaposleni<select id="r-e-staff"></select></label>
+        <label>Dan<input type="date" id="r-e-date"></label>
+        <label>Od<input type="time" id="r-e-start"></label>
+        <label>Do<input type="time" id="r-e-end"><span class="hint">ako je manje od „Od“, smena ide preko ponoći</span></label>
+        <label>Napomena<input id="r-e-note" autocomplete="off"></label>
+      </fieldset>
+      <div class="actions">
+        <button class="btn ember" type="submit" id="r-e-save">Sačuvaj izmenu</button>
+        <button class="btn ghost danger" type="button" id="r-e-del">Obriši smenu</button>
+        <button class="btn ghost" type="button" id="r-e-cancel">Otkaži</button>
+        <span class="msg" id="r-e-msg" role="status"></span>
+      </div>
+    </form>
     <div id="r-grid"></div>
     <form class="panel" id="r-form" novalidate>
       <h3>Dodaj smenu</h3>
@@ -482,7 +509,9 @@ a.linkbtn{color:var(--ink)}
         </fieldset>
         <div class="actions">
           <button class="btn ember" type="submit" id="z-save">Sačuvaj</button>
+          <button class="btn ghost" type="button" id="z-cancel">Otkaži</button>
           <button class="btn ghost" type="button" id="z-new">Novi zaposleni</button>
+          <button class="btn ghost danger" type="button" id="z-del" hidden>Obriši zaposlenog</button>
           <span class="msg" id="z-msg" role="status"></span>
         </div>
       </form>
@@ -803,6 +832,7 @@ a.linkbtn{color:var(--ink)}
   </section>
 </div>
 
+<div class="toast" id="undo" hidden role="status" aria-live="polite"><span id="undo-text"></span><button type="button" id="undo-btn">Poništi</button><button type="button" id="undo-x" aria-label="Zatvori">×</button></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script>
@@ -989,7 +1019,7 @@ a.linkbtn{color:var(--ink)}
     VIEWS.forEach(x=>{ if(x!=='obracun'&&x!=='podesavanja') return; });
     if(!S.canWrite){
       document.querySelectorAll('#d-sales input,#d-att input,#d-att select,#r-form input,#r-form select').forEach(i=>i.disabled=true);
-      ['d-sales-save','d-att-save','r-add','r-copy'].forEach(id=>$(id).disabled=true);
+      ['d-sales-save','d-att-save','r-add','r-copy','r-clear'].forEach(id=>$(id).disabled=true);
     }
   }
 
@@ -1195,9 +1225,9 @@ a.linkbtn{color:var(--ink)}
   });
 
   // ===== RASPORED =====
-  const R = {week: weekStart(today())};
-  $('r-prev').addEventListener('click',()=>{ R.week=addDays(R.week,-7); renderRaspored(); });
-  $('r-next').addEventListener('click',()=>{ R.week=addDays(R.week,7); renderRaspored(); });
+  const R = {week: weekStart(today()), edit:null};
+  $('r-prev').addEventListener('click',()=>{ R.week=addDays(R.week,-7); R.edit=null; $('r-edit').hidden=true; disarmClear(); renderRaspored(); });
+  $('r-next').addEventListener('click',()=>{ R.week=addDays(R.week,7); R.edit=null; $('r-edit').hidden=true; disarmClear(); renderRaspored(); });
   function renderRaspored(){
     const days=range(R.week,addDays(R.week,6));
     $('r-week').textContent=`${fmtD(days[0])} – ${fmtDY(days[6])}`;
@@ -1215,7 +1245,7 @@ a.linkbtn{color:var(--ink)}
     days.forEach((d,i)=>{ const list=shifts.filter(x=>x.date===d).sort((a,b)=>(a.start||'').localeCompare(b.start||''));
       const tot=list.reduce((s,x)=>s+shiftSpan(x.start,x.end).h,0);
       mob+=`<div class="mday"><h4>${DOW[i]} ${fmtD(d)}<span>${list.length} ${list.length===1?'smena':'smena'} · ${fmt(tot,1)} h</span></h4>`;
-      mob+= list.length ? list.map(x=>{ const st=staffById(x.staffId); return `<div class="mshift"><span><strong>${esc(st?st.name:'(obrisan)')}</strong> <span class="note">${esc(st?secName(st.sector):'')}${x.note?' · '+esc(x.note):''}</span></span><span style="display:flex;align-items:center;gap:4px"><span class="t">${esc(x.start)}–${esc(x.end)}</span>${S.canWrite?`<button type="button" data-del="${esc(x.id)}" aria-label="Obriši smenu">×</button>`:''}</span></div>`; }).join('') : '<span class="note">Nema smena.</span>';
+      mob+= list.length ? list.map(x=>{ const st=staffById(x.staffId); return `<div class="mshift${R.edit===x.id?' editing':''}"><span><strong>${esc(st?st.name:'(obrisan)')}</strong> <span class="note">${esc(st?secName(st.sector):'')}${x.note?' · '+esc(x.note):''}</span></span><span style="display:flex;align-items:center;gap:4px">${S.canWrite?`<button type="button" class="se t" data-edit-shift="${esc(x.id)}" title="Izmeni smenu">${esc(x.start)}–${esc(x.end)}</button>`:`<span class="t">${esc(x.start)}–${esc(x.end)}</span>`}${S.canWrite?`<button type="button" data-del="${esc(x.id)}" aria-label="Obriši smenu">×</button>`:''}</span></div>`; }).join('') : '<span class="note">Nema smena.</span>';
       mob+='</div>'; });
     mob+='</div>';
     let h=mob+`<div class="tablewrap desktop-only"><table class="sched"><thead><tr><th>Zaposleni</th>${days.map((d,i)=>`<th>${DOW[i]} ${fmtD(d)}</th>`).join('')}<th class="n">Sati</th></tr></thead><tbody>`;
@@ -1224,7 +1254,7 @@ a.linkbtn{color:var(--ink)}
       let tot=0;
       h+=`<tr><td><strong>${esc(st.name)}</strong><div class="note">${esc(secName(st.sector))}</div></td>`;
       days.forEach((d,i)=>{ const list=shifts.filter(x=>x.staffId===st.id&&x.date===d);
-        h+='<td>'+list.map(x=>{ const sp=shiftSpan(x.start,x.end); tot+=sp.h; dayTot[i]+=sp.h; return `<div class="shift" title="${esc(x.note||'')}"><span>${esc(x.start)}–${esc(x.end)}</span>${S.canWrite?`<button type="button" data-del="${esc(x.id)}" aria-label="Obriši smenu">×</button>`:''}</div>`; }).join('')+'</td>'; });
+        h+='<td>'+list.map(x=>{ const sp=shiftSpan(x.start,x.end); tot+=sp.h; dayTot[i]+=sp.h; return `<div class="shift${R.edit===x.id?' editing':''}" title="${esc(x.note||'')}">${S.canWrite?`<button type="button" class="se" data-edit-shift="${esc(x.id)}" aria-label="Izmeni smenu ${esc(x.start)}–${esc(x.end)}">${esc(x.start)}–${esc(x.end)}</button>`:`<span>${esc(x.start)}–${esc(x.end)}</span>`}${S.canWrite?`<button type="button" data-del="${esc(x.id)}" aria-label="Obriši smenu">×</button>`:''}</div>`; }).join('')+'</td>'; });
       all+=tot; const over=tot-(val(st.weeklyHours)||40);
       h+=`<td class="n">${fmt(tot,1)}${st.payMode==='fiksno'&&over>0?`<div><span class="pill warn">+${fmt(over,1)}</span></div>`:''}</td></tr>`;
     }
@@ -1232,11 +1262,84 @@ a.linkbtn{color:var(--ink)}
     if(S.admin){ const pc=periodCalc(R.week,addDays(R.week,6)); h+=`<p class="note" style="margin:6px 0 0">Planirani trošak rada za ovu nedelju (za dane koji nisu potvrđeni po rasporedu): <strong>${rsd(pc.cost)}</strong>${pc.net>0?` · promet do sada ${rsd(pc.net)}`:''}</p>`; }
     $('r-grid').innerHTML=h;
   }
-  $('r-grid').addEventListener('click',async e=>{
-    const b=e.target.closest('[data-del]'); if(!b||!S.db) return;
-    if(!b.classList.contains('confirm')){ b.classList.add('confirm'); b.textContent='obriši?'; b.style.color='var(--bad)'; b.style.fontSize='11px'; setTimeout(()=>{ if(b.isConnected){ b.classList.remove('confirm'); b.textContent='×'; b.style.color=''; b.style.fontSize=''; } },3500); return; }
-    try{ await q(S.db.from('mc_shifts').delete().eq('id',b.dataset.del)); await reload('shifts'); }catch(x){ writeErr($('r-msg'),x); }
+  // ----- pomoćno: poništavanje poslednje promene -----
+  const U={timer:null,fn:null};
+  function showUndo(text,fn){ U.fn=fn; $('undo-text').textContent=text; $('undo-btn').hidden=!fn; $('undo-btn').disabled=false; $('undo').hidden=false; clearTimeout(U.timer); U.timer=setTimeout(hideUndo,12000); }
+  function hideUndo(){ clearTimeout(U.timer); U.fn=null; $('undo').hidden=true; }
+  $('undo-x').addEventListener('click',hideUndo);
+  $('undo-btn').addEventListener('click',async ()=>{
+    const fn=U.fn; if(!fn) return; $('undo-btn').disabled=true; U.fn=null; clearTimeout(U.timer);
+    try{ await fn(); $('undo-text').textContent='Vraćeno kako je bilo.'; $('undo-btn').hidden=true; }
+    catch(x){ $('undo-text').textContent='Poništavanje nije uspelo: '+((x&&x.message)||'probaj ponovo.'); }
+    U.timer=setTimeout(hideUndo,3000);
   });
+  const smena = n => { const d=n%10, dd=n%100; return n+' '+(d===1&&dd!==11?'smenu':(d>=2&&d<=4&&(dd<12||dd>14)?'smene':'smena')); };
+  const allShifts = () => Object.values(S.schedule).flatMap(w=>w.shifts||[]);
+  const shiftById = id => allShifts().find(x=>x.id===id);
+  const shiftRow = x => ({id:x.id, staff_id:x.staffId, shift_date:x.date, start_time:x.start, end_time:x.end, note:x.note||null});
+  const dayNum = d => Math.round(Date.parse(d+'T00:00:00Z')/86400000);
+  function spanAbs(date,start,end){ const a=tmin(start), b0=tmin(end); const b=b0<=a?b0+1440:b0; const o=dayNum(date)*1440; return [o+a,o+b]; }
+  function overlapFor(staffId,date,start,end,skipId){
+    const [a,b]=spanAbs(date,start,end), n=dayNum(date);
+    return allShifts().find(x=>x.staffId===staffId && x.id!==skipId && Math.abs(dayNum(x.date)-n)<=1 && (()=>{ const [c,d]=spanAbs(x.date,x.start,x.end); return a<d && c<b; })());
+  }
+  const dowName = d => DOW[dowOf(d)];
+  const ovMsg = (st,x) => `${st?st.name:'Ta osoba'} već radi ${dowName(x.date)} ${fmtD(x.date)} od ${x.start} do ${x.end}. Izmeni ili obriši tu smenu, pa dodaj novu.`;
+  async function deleteShifts(list,label){
+    const ids=list.map(x=>x.id), rows=list.map(shiftRow);
+    for(let i=0;i<ids.length;i+=200) await q(S.db.from('mc_shifts').delete().in('id',ids.slice(i,i+200)));
+    await reload('shifts');
+    showUndo(label, async ()=>{ for(let i=0;i<rows.length;i+=200) await q(S.db.from('mc_shifts').insert(rows.slice(i,i+200))); await reload('shifts'); });
+  }
+
+  // ----- izmena jedne smene -----
+  function closeEdit(){ R.edit=null; $('r-edit').hidden=true; $('r-e-msg').textContent=''; renderRaspored(); }
+  function openEdit(id){
+    const x=shiftById(id); if(!x) return;
+    R.edit=id;
+    const opts=S.staff.filter(s=>activeOn(s,x.date)||s.id===x.staffId).sort((a,b)=>a.name.localeCompare(b.name,'sr'));
+    $('r-e-staff').innerHTML=opts.map(s=>`<option value="${esc(s.id)}">${esc(s.name)} · ${esc(secName(s.sector))}</option>`).join('');
+    $('r-e-staff').value=x.staffId; $('r-e-date').value=x.date; $('r-e-start').value=x.start; $('r-e-end').value=x.end; $('r-e-note').value=x.note||'';
+    const st=staffById(x.staffId);
+    $('r-e-title').textContent=`Izmena smene · ${st?st.name:''} · ${dowName(x.date)} ${fmtD(x.date)}`;
+    $('r-e-msg').className='msg'; $('r-e-msg').textContent='';
+    $('r-edit').hidden=false; renderRaspored();
+    $('r-edit').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  $('r-e-cancel').addEventListener('click',closeEdit);
+  $('r-edit').addEventListener('submit',async e=>{
+    e.preventDefault(); const m=$('r-e-msg'); m.className='msg';
+    const x=shiftById(R.edit); if(!x){ closeEdit(); return; }
+    const staffId=$('r-e-staff').value, date=$('r-e-date').value, start=$('r-e-start').value, end=$('r-e-end').value, note=$('r-e-note').value.trim();
+    if(!staffId||!date||!start||!end){ m.classList.add('err'); m.textContent='Popuni zaposlenog, dan i vreme.'; return; }
+    if(shiftSpan(start,end).h>16){ m.classList.add('err'); m.textContent='Smena je duža od 16 sati. Proveri vreme.'; return; }
+    const ov=overlapFor(staffId,date,start,end,x.id); if(ov){ m.classList.add('err'); m.textContent=ovMsg(staffById(staffId),ov); return; }
+    const before=shiftRow(x);
+    $('r-e-save').disabled=true;
+    try{
+      await q(S.db.from('mc_shifts').update({staff_id:staffId, shift_date:date, start_time:start, end_time:end, note:note||null}).eq('id',x.id));
+      await reload('shifts'); const st=staffById(staffId); closeEdit();
+      showUndo(`Izmenjena smena: ${st?st.name:''}, ${dowName(date)} ${fmtD(date)} ${start}–${end}.`, async ()=>{ const {id,...rest}=before; await q(S.db.from('mc_shifts').update(rest).eq('id',id)); await reload('shifts'); });
+    }catch(x2){ writeErr(m,x2); } finally{ $('r-e-save').disabled=false; }
+  });
+  $('r-e-del').addEventListener('click',async ()=>{
+    const x=shiftById(R.edit); if(!x){ closeEdit(); return; }
+    const st=staffById(x.staffId);
+    try{ await deleteShifts([x], `Obrisana smena: ${st?st.name:''}, ${dowName(x.date)} ${fmtD(x.date)} ${x.start}–${x.end}.`); closeEdit(); }
+    catch(x2){ writeErr($('r-e-msg'),x2); }
+  });
+
+  $('r-grid').addEventListener('click',async e=>{
+    if(!S.db) return;
+    const ed=e.target.closest('[data-edit-shift]'); if(ed){ openEdit(ed.dataset.editShift); return; }
+    const b=e.target.closest('[data-del]'); if(!b) return;
+    const x=shiftById(b.dataset.del); if(!x) return; const st=staffById(x.staffId);
+    try{ await deleteShifts([x], `Obrisana smena: ${st?st.name:''}, ${dowName(x.date)} ${fmtD(x.date)} ${x.start}–${x.end}.`); if(R.edit===x.id) closeEdit(); }
+    catch(x2){ writeErr($('r-msg'),x2); }
+  });
+
+  // ----- dodavanje smena -----
+  function resetAddForm(){ $('r-staff').value=''; $('r-start').value='10:00'; $('r-end').value='18:00'; $('r-note').value=''; document.querySelectorAll('#r-days input').forEach(i=>i.checked=false); }
   $('r-form').addEventListener('submit',async e=>{
     e.preventDefault(); const m=$('r-form-msg'); m.className='msg';
     if(!S.db){ m.classList.add('err'); m.textContent='Nisi prijavljen/a. Osveži stranicu i prijavi se.'; return; }
@@ -1246,20 +1349,45 @@ a.linkbtn{color:var(--ink)}
     if(!start||!end){ m.classList.add('err'); m.textContent='Upiši vreme od i do.'; return; }
     if(!days.length){ m.classList.add('err'); m.textContent='Označi bar jedan dan.'; return; }
     if(shiftSpan(start,end).h>16){ m.classList.add('err'); m.textContent='Smena je duža od 16 sati. Proveri vreme.'; return; }
+    const st=staffById(staffId);
+    for(const d of days){ const ov=overlapFor(staffId,d,start,end,null); if(ov){ m.classList.add('err'); m.textContent=ovMsg(st,ov); return; } }
     const rows=days.map(d=>({staff_id:staffId, shift_date:d, start_time:start, end_time:end, note:note||null}));
     $('r-add').disabled=true;
-    try{ await q(S.db.from('mc_shifts').insert(rows)); await reload('shifts'); const st=staffById(staffId); m.classList.add('ok'); m.textContent=`Dodato: ${st?st.name:''}, ${days.length} ${days.length===1?'dan':'dana'}.`; document.querySelectorAll('#r-days input').forEach(i=>i.checked=false); }
+    try{
+      const ins=await q(S.db.from('mc_shifts').insert(rows).select('id')); const ids=(ins||[]).map(r=>r.id);
+      await reload('shifts'); resetAddForm();
+      const txt=`Dodato: ${st?st.name:''}, ${days.length} ${days.length===1?'dan':'dana'}.`;
+      m.classList.add('ok'); m.textContent=txt;
+      showUndo(txt, async ()=>{ await q(S.db.from('mc_shifts').delete().in('id',ids)); await reload('shifts'); m.textContent=''; });
+    }
     catch(x){ writeErr(m,x); } finally{ $('r-add').disabled=!S.canWrite; }
   });
   $('r-copy').addEventListener('click',async ()=>{
     const m=$('r-msg'); m.className='msg';
     if(!S.db){ m.classList.add('err'); m.textContent='Nisi prijavljen/a. Osveži stranicu i prijavi se.'; return; }
     const cur=((S.schedule[R.week]||{}).shifts)||[];
-    if(cur.length){ m.classList.add('err'); m.textContent='Ova nedelja već ima smene. Obriši ih ili dodaj ručno.'; return; }
+    if(cur.length){ m.classList.add('err'); m.textContent='Ova nedelja već ima smene. Obriši ih („Obriši nedelju“) ili dodaj ručno.'; return; }
     const prev=((S.schedule[addDays(R.week,-7)]||{}).shifts)||[];
     if(!prev.length){ m.classList.add('err'); m.textContent='Prethodna nedelja nema raspored.'; return; }
     const shifts=prev.filter(x=>{ const st=staffById(x.staffId); return st&&activeOn(st,addDays(x.date,7)); }).map(x=>({staff_id:x.staffId, shift_date:addDays(x.date,7), start_time:x.start, end_time:x.end, note:x.note||null}));
-    try{ await q(S.db.from('mc_shifts').insert(shifts)); await reload('shifts'); m.classList.add('ok'); m.textContent=`Kopirano ${shifts.length} smena.`; }catch(x){ writeErr(m,x); }
+    try{
+      const ins=await q(S.db.from('mc_shifts').insert(shifts).select('id')); const ids=(ins||[]).map(r=>r.id);
+      await reload('shifts'); m.classList.add('ok'); m.textContent=`Kopirano: ${smena(shifts.length)}.`;
+      showUndo(`Kopirano iz prethodne nedelje: ${smena(shifts.length)}.`, async ()=>{ for(let i=0;i<ids.length;i+=200) await q(S.db.from('mc_shifts').delete().in('id',ids.slice(i,i+200))); await reload('shifts'); m.textContent=''; });
+    }catch(x){ writeErr(m,x); }
+  });
+  // ----- brisanje cele nedelje (dva klika) -----
+  let clearTimer=null;
+  function disarmClear(){ const b=$('r-clear'); b.classList.remove('armed'); b.textContent='Obriši nedelju'; clearTimeout(clearTimer); }
+  $('r-clear').addEventListener('click',async ()=>{
+    const m=$('r-msg'), b=$('r-clear'); m.className='msg';
+    if(!S.db){ m.classList.add('err'); m.textContent='Nisi prijavljen/a. Osveži stranicu i prijavi se.'; return; }
+    const cur=((S.schedule[R.week]||{}).shifts)||[];
+    if(!cur.length){ disarmClear(); m.classList.add('err'); m.textContent='Ova nedelja nema smena.'; return; }
+    if(!b.classList.contains('armed')){ b.classList.add('armed'); b.textContent=`Potvrdi: obriši ${smena(cur.length)}`; clearTimeout(clearTimer); clearTimer=setTimeout(disarmClear,5000); return; }
+    disarmClear(); b.disabled=true;
+    try{ await deleteShifts(cur.slice(), `Obrisana cela nedelja: ${smena(cur.length)}.`); if(R.edit) closeEdit(); m.textContent=''; }
+    catch(x){ writeErr(m,x); } finally{ b.disabled=!S.canWrite; }
   });
 
   // ===== ZAPOSLENI =====
@@ -1299,9 +1427,42 @@ a.linkbtn{color:var(--ink)}
     const p=st?payAt(id,today()):null;
     $('z-gross').value=p?inp(p.gross2):''; $('z-rate').value=p?inp(p.rate):''; $('z-meal').value=p?inp(p.meal):''; $('z-transport').value=p?inp(p.transport):''; $('z-regres').value=p?inp(p.regres):''; $('z-bonus').value=p?inp(p.bonus):'';
     $('z-payfrom').value=p?(p.from||$('z-from').value):$('z-from').value;
-    $('z-msg').textContent=''; modeUI(); updateZCalc();
+    $('z-msg').textContent=''; $('z-msg').className='msg'; modeUI(); updateZCalc();
+    $('z-del').hidden=!(S.admin&&st); disarmZDel();
   }
   $('z-new').addEventListener('click',()=>editStaff(null));
+  $('z-cancel').addEventListener('click',()=>{ editStaff(null); $('z-msg').textContent='Izmene nisu sačuvane.'; });
+  // ----- brisanje pogrešno unetog zaposlenog (dva klika, samo bez istorije) -----
+  let zDelTimer=null;
+  function disarmZDel(){ const b=$('z-del'); b.classList.remove('armed'); b.textContent='Obriši zaposlenog'; clearTimeout(zDelTimer); }
+  $('z-del').addEventListener('click',async ()=>{
+    const m=$('z-msg'), b=$('z-del'); m.className='msg';
+    const st=staffById(Z.editing); if(!st||!S.db||!S.admin) return;
+    b.disabled=true;
+    try{
+      const [sh,dy]=await Promise.all([
+        S.db.from('mc_shifts').select('id',{count:'exact',head:true}).eq('staff_id',st.id),
+        S.db.from('mc_days').select('day',{count:'exact',head:true}).contains('rows',[{staffId:st.id}])
+      ]);
+      if(sh.error) throw sh.error; if(dy.error) throw dy.error;
+      const nShifts=sh.count||0, nDays=dy.count||0;
+      const nPay=Object.values(S.payroll||{}).filter(x=>x&&x.amounts&&x.amounts[st.id]!=null&&x.amounts[st.id]!=='').length;
+      if(nDays||nPay){
+        disarmZDel(); m.classList.add('err');
+        m.textContent=`${st.name} ima istoriju (${nDays} potvrđenih dana${nPay?`, ${nPay} obračun`:''}), pa se ne briše da se ne izgube podaci o radu i platama. Upiši „Radi do“ i sačuvaj — ostaje u arhivi kao „ne radi više“.`;
+        return;
+      }
+      if(!b.classList.contains('armed')){
+        b.classList.add('armed');
+        b.textContent = nShifts ? `Potvrdi: obriši i ${smena(nShifts)} iz rasporeda` : 'Potvrdi brisanje';
+        clearTimeout(zDelTimer); zDelTimer=setTimeout(disarmZDel,5000); return;
+      }
+      disarmZDel();
+      await q(S.db.from('mc_staff').delete().eq('id',st.id));
+      await Promise.all([reload('staff'),reload('pay'),reload('shifts')]);
+      editStaff(null); m.className='msg ok'; m.textContent=`Obrisan/a: ${st.name}.`;
+    }catch(x){ disarmZDel(); writeErr(m,x); } finally{ b.disabled=false; }
+  });
   function modeUI(){
     const m=$('z-mode').value, t=$('z-type').value;
     document.querySelectorAll('.pay-fixed').forEach(e=>e.hidden=m!=='fiksno');
@@ -1352,7 +1513,7 @@ a.linkbtn{color:var(--ink)}
       else { const r=await q(S.db.from('mc_staff').insert(row).select('id').single()); id=r.id; }
       await q(S.db.from('mc_pay').upsert({staff_id:id, valid_from:p.from, gross2:p.gross2??null, rate:p.rate??null, meal:p.meal??null, transport:p.transport??null, regres:p.regres??null, bonus:p.bonus??null, updated_at:new Date().toISOString()},{onConflict:'staff_id,valid_from'}));
       await reload('staff'); await reload('pay');
-      Z.editing=id; $('z-title').textContent=`Izmena: ${name}`; m.classList.add('ok'); m.textContent=`Sačuvano: ${name}.`; }
+      Z.editing=id; $('z-title').textContent=`Izmena: ${name}`; $('z-del').hidden=!S.admin; m.classList.add('ok'); m.textContent=`Sačuvano: ${name}.`; }
     catch(x){ writeErr(m,x); } finally{ $('z-save').disabled=false; }
   });
 
