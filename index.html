@@ -168,6 +168,68 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
 .member .pwform label{flex:1 1 220px}
 .group-h{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember);margin:6px 0 8px}
 @media (prefers-reduced-motion:no-preference){.bar span{transition:width .3s ease}}
+/* HACCP */
+.runs{grid-column:1/-1;display:flex;flex-direction:column;gap:10px}
+.runs:empty{display:none}
+.run{background:var(--char);color:#f2ebe5;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.run .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+.run .code{font:600 15px var(--f-mono);letter-spacing:.04em;color:#fff}
+.run .meta{font-size:13px;color:#cfc4bb}
+.run .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.run .sbtn{color:#f2ebe5;border-color:#5a4f49}
+.run .sbtn.go{color:#fff}
+.run form{background:transparent;border:0;padding:0;gap:12px}
+.run input{background:#1d1816;color:#f2ebe5;border-color:#5a4f49}
+.run label{color:#e7ddd5}
+.run label .hint{color:#bfb2a8}
+.lotrows{display:flex;flex-direction:column;gap:8px}
+.lotrow{display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:8px;align-items:end}
+@media (max-width:560px){.lotrow{grid-template-columns:minmax(0,1fr) 96px auto}}
+.lotrow .info{grid-column:1/-1;font-size:12px;color:var(--muted);margin-top:-4px}
+.xbtn{background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:9px 12px}
+.addbtn{align-self:flex-start;background:none;border:1px dashed var(--line);border-radius:6px;color:var(--ink);cursor:pointer;font:600 14px var(--f-body);padding:8px 14px}
+.photobar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.photobtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:8px 12px;font:600 14px var(--f-body);cursor:pointer;background:var(--bg);color:var(--ink)}
+.photobtn input{display:none}
+.thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--line);background:var(--bg)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:2px;right:2px;border:0;border-radius:99px;width:20px;height:20px;line-height:20px;padding:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:13px}
+.item{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.item .ihead{display:flex;justify-content:space-between;align-items:center;font:500 11px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
+.done{background:var(--surface);border:2px solid var(--good);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.done .codes{display:flex;flex-wrap:wrap;gap:10px}
+.done .codes b{font:700 26px var(--f-mono);letter-spacing:.04em;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
+.rlist{display:flex;flex-direction:column;gap:10px}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.rcard .rh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+.rcard .rh b{font-size:16px}
+.rcard .sub{font-size:13px;color:var(--muted)}
+.rcard .lots{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.rcard .lots div{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.code{font:600 14px var(--f-mono);letter-spacing:.03em}
+.clip{background:none;border:0;color:var(--ink);cursor:pointer;font:inherit;font-size:13px;text-decoration:underline;padding:0}
+.miss{font-size:12px;color:var(--warn)}
+.trace{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;break-inside:avoid}
+.trace h3{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase;margin:0}
+.trace dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;margin:0;font-size:14px}
+.trace dt{color:var(--muted)}
+.trace dd{margin:0}
+.trace .link{border-left:3px solid var(--ember);padding:8px 12px;background:var(--bg);border-radius:0 8px 8px 0;display:flex;flex-direction:column;gap:6px}
+.trace table{min-width:0}
+.printhead{display:none}
+.printonly{display:none}
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:60;display:flex;align-items:center;justify-content:center;padding:16px}
+#lightbox[hidden]{display:none}
+#lightbox img{max-width:100%;max-height:100%;border-radius:6px;background:#fff}
+#lightbox button{position:absolute;top:12px;right:12px;border:0;border-radius:99px;width:40px;height:40px;background:#fff;color:#000;font-size:22px;cursor:pointer}
+@media print{
+  body{background:#fff}
+  header,nav,.pendbar,.filters,.noprint,#lightbox,.del,.clip,.sbtn{display:none !important}
+  section[hidden]{display:none !important}
+  .printhead{display:block;margin-bottom:12px}
+  .printonly{display:inline}
+  .trace{border:1px solid #999}
+}
 </style>
 </head>
 <body>
@@ -263,6 +325,11 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       <button role="tab" aria-selected="false" data-view="otpis">Otpis po smeni</button>
       <button role="tab" aria-selected="false" data-view="otpis-pregled">Pregled otpisa</button>
     </div>
+    <div class="navgroup"><span class="navlabel">HACCP</span>
+      <button role="tab" aria-selected="false" data-view="prijem">Prijem mesa</button>
+      <button role="tab" aria-selected="false" data-view="lotovi">Stanje lotova</button>
+      <button role="tab" aria-selected="false" data-view="sled">Sledljivost</button>
+    </div>
     <div class="navgroup" id="nav-sef" hidden><span class="navlabel">Proizvodi</span>
       <button role="tab" aria-selected="false" data-view="normativi" title="Normativi su u Management Control-u">Normativi ↗</button>
     </div>
@@ -273,23 +340,34 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   </nav>
 
   <section id="view-unos" class="entry">
+    <div class="runs" id="runs"></div>
     <form id="form" novalidate>
       <div>
         <h2>Novi ciklus</h2>
-        <p class="lede">Izmeri meso na četiri tačke: kad stigne, posle trimovanja, kad izađe iz smokera i kad se iseče za prodaju. Yield se računa sam.</p>
+        <p class="lede">Kad meso ulazi u smoker: izaberi meso i lot iz prijema, upiši sirovo i trim, pa klikni „Započni ciklus“. Kad izađe, završiš ga gore u „U smokeru“. Ako upisuješ sve odjednom, popuni i težine iz smokera i klikni „Sačuvaj gotov ciklus“.</p>
       </div>
       <fieldset>
         <legend>Osnovno</legend>
-        <label>Datum<input type="date" id="f-date" required></label>
         <label>Meso<select id="f-product" required><option value="">Izaberi meso</option></select></label>
         <label>Ko je pekao<input id="f-cook" autocomplete="off"></label>
-        <label>Šarža / dobavljač<input id="f-batch" placeholder="npr. Mesara X, lot 14" autocomplete="off"></label>
+      </fieldset>
+      <fieldset style="display:flex;flex-direction:column;gap:8px">
+        <legend>Meso iz prijema (lot)</legend>
+        <div class="lotrows" id="f-lots"></div>
+        <button type="button" class="addbtn" id="f-addlot">+ Dodaj lot</button>
+        <span class="hint" id="f-lothint" style="font-size:12px;color:var(--muted)">Izaberi meso, pa lot sa otpremnice.</span>
+      </fieldset>
+      <fieldset>
+        <legend>Vreme</legend>
+        <label>Ušlo u smoker<input type="datetime-local" id="f-in"></label>
+        <label>Izašlo iz smokera<span class="hint">samo ako je već gotovo</span><input type="datetime-local" id="f-out"></label>
+        <label>Temperatura u jezgru na izlazu (°C)<span class="hint">najdeblji deo mesa</span><input class="num" id="f-core" inputmode="decimal" placeholder="npr. 94"></label>
       </fieldset>
       <fieldset>
         <legend>Merenja (kg)</legend>
         <label>Sirovo — nabavka<span class="hint">težina kad stigne</span><input class="num" id="f-raw" inputmode="decimal" placeholder="0,000" required></label>
         <label>Posle trimovanja<span class="hint">ide u smoker</span><input class="num" id="f-trim" inputmode="decimal" placeholder="0,000"></label>
-        <label>Iz smokera<span class="hint">posle odmaranja</span><input class="num" id="f-cooked" inputmode="decimal" placeholder="0,000" required></label>
+        <label>Iz smokera<span class="hint">posle odmaranja · prazno ako tek ulazi</span><input class="num" id="f-cooked" inputmode="decimal" placeholder="0,000"></label>
         <label>Za prodaju<span class="hint">očišćeno, isečeno</span><input class="num" id="f-sell" inputmode="decimal" placeholder="0,000"></label>
       </fieldset>
       <fieldset>
@@ -303,7 +381,8 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
         <label class="wide">Napomena<textarea id="f-notes" placeholder="stall na 70 °C, umotano u papir na 75 °C, kora suva…"></textarea></label>
       </fieldset>
       <div class="actions">
-        <button class="btn ember" type="submit" id="save">Sačuvaj ciklus</button>
+        <button class="btn ember" type="button" id="start">Započni ciklus · meso ulazi u smoker</button>
+        <button class="btn" type="submit" id="save">Sačuvaj gotov ciklus</button>
         <button class="btn ghost" type="reset">Očisti</button>
         <span class="msg" id="msg" role="status"></span>
       </div>
@@ -444,6 +523,82 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   </section>
 
   <!-- NORMATIVI I ZARADA -->
+  <!-- HACCP: PRIJEM MESA -->
+  <section id="view-prijem" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <h2>Prijem mesa</h2>
+        <p class="lede">Upiši otpremnicu čim meso stigne. Svaka stavka dobija kod lota — prepiši ga flomasterom na kesu ili kutiju.</p>
+      </div>
+      <form id="rc-form" novalidate>
+        <fieldset>
+          <legend>Otpremnica</legend>
+          <label>Dobavljač<select id="rc-sup"></select></label>
+          <label id="rc-sup-new-l" hidden>Naziv novog dobavljača<input id="rc-sup-new" autocomplete="off" placeholder="npr. Mesara Petrović"></label>
+          <label>Broj otpremnice<input id="rc-doc" autocomplete="off" placeholder="npr. 2611/0457"></label>
+          <label>Primljeno<input type="datetime-local" id="rc-at"></label>
+          <label>Primio<input id="rc-by" autocomplete="off"></label>
+          <label class="wide">Napomena<input id="rc-note" autocomplete="off" placeholder="neobavezno"></label>
+        </fieldset>
+        <div class="photobar">
+          <label class="photobtn">📷 Slikaj otpremnicu<input type="file" id="rc-photo" accept="image/*" capture="environment" multiple></label>
+          <div class="photobar" id="rc-thumbs"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <legend>Stavke (meso sa otpremnice)</legend>
+          <div id="rc-items" style="display:flex;flex-direction:column;gap:10px"></div>
+          <button type="button" class="addbtn" id="rc-additem">+ Dodaj stavku</button>
+        </div>
+        <div class="actions">
+          <button class="btn ember" type="submit" id="rc-save">Sačuvaj prijem</button>
+          <button class="btn ghost" type="button" id="rc-clear">Očisti</button>
+          <span class="msg" id="rc-msg" role="status"></span>
+        </div>
+      </form>
+      <div id="rc-done"></div>
+      <div>
+        <h2 style="font-size:20px">Poslednji prijemi</h2>
+      </div>
+      <div class="rlist" id="rc-list"></div>
+    </div>
+  </section>
+
+  <!-- HACCP: STANJE LOTOVA -->
+  <section id="view-lotovi" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <h2>Stanje lotova</h2>
+        <p class="lede">Meso u komori po lotovima: koliko je primljeno, koliko je otišlo u smoker i koliko je ostalo. Lot kome je istekao rok ne može u smoker.</p>
+      </div>
+      <div class="filters">
+        <label>Prikaži<select id="lt-show"><option value="open">Otvoreni lotovi</option><option value="all">Svi lotovi</option></select></label>
+        <label>Meso<select id="lt-product"><option value="">Sve</option></select></label>
+      </div>
+      <div class="stat-row" id="lt-stats"></div>
+      <div id="lt-list"></div>
+    </div>
+  </section>
+
+  <!-- HACCP: SLEDLJIVOST -->
+  <section id="view-sled" hidden>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="noprint">
+        <h2>Sledljivost</h2>
+        <p class="lede">Upiši kod ciklusa (C-…), kod lota (npr. BR-2511-01) ili broj otpremnice. Bez pretrage prikazuju se svi ciklusi u izabranom periodu.</p>
+      </div>
+      <div class="filters">
+        <label style="width:260px">Traži<input id="sl-q" autocomplete="off" placeholder="C-2511-BR1, BR-2511-01, 2611/0457"></label>
+        <label>Od<input type="date" id="sl-from"></label>
+        <label>Do<input type="date" id="sl-to"></label>
+        <label>Meso<select id="sl-product"><option value="">Sve</option></select></label>
+        <label>Dobavljač<select id="sl-sup"><option value="">Svi</option></select></label>
+        <button class="btn ghost" type="button" id="sl-print" style="align-self:flex-end">Štampaj / PDF</button>
+      </div>
+      <div class="printhead" id="sl-printhead"></div>
+      <div id="sl-out" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+  </section>
+
   <section id="view-normativi" hidden>
     <div style="display:flex;flex-direction:column;gap:16px">
       <div>
@@ -520,6 +675,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   <div class="empty"><strong>Sajt još nije povezan sa bazom</strong>U fajl config.js treba upisati adresu i anon ključ Supabase projekta.</div>
 </div>
 
+<div id="lightbox" hidden role="dialog" aria-label="Slika"><img id="lb-img" alt=""><button type="button" id="lb-x" aria-label="Zatvori">×</button></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script>
@@ -533,7 +689,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const show = id => ['login-view','signup-view','forgot-view','newpass-view','pending-view','app-view','config-view'].forEach(v=>$(v).hidden = v!==id);
   let recovering = /type=recovery/.test(location.hash);
-  const VIEWS = ['unos','pregled','istorija','otpis','otpis-pregled','normativi','namirnice','tim'];
+  const VIEWS = ['unos','pregled','istorija','otpis','otpis-pregled','prijem','lotovi','sled','normativi','namirnice','tim'];
   const ADMIN_VIEWS = ['namirnice','tim'];
   const SEF_VIEWS = ['normativi'];
   const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
@@ -574,13 +730,22 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     if(diff>=-4) return {cls:'warn',txt:fmt(diff,1)+' pp od cilja'};
     return {cls:'bad',txt:fmt(diff,1)+' pp od cilja'};
   }
-  const toNumRow = r => { const o={...r}; ['raw_kg','trimmed_kg','cooked_kg','sellable_kg','price_per_kg','smoker_temp_c','hours','yield_pct'].forEach(k=>{ if(o[k]!=null) o[k]=Number(o[k]); }); return o; };
+  const toNumRow = r => { const o={...r}; ['raw_kg','trimmed_kg','cooked_kg','sellable_kg','price_per_kg','smoker_temp_c','hours','yield_pct','core_temp_c','kg','temp_c'].forEach(k=>{ if(o[k]!=null) o[k]=Number(o[k]); }); return o; };
+  // vreme: polje datetime-local <-> ISO, prikaz po beogradskom vremenu
+  const pad2 = n => String(n).padStart(2,'0');
+  const toLocalInput = d => { d=d?new Date(d):new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+  const fromLocalInput = v => v ? new Date(v).toISOString() : null;
+  const fmtDT = ts => { if(!ts) return '—'; const d=new Date(ts); return d.toLocaleString('sr-Latn-RS',{timeZone:'Europe/Belgrade',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).replace(',',''); };
+  const dayOf = ts => { const d=new Date(ts); return d.toLocaleDateString('sv-SE',{timeZone:'Europe/Belgrade'}); };
+  const durTxt = (a,b) => { const m=Math.max(0,Math.round((new Date(b)-new Date(a))/60000)); return `${Math.floor(m/60)} h ${pad2(m%60)} min`; };
+  let suppliers=[], receipts=[], lots=[], lotUses=[], runs=[];
 
   // ---------- forma ----------
   const F = id => $('f-'+id);
   function readForm(){
     return {
-      cook_date:F('date').value, product_id:F('product').value, cook_name:F('cook').value.trim(), batch:F('batch').value.trim(),
+      cook_date:F('in').value?F('in').value.slice(0,10):today(), smoker_in:F('in').value, smoker_out:F('out').value, core_temp_c:num(F('core').value),
+      product_id:F('product').value, cook_name:F('cook').value.trim(), lots:readLots(),
       raw_kg:num(F('raw').value), trimmed_kg:num(F('trim').value), cooked_kg:num(F('cooked').value), sellable_kg:num(F('sell').value),
       price_per_kg:num(F('price').value), smoker_temp_c:num(F('temp').value), hours:num(F('hours').value),
       wood:F('wood').value.trim(), notes:F('notes').value.trim()
@@ -612,32 +777,61 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     $('c-verdict').textContent = t==null ? 'Za ovo meso još nema cilja — administrator ga postavlja u „Pregled po mesu“.' : `Cilj za ${prodName(e.product_id)}: ${fmt(t,0)} %. Ovaj ciklus: ${judge(r.yield,t).txt}.`;
   }
   $('form').addEventListener('input',updateCalc);
-  $('form').addEventListener('reset',()=>setTimeout(()=>{F('date').value=today();F('cook').value=me?me.full_name:'';updateCalc();$('msg').textContent='';},0));
+  $('form').addEventListener('reset',()=>setTimeout(()=>{F('in').value=toLocalInput();F('cook').value=me?me.full_name:'';$('f-lots').innerHTML='';renderLotPicker();updateCalc();$('msg').textContent='';},0));
 
-  function validate(e){
-    if(!e.cook_date) return 'Upiši datum.';
+  function validate(e, mode){
     if(!e.product_id) return 'Izaberi meso.';
-    for(const [k,l] of [['raw_kg','sirovo'],['trimmed_kg','posle trimovanja'],['cooked_kg','iz smokera'],['sellable_kg','za prodaju'],['price_per_kg','cena'],['smoker_temp_c','temperatura'],['hours','vreme']]) if(Number.isNaN(e[k])) return `Polje „${l}“ mora biti broj (npr. 4,250).`;
+    for(const [k,l] of [['raw_kg','sirovo'],['trimmed_kg','posle trimovanja'],['cooked_kg','iz smokera'],['sellable_kg','za prodaju'],['price_per_kg','cena'],['smoker_temp_c','temperatura smokera'],['hours','vreme'],['core_temp_c','temperatura u jezgru']]) if(Number.isNaN(e[k])) return `Polje „${l}“ mora biti broj (npr. 4,250).`;
     if(!(e.raw_kg>0)) return 'Upiši sirovu težinu u kg.';
-    if(!(e.cooked_kg>0)) return 'Upiši težinu iz smokera u kg.';
+    if(e.lots.some(l=>!l.lot_id)) return 'Izaberi lot u svakom redu ili ukloni prazan red (×).';
+    if(e.lots.some(l=>!(l.kg>0))) return 'Upiši koliko kg je uzeto iz svakog lota.';
+    if(e.lots.length){ const sum=e.lots.reduce((a,l)=>a+l.kg,0); if(Math.abs(sum-e.raw_kg)>0.05) return `Zbir kg iz lotova (${fmt(sum,2)}) nije isti kao sirovo (${fmt(e.raw_kg,2)}).`; }
+    else if(openLotsFor(e.product_id, e.cook_date).length) return 'Izaberi lot iz prijema (meso sa otpremnice) — za ovo meso ima otvorenih lotova.';
+    if(mode==='start'){
+      if(!e.smoker_in) return 'Upiši kada je meso ušlo u smoker.';
+      if(e.cooked_kg) return 'Težina iz smokera je upisana — ciklus je gotov. Klikni „Sačuvaj gotov ciklus“.';
+      if(e.trimmed_kg && e.trimmed_kg>e.raw_kg) return 'Težina posle trimovanja je veća od sirove — proveri merenje.';
+      return null;
+    }
+    if(!(e.cooked_kg>0)) return 'Upiši težinu iz smokera u kg. Ako meso tek ulazi u smoker, klikni „Započni ciklus“.';
+    if(e.smoker_in && e.smoker_out && new Date(e.smoker_out)<new Date(e.smoker_in)) return 'Vreme izlaska je pre vremena ulaska u smoker.';
     return sanity(e);
+  }
+  function cookPayload(e){
+    const p={product_id:e.product_id, cook_name:e.cook_name, cook_date:e.cook_date, raw_kg:e.raw_kg, trimmed_kg:e.trimmed_kg, cooked_kg:e.cooked_kg, sellable_kg:e.sellable_kg,
+      price_per_kg:e.price_per_kg, smoker_temp_c:e.smoker_temp_c, hours:e.hours, wood:e.wood, notes:e.notes, core_temp_c:e.core_temp_c,
+      smoker_in:fromLocalInput(e.smoker_in), smoker_out:fromLocalInput(e.smoker_out), lots:e.lots};
+    Object.keys(p).forEach(k=>{ if(p[k]==null||p[k]==='') delete p[k]; });
+    return p;
+  }
+  function clearForm(){
+    const keep={cook:F('cook').value};
+    ['product','raw','trim','cooked','sell','price','temp','hours','wood','notes','out','core'].forEach(k=>F(k).value='');
+    F('in').value=toLocalInput(); F('cook').value=keep.cook; $('f-lots').innerHTML=''; renderLotPicker(); updateCalc();
   }
   $('form').addEventListener('submit',async ev=>{
     ev.preventDefault();
     const msg=$('msg'); msg.className='msg';
-    const e=readForm(), err=validate(e);
+    const e=readForm(), err=validate(e,'done');
     if(err){msg.classList.add('err');msg.textContent=err;return;}
-    const row={...e}; Object.keys(row).forEach(k=>{ if(row[k]==null||row[k]==='') delete row[k]; });
     $('save').disabled=true;
-    const {error}=await sb.from('cooks').insert(row);
+    const {error}=await sb.rpc('haccp_direct',{p:cookPayload(e)});
     $('save').disabled=false;
     if(error){ msg.classList.add('err'); msg.textContent='Čuvanje nije uspelo: '+(error.message||'proveri internet i probaj ponovo.'); return; }
     const r=compute(e);
     msg.classList.add('ok'); msg.textContent=`Sačuvano: ${prodName(e.product_id)}, yield ${pct(r.yield)}.`;
-    const keep={date:F('date').value,cook:F('cook').value};
-    ['product','batch','raw','trim','cooked','sell','price','temp','hours','wood','notes'].forEach(k=>F(k).value='');
-    F('date').value=keep.date; F('cook').value=keep.cook; updateCalc();
-    loadCooks();
+    clearForm(); loadCooks(); loadHaccp();
+  });
+  $('start').addEventListener('click',async ()=>{
+    const msg=$('msg'); msg.className='msg';
+    const e=readForm(), err=validate(e,'start');
+    if(err){msg.classList.add('err');msg.textContent=err;return;}
+    $('start').disabled=true;
+    const {data,error}=await sb.rpc('haccp_start',{p:cookPayload(e)});
+    $('start').disabled=false;
+    if(error){ msg.classList.add('err'); msg.textContent='Nije sačuvano: '+(error.message||'proveri internet i probaj ponovo.'); return; }
+    msg.classList.add('ok'); msg.textContent=`Ciklus ${data} je započet: ${prodName(e.product_id)} je u smokeru. Kad izađe, klikni „Završi“ gore.`;
+    clearForm(); loadHaccp(); window.scrollTo({top:0,behavior:'smooth'});
   });
 
   // ---------- tabovi ----------
@@ -721,7 +915,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       const r=compute(e), j=r?judge(r.yield,targetFor(e.product_id)):{cls:'none'};
       const sm=[e.smoker_temp_c!=null?fmt(e.smoker_temp_c,0)+' °C':null,e.hours!=null?fmt(e.hours,1)+' h':null,e.wood||null].filter(Boolean).join(' · ')||'—';
       const canDel = isAdmin || (me && e.created_by===me.id);
-      html+=`<tr><td>${fmtDate(e.cook_date)}</td><td><strong>${esc(prodName(e.product_id))}</strong>${e.batch?`<div class="note">${esc(e.batch)}</div>`:''}</td>
+      html+=`<tr><td>${fmtDate(e.cook_date)}</td><td><strong>${esc(prodName(e.product_id))}</strong>${e.code?`<div class="note code">${esc(e.code)}</div>`:''}${e.batch?`<div class="note">${esc(e.batch)}</div>`:''}</td>
         <td class="n">${fmt(e.raw_kg,2)}</td><td class="n">${e.trimmed_kg?fmt(e.trimmed_kg,2):'—'}</td><td class="n">${fmt(e.cooked_kg,2)}</td><td class="n">${e.sellable_kg?fmt(e.sellable_kg,2):'—'}</td>
         <td class="n"><span class="pill ${j.cls}">${r?pct(r.yield):'—'}</span></td><td class="n">${r&&r.cost?fmt(r.cost,0):'—'}</td>
         <td>${esc(sm)}</td><td>${esc(e.cook_name||'—')}${e.notes?`<div class="note">${esc(e.notes)}</div>`:''}</td>
@@ -736,7 +930,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       loadCooks();
     }));
   }
-  function renderAll(){ renderProducts(); renderCards(); renderHistory(); updateCalc(); }
+  function renderAll(){ renderProducts(); renderCards(); renderHistory(); updateCalc(); renderHaccp(); }
 
   // ---------- tim (administrator) ----------
   async function loadTeam(){
@@ -1249,6 +1443,11 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     if(channel) return;
     channel = sb.channel('yield-live')
       .on('postgres_changes',{event:'*',schema:'public',table:'cooks'},()=>loadCooks())
+      .on('postgres_changes',{event:'*',schema:'public',table:'receipts'},()=>loadHaccp())
+      .on('postgres_changes',{event:'*',schema:'public',table:'lots'},()=>loadHaccp())
+      .on('postgres_changes',{event:'*',schema:'public',table:'lot_uses'},()=>loadHaccp())
+      .on('postgres_changes',{event:'*',schema:'public',table:'smoker_runs'},()=>loadHaccp())
+      .on('postgres_changes',{event:'*',schema:'public',table:'suppliers'},()=>loadHaccp())
       .on('postgres_changes',{event:'*',schema:'public',table:'products'},()=>loadProducts())
       .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>loadTeam())
       .on('postgres_changes',{event:'*',schema:'public',table:'waste'},()=>loadWaste())
@@ -1337,6 +1536,399 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   });
   $('pendbar-go').addEventListener('click',()=>tab('tim'));
 
+  // =====================================================================
+  // HACCP: prijem mesa, lotovi, ciklus u smokeru, sledljivost
+  // =====================================================================
+  const supName = id => (suppliers.find(s=>s.id===id)||{}).name || '—';
+  const recById = id => receipts.find(r=>r.id===id);
+  const lotById = id => lots.find(l=>l.id===id);
+  const lotUsed = id => lotUses.filter(u=>u.lot_id===id).reduce((a,u)=>a+Number(u.kg),0);
+  const lotLeft = l => Math.max(0, Number(l.kg) - lotUsed(l.id));
+  const daysTo = d => d ? Math.round((Date.parse(d+'T00:00:00Z') - Date.parse(today()+'T00:00:00Z'))/86400000) : null;
+  function expiryPill(l){
+    if(!l.expiry) return '<span class="pill none">bez roka</span>';
+    const n=daysTo(l.expiry), txt=fmtDate(l.expiry);
+    if(n<0) return `<span class="pill bad">🔴 istekao ${txt}</span>`;
+    if(n<=2) return `<span class="pill warn">🟠 ${txt} · još ${n} ${n===1?'dan':'dana'}</span>`;
+    return `<span class="pill good">🟢 ${txt}</span>`;
+  }
+  const lotOpen = l => !l.closed_at && lotLeft(l) > 0.001;
+  const openLotsFor = (pid, day) => lots.filter(l=>l.product_id===pid && lotOpen(l) && (!l.expiry || l.expiry >= (day||today())));
+  const kgTxt = n => fmt(n,2)+' kg';
+
+  async function loadHaccp(){
+    const [s,r,l,u,ru] = await Promise.all([
+      sb.from('suppliers').select('*').order('sort').order('name'),
+      sb.from('receipts').select('*').order('received_at',{ascending:false}).limit(2000),
+      sb.from('lots').select('*').order('created_at',{ascending:false}).limit(5000),
+      sb.from('lot_uses').select('*').limit(20000),
+      sb.from('smoker_runs').select('*').order('smoker_in')
+    ]);
+    const err=[s,r,l,u,ru].find(x=>x.error);
+    if(err){ $('runs').innerHTML=''; console.warn('HACCP nije učitan:', err.error.message); return; }
+    suppliers=s.data||[]; receipts=r.data||[]; lots=(l.data||[]).map(toNumRow); lotUses=(u.data||[]).map(x=>({...x,kg:Number(x.kg)})); runs=(ru.data||[]).map(toNumRow);
+    renderHaccp();
+  }
+  function renderHaccp(){
+    if(!$('rc-sup')) return;
+    renderSupplierSelects(); renderLotPicker(); renderRuns(); renderReceipts(); renderLots(); renderTrace();
+    if(!$('rc-items').children.length) addItem();
+  }
+
+  // ---------- slike ----------
+  async function shrink(file){
+    try{
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 1600/Math.max(bmp.width,bmp.height));
+      const c = document.createElement('canvas'); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+      c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+      const blob = await new Promise(res=>c.toBlob(res,'image/jpeg',0.78));
+      if(blob) return blob;
+    }catch(_){}
+    return file;
+  }
+  const rid8 = () => Math.random().toString(36).slice(2,10);
+  async function uploadAll(prefix, blobs){
+    const paths=[];
+    for(const b of blobs){
+      const path=`${prefix}/${Date.now()}-${rid8()}.jpg`;
+      const {error}=await sb.storage.from('haccp').upload(path, b, {contentType: b.type||'image/jpeg', upsert:false});
+      if(error) throw new Error('Slika nije poslata: '+error.message);
+      paths.push(path);
+    }
+    return paths;
+  }
+  async function openPhoto(path){
+    const {data,error}=await sb.storage.from('haccp').createSignedUrl(path, 600);
+    if(error){ alertMsg('Slika nije učitana: '+error.message); return; }
+    $('lb-img').src=data.signedUrl; $('lightbox').hidden=false;
+  }
+  function alertMsg(t){ $('status').textContent=t; }
+  $('lb-x').addEventListener('click',()=>{ $('lightbox').hidden=true; $('lb-img').src=''; });
+  $('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox'){ $('lightbox').hidden=true; $('lb-img').src=''; } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('lightbox').hidden){ $('lightbox').hidden=true; $('lb-img').src=''; } });
+  const clips = (paths, label) => (paths&&paths.length) ? paths.map((p,i)=>`<button type="button" class="clip" data-photo="${esc(p)}">📎 ${esc(label)}${paths.length>1?' '+(i+1):''}</button>`).join(' ')+`<span class="printonly">slika priložena u aplikaciji (${paths.length})</span>` : `<span class="miss">bez slike</span>`;
+  document.addEventListener('click',e=>{ const b=e.target.closest('[data-photo]'); if(b){ e.preventDefault(); openPhoto(b.dataset.photo); } });
+
+  // ---------- Novi unos: izbor lotova ----------
+  function lotOptionLabel(l){
+    const r=recById(l.receipt_id)||{};
+    return `${l.code} · ${supName(r.supplier_id)} · otp. ${r.doc_no||'—'} · ostalo ${fmt(lotLeft(l),2)} kg${l.expiry?' · rok '+fmtDate(l.expiry):''}`;
+  }
+  function addLotRow(lotId, kg){
+    const pid=F('product').value;
+    const row=document.createElement('div'); row.className='lotrow';
+    row.innerHTML=`<label>Lot<select class="lr-lot"><option value="">Izaberi lot</option></select></label>
+      <label>kg iz lota<input class="num lr-kg" inputmode="decimal" placeholder="0,000"></label>
+      <button type="button" class="xbtn" aria-label="Ukloni lot">×</button><div class="info"></div>`;
+    const sel=row.querySelector('.lr-lot');
+    openLotsFor(pid, (F('in').value||today()).slice(0,10)).forEach(l=>{ const o=document.createElement('option'); o.value=l.id; o.textContent=lotOptionLabel(l); sel.appendChild(o); });
+    if(lotId) sel.value=lotId; if(kg!=null) row.querySelector('.lr-kg').value=String(kg).replace('.',',');
+    row.querySelector('.xbtn').addEventListener('click',()=>{ row.remove(); syncRaw(); renderLotPicker(); updateCalc(); });
+    sel.addEventListener('change',()=>{ const l=lotById(sel.value); const k=row.querySelector('.lr-kg'); if(l && !k.value && $('f-lots').children.length===1 && !F('raw').value) k.value=String(Math.round(lotLeft(l)*1000)/1000).replace('.',','); syncRaw(); updateCalc(); lotInfo(row); });
+    row.querySelector('.lr-kg').addEventListener('input',()=>{ syncRaw(); });
+    $('f-lots').appendChild(row); lotInfo(row);
+  }
+  function lotInfo(row){
+    const l=lotById(row.querySelector('.lr-lot').value), info=row.querySelector('.info');
+    if(!l){ info.textContent=''; return; }
+    const r=recById(l.receipt_id)||{};
+    info.innerHTML=`${esc(supName(r.supplier_id))} · otpremnica ${esc(r.doc_no||'—')} · primljeno ${esc(fmtDT(r.received_at))}${l.supplier_lot?' · LOT '+esc(l.supplier_lot):''} · ${expiryPill(l)}`;
+  }
+  function readLots(){
+    return [...document.querySelectorAll('#f-lots .lotrow')].map(r=>({lot_id:r.querySelector('.lr-lot').value, kg:num(r.querySelector('.lr-kg').value)}));
+  }
+  function syncRaw(){
+    const ls=readLots().filter(l=>l.kg>0); if(!ls.length) return;
+    F('raw').value=String(Math.round(ls.reduce((a,l)=>a+l.kg,0)*1000)/1000).replace('.',',');
+  }
+  function renderLotPicker(){
+    const pid=F('product').value, n=pid?openLotsFor(pid,(F('in').value||today()).slice(0,10)).length:0;
+    const hint=$('f-lothint'), add=$('f-addlot');
+    add.hidden = !pid || !n;
+    if(!pid){ hint.textContent='Izaberi meso, pa lot sa otpremnice.'; return; }
+    if(!n){ hint.innerHTML = $('f-lots').children.length ? '' : `Za ${esc(prodName(pid))} nema otvorenih lotova. Upiši prijem u „Prijem mesa“ da bi meso bilo sledljivo, ili sačuvaj bez lota.`; return; }
+    hint.textContent = $('f-lots').children.length ? 'Ako meso uzimaš sa više otpremnica, dodaj još jedan lot.' : '';
+    if(!$('f-lots').children.length) addLotRow();
+  }
+  F('product').addEventListener('change',()=>{ $('f-lots').innerHTML=''; renderLotPicker(); });
+  $('f-addlot').addEventListener('click',()=>addLotRow());
+  const autoHours=()=>{ const a=F('in').value, b=F('out').value; if(a&&b&&new Date(b)>new Date(a)) F('hours').value=String(Math.round((new Date(b)-new Date(a))/360000)/10).replace('.',','); };
+  F('in').addEventListener('change',autoHours); F('out').addEventListener('change',autoHours);
+
+  // ---------- U smokeru ----------
+  function renderRuns(){
+    const box=$('runs');
+    if(!runs.length){ box.innerHTML=''; return; }
+    box.innerHTML=`<div style="font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ember)">U smokeru · ${runs.length}</div>`+runs.map(r=>{
+      const us=lotUses.filter(u=>u.run_id===r.id).map(u=>{ const l=lotById(u.lot_id); return l?`${l.code} (${fmt(u.kg,2)} kg)`:''; }).filter(Boolean).join(', ');
+      return `<div class="run" data-run="${esc(r.id)}">
+        <div class="top"><div><span class="code">${esc(r.code)}</span> · <b>${esc(prodName(r.product_id))}</b> · ${fmt(r.raw_kg,2)} kg sirovo</div>
+          <div class="meta">ušlo ${esc(fmtDT(r.smoker_in))} · u smokeru ${esc(durTxt(r.smoker_in,new Date()))}</div></div>
+        <div class="meta">${us?'Lot: '+esc(us):'bez lota'}${r.cook_name?' · pekao '+esc(r.cook_name):''}${r.smoker_temp_c?' · '+fmt(r.smoker_temp_c,0)+' °C':''}${r.wood?' · '+esc(r.wood):''}</div>
+        <div class="acts"><button type="button" class="sbtn go" data-finish="${esc(r.id)}">Završi · meso izlazi</button><button type="button" class="sbtn" data-cancel="${esc(r.id)}">Otkaži ciklus</button><span class="msg" data-rmsg></span></div>
+        <form class="finish" hidden novalidate>
+          <fieldset>
+            <label>Izašlo iz smokera<input type="datetime-local" data-k="out"></label>
+            <label>Iz smokera (kg)<span class="hint">posle odmaranja</span><input class="num" inputmode="decimal" data-k="cooked" placeholder="0,000"></label>
+            <label>Za prodaju (kg)<span class="hint">očišćeno, isečeno</span><input class="num" inputmode="decimal" data-k="sell" placeholder="0,000"></label>
+            <label>Temperatura u jezgru na izlazu (°C)<span class="hint">najdeblji deo mesa</span><input class="num" inputmode="decimal" data-k="core" placeholder="npr. 94"></label>
+            <label class="wide">Napomena<input data-k="notes" autocomplete="off"></label>
+          </fieldset>
+          <div class="actions"><button type="submit" class="btn ember">Sačuvaj · ciklus gotov</button><button type="button" class="btn ghost" data-close>Odustani</button></div>
+        </form></div>`;
+    }).join('');
+  }
+  $('runs').addEventListener('click',async e=>{
+    const card=e.target.closest('.run'); if(!card) return;
+    const m=card.querySelector('[data-rmsg]');
+    if(e.target.closest('[data-finish]')){ const f=card.querySelector('.finish'); f.hidden=false; f.querySelector('[data-k=out]').value=toLocalInput(); f.querySelector('[data-k=cooked]').focus(); return; }
+    if(e.target.closest('[data-close]')){ card.querySelector('.finish').hidden=true; return; }
+    const cb=e.target.closest('[data-cancel]');
+    if(cb){
+      if(!cb.classList.contains('armed')){ cb.classList.add('armed'); cb.textContent='Sigurno? Lot se vraća'; setTimeout(()=>{ if(cb.isConnected){ cb.classList.remove('armed'); cb.textContent='Otkaži ciklus'; } },5000); return; }
+      cb.disabled=true; const {error}=await sb.rpc('haccp_cancel',{p_run:cb.dataset.cancel});
+      if(error){ m.className='msg err'; m.textContent=error.message; cb.disabled=false; return; }
+      loadHaccp();
+    }
+  });
+  $('runs').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const card=e.target.closest('.run'), f=e.target, m=card.querySelector('[data-rmsg]'), v=k=>f.querySelector(`[data-k=${k}]`).value;
+    const r=runs.find(x=>x.id===card.dataset.run); if(!r) return;
+    const cooked=num(v('cooked')), sell=num(v('sell')), core=num(v('core')), out=v('out');
+    m.className='msg err';
+    if([cooked,sell,core].some(Number.isNaN)){ m.textContent='Težine i temperatura moraju biti brojevi.'; return; }
+    if(!(cooked>0)){ m.textContent='Upiši težinu iz smokera u kg.'; return; }
+    if(cooked>(r.trimmed_kg||r.raw_kg)){ m.textContent='Težina iz smokera je veća od težine koja je ušla — proveri.'; return; }
+    if(sell && sell>cooked){ m.textContent='Za prodaju je više nego iz smokera — proveri.'; return; }
+    if(!out){ m.textContent='Upiši vreme izlaska.'; return; }
+    if(new Date(out)<new Date(r.smoker_in)){ m.textContent='Vreme izlaska je pre vremena ulaska.'; return; }
+    const p={smoker_out:fromLocalInput(out), cooked_kg:cooked, sellable_kg:sell, core_temp_c:core, notes:v('notes').trim(), cook_name:me?me.full_name:''};
+    Object.keys(p).forEach(k=>{ if(p[k]==null||p[k]==='') delete p[k]; }); if(r.cook_name) delete p.cook_name;
+    f.querySelector('[type=submit]').disabled=true;
+    const {error}=await sb.rpc('haccp_finish',{p_run:r.id, p});
+    if(error){ f.querySelector('[type=submit]').disabled=false; m.textContent='Nije sačuvano: '+error.message; return; }
+    const y=(sell||cooked)/r.raw_kg;
+    $('msg').className='msg ok'; $('msg').textContent=`Ciklus ${r.code} je gotov: ${prodName(r.product_id)}, yield ${pct(y)}.`;
+    loadHaccp(); loadCooks();
+  });
+
+  // ---------- Prijem mesa ----------
+  let rcPhotos=[];   // [{blob,url}]
+  function renderSupplierSelects(){
+    const cur=$('rc-sup').value;
+    $('rc-sup').innerHTML='<option value="">Izaberi dobavljača</option>'+suppliers.filter(s=>s.active).map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')+'<option value="__new">+ Novi dobavljač…</option>';
+    if([...$('rc-sup').options].some(o=>o.value===cur)) $('rc-sup').value=cur;
+    const sc=$('sl-sup').value; $('sl-sup').innerHTML='<option value="">Svi</option>'+suppliers.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join(''); $('sl-sup').value=sc;
+    ['lt-product','sl-product'].forEach(id=>{ const el=$(id), c=el.value; el.innerHTML='<option value="">Sve</option>'+products.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(''); el.value=c; });
+    document.querySelectorAll('#rc-items .it-prod').forEach(sel=>{ const c=sel.value; sel.innerHTML='<option value="">Izaberi meso</option>'+products.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join(''); sel.value=c; });
+  }
+  $('rc-sup').addEventListener('change',()=>{ const n=$('rc-sup').value==='__new'; $('rc-sup-new-l').hidden=!n; if(n) $('rc-sup-new').focus(); });
+  function thumbs(box, arr){
+    box.innerHTML=arr.map((p,i)=>`<div class="thumb"><img src="${p.url}" alt="slika ${i+1}"><button type="button" data-rm="${i}" aria-label="Ukloni sliku">×</button></div>`).join('');
+    box.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>{ URL.revokeObjectURL(arr[b.dataset.rm].url); arr.splice(Number(b.dataset.rm),1); thumbs(box,arr); }));
+  }
+  async function takePhotos(input, arr, box){
+    for(const f of [...input.files]){ const blob=await shrink(f); arr.push({blob,url:URL.createObjectURL(blob)}); }
+    input.value=''; thumbs(box,arr);
+  }
+  $('rc-photo').addEventListener('change',e=>takePhotos(e.target,rcPhotos,$('rc-thumbs')));
+  function addItem(){
+    const n=$('rc-items').children.length+1, it=document.createElement('div'); it.className='item'; it._photos=[];
+    it.innerHTML=`<div class="ihead"><span>Stavka ${n}</span><button type="button" class="xbtn" aria-label="Ukloni stavku" style="padding:4px 10px">×</button></div>
+      <fieldset>
+        <label>Meso<select class="it-prod"></select></label>
+        <label>Količina (kg)<input class="num it-kg" inputmode="decimal" placeholder="0,000"></label>
+        <label>LOT sa etikete<span class="hint">ako postoji</span><input class="it-lot" autocomplete="off"></label>
+        <label>Rok upotrebe<input type="date" class="it-exp"></label>
+        <label>Temperatura mesa pri prijemu (°C)<span class="hint">ubodni termometar, u sredini komada</span><input class="num it-temp" inputmode="decimal" placeholder="npr. 3"></label>
+      </fieldset>
+      <div class="photobar"><label class="photobtn">📷 Deklaracija<input type="file" class="it-photo" accept="image/*" capture="environment" multiple></label><div class="photobar it-thumbs"></div></div>`;
+    it.querySelector('.it-prod').innerHTML='<option value="">Izaberi meso</option>'+products.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    it.querySelector('.xbtn').addEventListener('click',()=>{ it.remove(); renumber(); });
+    it.querySelector('.it-photo').addEventListener('change',e=>takePhotos(e.target,it._photos,it.querySelector('.it-thumbs')));
+    $('rc-items').appendChild(it);
+  }
+  function renumber(){ [...$('rc-items').children].forEach((it,i)=>it.querySelector('.ihead span').textContent='Stavka '+(i+1)); if(!$('rc-items').children.length) addItem(); }
+  $('rc-additem').addEventListener('click',addItem);
+  function clearReceipt(){
+    $('rc-doc').value=''; $('rc-note').value=''; $('rc-sup').value=''; $('rc-sup-new').value=''; $('rc-sup-new-l').hidden=true;
+    $('rc-at').value=toLocalInput(); $('rc-by').value=me?me.full_name:'';
+    rcPhotos.forEach(p=>URL.revokeObjectURL(p.url)); rcPhotos=[]; thumbs($('rc-thumbs'),rcPhotos);
+    $('rc-items').innerHTML=''; addItem(); $('rc-msg').textContent='';
+  }
+  $('rc-clear').addEventListener('click',clearReceipt);
+  $('rc-form').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const m=$('rc-msg'); m.className='msg err';
+    let sup=$('rc-sup').value; const doc=$('rc-doc').value.trim();
+    if(!sup){ m.textContent='Izaberi dobavljača.'; return; }
+    if(sup==='__new' && $('rc-sup-new').value.trim().length<2){ m.textContent='Upiši naziv novog dobavljača.'; return; }
+    if(!doc){ m.textContent='Upiši broj otpremnice.'; return; }
+    if(!$('rc-at').value){ m.textContent='Upiši kada je meso primljeno.'; return; }
+    const items=[...$('rc-items').children].map(it=>({el:it, product_id:it.querySelector('.it-prod').value, kg:num(it.querySelector('.it-kg').value),
+      supplier_lot:it.querySelector('.it-lot').value.trim(), expiry:it.querySelector('.it-exp').value, temp_c:num(it.querySelector('.it-temp').value)}))
+      .filter(x=>x.product_id||x.kg!=null||x.supplier_lot||x.expiry);
+    if(!items.length){ m.textContent='Dodaj bar jednu stavku: meso i kg.'; return; }
+    for(const [i,x] of items.entries()){
+      if(!x.product_id){ m.textContent=`Stavka ${i+1}: izaberi meso.`; return; }
+      if(Number.isNaN(x.kg)||!(x.kg>0)){ m.textContent=`Stavka ${i+1}: upiši količinu u kg (npr. 42,6).`; return; }
+      if(x.kg>200){ m.textContent=`Stavka ${i+1}: ${fmt(x.kg,0)} kg je previše — da li je upisano u gramima? Upiši u kg.`; return; }
+      if(Number.isNaN(x.temp_c)){ m.textContent=`Stavka ${i+1}: temperatura mora biti broj.`; return; }
+    }
+    $('rc-save').disabled=true; m.className='msg'; m.textContent='Čuvam…';
+    try{
+      if(sup==='__new'){ const {data,error}=await sb.rpc('haccp_add_supplier',{p_name:$('rc-sup-new').value.trim()}); if(error) throw error; sup=data; }
+      const rid=(crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));
+      if(rcPhotos.length||items.some(x=>x.el._photos.length)) m.textContent='Šaljem slike…';
+      const photos=await uploadAll(`r/${rid}`, rcPhotos.map(p=>p.blob));
+      const its=[];
+      for(const [i,x] of items.entries()) its.push({product_id:x.product_id, kg:x.kg, supplier_lot:x.supplier_lot, expiry:x.expiry, temp_c:x.temp_c, photos: await uploadAll(`l/${rid}/${i+1}`, x.el._photos.map(p=>p.blob))});
+      const {data,error}=await sb.rpc('haccp_receive',{p:{id:rid, supplier_id:sup, doc_no:doc, received_at:fromLocalInput($('rc-at').value), received_by:$('rc-by').value.trim(), note:$('rc-note').value.trim(), photos, items:its}});
+      if(error) throw error;
+      const codes=String(data||'').split(', ').filter(Boolean);
+      $('rc-done').innerHTML=`<div class="done"><b>Prijem je sačuvan · ${esc(supName(sup)||$('rc-sup-new').value)} · otpremnica ${esc(doc)}</b><span class="sub" style="font-size:14px">Prepiši kodove na kese ili kutije:</span><div class="codes">${codes.map((c,i)=>`<b>${esc(c)}</b>`).join('')}</div></div>`;
+      clearReceipt(); await loadHaccp();
+      $('rc-done').scrollIntoView({behavior:'smooth',block:'center'});
+    }catch(x){ m.className='msg err'; m.textContent='Prijem nije sačuvan: '+(x.message||'proveri internet i probaj ponovo.'); }
+    finally{ $('rc-save').disabled=false; }
+  });
+  function renderReceipts(){
+    const box=$('rc-list'), list=receipts.slice(0,40);
+    if(!list.length){ box.innerHTML='<div class="empty"><strong>Još nema prijema</strong>Kad upišeš prvu otpremnicu, ovde se vidi sa slikama i kodovima lotova.</div>'; return; }
+    box.innerHTML=list.map(r=>{
+      const ls=lots.filter(l=>l.receipt_id===r.id).sort((a,b)=>a.code.localeCompare(b.code));
+      const used=ls.some(l=>lotUsed(l.id)>0), canDel=!used && (isSef || (me && r.created_by===me.id));
+      return `<div class="rcard"><div class="rh"><div><b>${esc(supName(r.supplier_id))}</b> · otpremnica <b>${esc(r.doc_no)}</b></div><span class="sub">${esc(fmtDT(r.received_at))}${r.received_by?' · primio '+esc(r.received_by):''}</span></div>
+        <div class="photobar">${clips(r.photos,'otpremnica')}<label class="photobtn noprint" style="padding:4px 10px;font-size:13px">📷 Dodaj sliku<input type="file" accept="image/*" capture="environment" multiple data-addphoto="receipt" data-id="${esc(r.id)}"></label>${canDel?`<button type="button" class="del" data-delrc="${esc(r.id)}">Obriši prijem</button>`:''}</div>
+        ${r.note?`<div class="sub">${esc(r.note)}</div>`:''}
+        <div class="lots">${ls.map(l=>`<div><span class="code">${esc(l.code)}</span> <b>${esc(prodName(l.product_id))}</b> · ${kgTxt(l.kg)}${l.supplier_lot?' · LOT '+esc(l.supplier_lot):''}${l.temp_c!=null?' · '+fmt(l.temp_c,1)+' °C':''} · ${expiryPill(l)} · ${clips(l.photos,'deklaracija')} <label class="photobtn noprint" style="padding:2px 8px;font-size:12px">📷<input type="file" accept="image/*" capture="environment" multiple data-addphoto="lot" data-id="${esc(l.id)}"></label></div>`).join('')}</div></div>`;
+    }).join('');
+  }
+  document.addEventListener('change',async e=>{
+    const inp=e.target.closest('[data-addphoto]'); if(!inp||!inp.files.length) return;
+    try{
+      alertMsg('Šaljem sliku…');
+      const blobs=[]; for(const f of [...inp.files]) blobs.push(await shrink(f));
+      const id=inp.dataset.id, kind=inp.dataset.addphoto;
+      const rec = kind==='receipt' ? id : (lotById(id)||{}).receipt_id;
+      const paths=await uploadAll(kind==='receipt'?`r/${rec}`:`l/${rec}/x`, blobs);
+      const {error}=await sb.rpc('haccp_add_photos',{p_kind:kind, p_id:id, p_paths:paths}); if(error) throw error;
+      alertMsg('Slika je dodata.'); loadHaccp();
+    }catch(x){ alertMsg('Slika nije dodata: '+(x.message||'')); }
+    inp.value='';
+  });
+  $('rc-list').addEventListener('click',async e=>{
+    const b=e.target.closest('[data-delrc]'); if(!b) return;
+    if(!b.classList.contains('confirm')){ b.classList.add('confirm'); b.textContent='Sigurno? Briše i lotove'; setTimeout(()=>{ if(b.isConnected){ b.classList.remove('confirm'); b.textContent='Obriši prijem'; } },5000); return; }
+    b.disabled=true; const {error}=await sb.rpc('haccp_delete_receipt',{p_id:b.dataset.delrc});
+    if(error){ b.textContent=error.message; return; } loadHaccp();
+  });
+
+  // ---------- Stanje lotova ----------
+  function renderLots(){
+    const show=$('lt-show').value, pid=$('lt-product').value;
+    const list=lots.filter(l=>(!pid||l.product_id===pid) && (show==='all' || lotOpen(l))).sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999')||a.code.localeCompare(b.code));
+    const open=lots.filter(lotOpen);
+    const soon=open.filter(l=>l.expiry && daysTo(l.expiry)>=0 && daysTo(l.expiry)<=2).length, exp=open.filter(l=>l.expiry && daysTo(l.expiry)<0).length;
+    const nopic=lots.filter(l=>lotOpen(l) && !(l.photos||[]).length).length;
+    $('lt-stats').innerHTML=`<div class="stat"><div class="k">Otvoreni lotovi</div><div class="v">${open.length}</div><div class="status">${fmt(open.reduce((a,l)=>a+lotLeft(l),0),1)} kg u komori</div></div>
+      <div class="stat"><div class="k">Rok ističe</div><div class="v" style="color:var(--warn)">${soon}</div><div class="status">za 2 dana ili manje</div></div>
+      <div class="stat"><div class="k">Istekao rok</div><div class="v" style="color:var(--bad)">${exp}</div><div class="status">ne sme u smoker</div></div>
+      <div class="stat"><div class="k">Bez deklaracije</div><div class="v">${nopic}</div><div class="status">otvoreni lotovi bez slike</div></div>`;
+    if(!list.length){ $('lt-list').innerHTML=`<div class="empty"><strong>${lots.length?'Nema lotova za ovaj filter':'Još nema lotova'}</strong>${lots.length?'Promeni prikaz ili meso.':'Lotovi nastaju kad upišeš prijem u „Prijem mesa“.'}</div>`; return; }
+    $('lt-list').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Lot</th><th>Meso</th><th>Dobavljač · otpremnica</th><th>Primljeno</th><th class="n">Primljeno kg</th><th class="n">U smoker</th><th class="n">Ostalo</th><th>Rok</th><th>Slike</th><th></th></tr></thead><tbody>`+
+      list.map(l=>{ const r=recById(l.receipt_id)||{}; const left=lotLeft(l);
+        const st = l.closed_at ? `<span class="pill none">zatvoren ${esc(fmtDate(dayOf(l.closed_at)))}</span>${l.close_note?`<div class="note">${esc(l.close_note)}</div>`:''}${isSef?` <button class="del" data-reopen="${esc(l.id)}">Otvori ponovo</button>`:''}`
+          : left<=0.001 ? '<span class="pill none">potrošen</span>'
+          : `<button class="sbtn" data-closelot="${esc(l.id)}">Zatvori lot</button>`;
+        return `<tr><td><span class="code">${esc(l.code)}</span>${l.supplier_lot?`<div class="note">LOT ${esc(l.supplier_lot)}</div>`:''}</td><td><strong>${esc(prodName(l.product_id))}</strong></td>
+          <td>${esc(supName(r.supplier_id))}<div class="note">otp. ${esc(r.doc_no||'—')}</div></td><td>${esc(fmtDT(r.received_at))}${l.temp_c!=null?`<div class="note">${fmt(l.temp_c,1)} °C</div>`:''}</td>
+          <td class="n">${fmt(l.kg,2)}</td><td class="n">${fmt(lotUsed(l.id),2)}</td><td class="n"><b>${fmt(left,2)}</b></td><td>${expiryPill(l)}</td>
+          <td>${clips(l.photos,'deklaracija')}<div>${clips(r.photos,'otpremnica')}</div></td><td>${st}</td></tr>`; }).join('')+'</tbody></table></div>';
+  }
+  ['lt-show','lt-product'].forEach(id=>$(id).addEventListener('change',renderLots));
+  $('lt-list').addEventListener('click',async e=>{
+    const c=e.target.closest('[data-closelot]'), o=e.target.closest('[data-reopen]');
+    if(c){
+      const td=c.parentElement, id=c.dataset.closelot, l=lotById(id);
+      td.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px;min-width:180px"><input class="cell-input" style="width:100%" placeholder="zašto (npr. ostatak u otpis)" data-note><div style="display:flex;gap:6px"><button class="sbtn no" data-confirmclose="${esc(id)}">Zatvori (ostalo ${fmt(lotLeft(l),2)} kg)</button><button class="sbtn" data-cancelclose>Odustani</button></div></div>`;
+      td.querySelector('[data-note]').focus(); return;
+    }
+    if(e.target.closest('[data-cancelclose]')){ renderLots(); return; }
+    const cc=e.target.closest('[data-confirmclose]');
+    if(cc){ cc.disabled=true; const note=cc.closest('td').querySelector('[data-note]').value.trim();
+      const {error}=await sb.rpc('haccp_close_lot',{p_id:cc.dataset.confirmclose, p_note:note, p_open:false}); if(error){ cc.textContent=error.message; return; } loadHaccp(); return; }
+    if(o){ const {error}=await sb.rpc('haccp_close_lot',{p_id:o.dataset.reopen, p_note:null, p_open:true}); if(error){ o.textContent=error.message; return; } loadHaccp(); }
+  });
+
+  // ---------- Sledljivost ----------
+  (function(){ const d=new Date(); d.setDate(d.getDate()-30); $('sl-from').value=d.toISOString().slice(0,10); $('sl-to').value=today(); })();
+  function lotBlock(l, kg){
+    const r=recById(l.receipt_id)||{};
+    return `<div class="link"><div><span class="code">${esc(l.code)}</span> · <b>${esc(prodName(l.product_id))}</b>${kg!=null?` · u ovaj ciklus ${kgTxt(kg)}`:''}</div>
+      <dl><dt>Dobavljač</dt><dd>${esc(supName(r.supplier_id))}</dd><dt>Otpremnica</dt><dd>${esc(r.doc_no||'—')} · ${clips(r.photos,'otpremnica')}</dd>
+      <dt>Primljeno</dt><dd>${esc(fmtDT(r.received_at))}${r.received_by?' · primio '+esc(r.received_by):''}</dd>
+      <dt>LOT proizvođača</dt><dd>${esc(l.supplier_lot||'—')}</dd><dt>Rok upotrebe</dt><dd>${l.expiry?esc(fmtDate(l.expiry)):'—'}</dd>
+      <dt>Temp. pri prijemu</dt><dd>${l.temp_c!=null?fmt(l.temp_c,1)+' °C':'—'}</dd><dt>Deklaracija</dt><dd>${clips(l.photos,'deklaracija')}</dd></dl></div>`;
+  }
+  function cookBlock(c, isRun){
+    const us=lotUses.filter(u=>isRun?u.run_id===c.id:u.cook_id===c.id);
+    const r=isRun?null:compute(c);
+    const tin=c.smoker_in, tout=isRun?null:c.smoker_out;
+    return `<div class="trace"><h3>${esc(c.code||'Ciklus bez koda')} · ${esc(prodName(c.product_id))} ${isRun?'<span class="pill warn">u smokeru</span>':''}</h3>
+      <dl><dt>Ušlo u smoker</dt><dd>${tin?esc(fmtDT(tin)):esc(fmtDate(c.cook_date))+' (vreme nije upisano)'}</dd>
+      <dt>Izašlo iz smokera</dt><dd>${isRun?'još je u smokeru':tout?esc(fmtDT(tout)):'—'}${tin&&tout?' · '+esc(durTxt(tin,tout)):''}</dd>
+      <dt>Pekao</dt><dd>${esc(c.cook_name||'—')}</dd>
+      <dt>Težine</dt><dd>sirovo ${kgTxt(c.raw_kg)}${c.trimmed_kg?' · trim '+kgTxt(c.trimmed_kg):''}${!isRun?' · iz smokera '+kgTxt(c.cooked_kg):''}${c.sellable_kg?' · za prodaju '+kgTxt(c.sellable_kg):''}${r?' · yield '+pct(r.yield):''}</dd>
+      <dt>Temp. u jezgru</dt><dd>${c.core_temp_c!=null?fmt(c.core_temp_c,1)+' °C':'—'}</dd>
+      ${c.smoker_temp_c||c.wood?`<dt>Smoker</dt><dd>${c.smoker_temp_c?fmt(c.smoker_temp_c,0)+' °C':''}${c.wood?' · '+esc(c.wood):''}</dd>`:''}
+      ${c.notes?`<dt>Napomena</dt><dd>${esc(c.notes)}</dd>`:''}</dl>
+      ${us.length?us.map(u=>{ const l=lotById(u.lot_id); return l?lotBlock(l,u.kg):''; }).join(''):`<div class="miss">Nije vezan za prijem${c.batch?' · ranije upisano: '+esc(c.batch):''} (upisano pre HACCP sistema ili bez lota).</div>`}</div>`;
+  }
+  function receiptBlock(r){
+    const ls=lots.filter(l=>l.receipt_id===r.id).sort((a,b)=>a.code.localeCompare(b.code));
+    return `<div class="trace"><h3>Otpremnica ${esc(r.doc_no)} · ${esc(supName(r.supplier_id))}</h3>
+      <dl><dt>Primljeno</dt><dd>${esc(fmtDT(r.received_at))}${r.received_by?' · primio '+esc(r.received_by):''}</dd><dt>Slika</dt><dd>${clips(r.photos,'otpremnica')}</dd>${r.note?`<dt>Napomena</dt><dd>${esc(r.note)}</dd>`:''}</dl>
+      ${ls.map(l=>lotForward(l)).join('')}</div>`;
+  }
+  function lotForward(l){
+    const us=lotUses.filter(u=>u.lot_id===l.id);
+    const rows=us.map(u=>{ const c=u.cook_id?entries.find(e=>e.id===u.cook_id):null, rn=u.run_id?runs.find(x=>x.id===u.run_id):null, x=c||rn; if(!x) return '';
+      return `<tr><td><span class="code">${esc(x.code||'—')}</span>${rn?' <span class="pill warn">u smokeru</span>':''}</td><td class="n">${fmt(u.kg,2)}</td><td>${esc(x.smoker_in?fmtDT(x.smoker_in):fmtDate(x.cook_date))}</td><td>${c&&c.smoker_out?esc(fmtDT(c.smoker_out)):rn?'—':'—'}</td><td>${esc(x.cook_name||'—')}</td><td>${c&&c.core_temp_c!=null?fmt(c.core_temp_c,1)+' °C':'—'}</td></tr>`; }).join('');
+    return `<div class="link"><div><span class="code">${esc(l.code)}</span> · <b>${esc(prodName(l.product_id))}</b> · primljeno ${kgTxt(l.kg)} · u smoker ${kgTxt(lotUsed(l.id))} · ostalo <b>${kgTxt(lotLeft(l))}</b>${l.closed_at?` · zatvoren ${esc(fmtDate(dayOf(l.closed_at)))}${l.close_note?' ('+esc(l.close_note)+')':''}`:''}</div>
+      <div class="sub" style="font-size:13px;color:var(--muted)">LOT ${esc(l.supplier_lot||'—')} · rok ${l.expiry?esc(fmtDate(l.expiry)):'—'} · ${l.temp_c!=null?fmt(l.temp_c,1)+' °C pri prijemu':'temp. nije merena'} · ${clips(l.photos,'deklaracija')}</div>
+      ${rows?`<div class="tablewrap"><table><thead><tr><th>Ciklus</th><th class="n">kg</th><th>Ušlo u smoker</th><th>Izašlo</th><th>Pekao</th><th>Jezgro</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="miss">Ovo meso još nije ušlo u smoker.</div>'}</div>`;
+  }
+  function renderTrace(){
+    if(!$('sl-out')) return;
+    const q=$('sl-q').value.trim().toLowerCase(), from=$('sl-from').value, to=$('sl-to').value, pid=$('sl-product').value, sid=$('sl-sup').value;
+    let html='', head='';
+    const supOfCook = (c,isRun) => lotUses.filter(u=>isRun?u.run_id===c.id:u.cook_id===c.id).map(u=>(recById((lotById(u.lot_id)||{}).receipt_id)||{}).supplier_id);
+    if(q){
+      const rs=receipts.filter(r=>r.doc_no.toLowerCase()===q || r.doc_no.toLowerCase().includes(q));
+      const ls=lots.filter(l=>l.code.toLowerCase()===q || (l.supplier_lot||'').toLowerCase()===q);
+      const cs=entries.filter(e=>(e.code||'').toLowerCase()===q), rn=runs.filter(r=>r.code.toLowerCase()===q);
+      if(rs.length) html+=rs.map(receiptBlock).join('');
+      if(ls.length) html+=ls.filter(l=>!rs.some(r=>r.id===l.receipt_id)).map(l=>`<div class="trace"><h3>Lot ${esc(l.code)}</h3>${lotForward(l)}${lotBlock(l,null)}</div>`).join('');
+      html+=rn.map(r=>cookBlock(r,true)).join('')+cs.map(c=>cookBlock(c,false)).join('');
+      head=`Pretraga: ${esc($('sl-q').value.trim())}`;
+      if(!html) html=`<div class="empty"><strong>Ništa nije pronađeno</strong>Proveri kod ciklusa (C-…), kod lota (npr. BR-2511-01) ili broj otpremnice.</div>`;
+    } else {
+      const inR = d => (!from||d>=from) && (!to||d<=to);
+      const rn=runs.filter(r=>(!pid||r.product_id===pid) && inR(dayOf(r.smoker_in)) && (!sid||supOfCook(r,true).includes(sid)));
+      const cs=entries.filter(e=>(!pid||e.product_id===pid) && inR(e.cook_date) && (!sid||supOfCook(e,false).includes(sid)));
+      html=rn.map(r=>cookBlock(r,true)).join('')+cs.map(c=>cookBlock(c,false)).join('');
+      head=`Period ${esc(fmtDate(from))} – ${esc(fmtDate(to))}${pid?' · '+esc(prodName(pid)):''}${sid?' · '+esc(supName(sid)):''} · ${rn.length+cs.length} ciklusa`;
+      if(!html) html=`<div class="empty"><strong>Nema ciklusa za ovaj filter</strong>Promeni period, meso ili dobavljača.</div>`;
+    }
+    $('sl-printhead').innerHTML=`<h2>In Smoke We Trust · Sledljivost mesa</h2><div>${head}</div><div style="font-size:12px;color:#555">Odštampano ${esc(fmtDT(new Date()))}${me?' · '+esc(me.full_name):''}</div>`;
+    $('sl-out').innerHTML=html;
+  }
+  ['sl-q','sl-from','sl-to','sl-product','sl-sup'].forEach(id=>$(id).addEventListener(id==='sl-q'?'input':'change',renderTrace));
+  $('sl-print').addEventListener('click',()=>{ renderTrace(); window.print(); });
+
   async function enter(session){
     stopChannels();
     if(!session){ me=null; isAdmin=false; entries=[]; team=[]; show('login-view'); return; }
@@ -1368,9 +1960,10 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     try{ const sh=localStorage.getItem('syl-shift'); if(sh) W('shift').value=sh; }catch(_){}
     W('cook').value=me.full_name;
     F('cook').value=me.full_name;
-    if(!F('date').value) F('date').value=today();
+    if(!F('in').value) F('in').value=toLocalInput();
+    $('rc-by').value=me.full_name; if(!$('rc-at').value) $('rc-at').value=toLocalInput();
     show('app-view'); restoreTab();
-    await loadProducts(); await loadCooks(); await loadTeam(); await loadWasteItems(); await loadWaste(); await loadNormativi(); subscribe();
+    await loadProducts(); await loadCooks(); await loadHaccp(); await loadTeam(); await loadWasteItems(); await loadWaste(); await loadNormativi(); subscribe();
   }
   let lastUid=null;
   sb.auth.onAuthStateChange((event,session)=>{
