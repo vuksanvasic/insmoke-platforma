@@ -1,289 +1,372 @@
 <!doctype html>
 <html lang="sr-Latn">
 <head>
-<script>if(/github\.io$/.test(location.hostname)){location.replace('https://insmoke.rs/aplikacija/osoblje.html'+location.hash);}</script>
+<script>if(/github\.io$/.test(location.hostname)){location.replace('https://insmoke.rs/aplikacija/osoblje.html'+location.search+location.hash);}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>Kuhinja osoblje · In Smoke We Trust</title>
+<meta name="theme-color" content="#1c1715">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ISWT Kuhinja">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="osoblje-manifest.json">
+<link rel="apple-touch-icon" href="osoblje-apple-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="osoblje-icon-192.png">
+<title>Kuhinja · In Smoke We Trust</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: kartica smene (dolazak/pauza/odlazak) gore, ček-lista po sekcijama ispod; pregled za šefa u tabovima */
+/* Kuhinja osoblje — mobilno prvo. Dve smene sa svojim bojama; ček-lista po sekcijama; trebovanje ide menadžeru. */
 :root{
-  --bg:#efebe7; --surface:#faf8f6; --ink:#211c19; --muted:#6d625b; --line:#d9d1ca;
-  --ember:#b4401e; --ember-soft:#f3dfd5; --char:#2e2724; --char-ink:#f2ebe5; --char-muted:#cfc4bb; --char-line:#4a403b;
-  --good:#2f7a4b; --good-soft:#dcefe2; --warn:#a86a10; --warn-soft:#f6ead2; --bad:#b0322a; --bad-soft:#f5dcd9;
+  --bg:#f3efeb; --surface:#ffffff; --surface-2:#f8f5f2; --ink:#1c1715; --muted:#6f645d; --line:#e4ddd6; --line-2:#d3cac2;
+  --ember:#c2461f; --ember-ink:#fff;
+  --good:#22814f; --good-soft:#e3f2e9; --warn:#b26b00; --warn-soft:#fbefdc; --bad:#c0362c; --bad-soft:#fbe3e0;
+  --s1:#d9822b; --s1-deep:#9c5410; --s1-soft:#fdf1e3;          /* 1. smena — jutro */
+  --s2:#3c4c9a; --s2-deep:#232d63; --s2-soft:#e8ebf8;          /* 2. smena — veče */
+  --shift:var(--ember); --shift-deep:#7a2a12; --shift-soft:#fbe9e2;
+  --r:14px; --r-sm:10px;
+  --shadow:0 1px 2px rgba(28,23,21,.06),0 4px 14px rgba(28,23,21,.06);
   --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#181412; --surface:#221d1a; --ink:#efe8e2; --muted:#a8998f; --line:#3a312c;
-  --ember:#e2683f; --ember-soft:#3a231a; --char:#0f0c0b; --char-ink:#f2ebe5; --char-muted:#bfb2a8; --char-line:#3a312c;
-  --good:#5fb57f; --good-soft:#1d2e23; --warn:#d9a043; --warn-soft:#33281a; --bad:#e2675d; --bad-soft:#3a1f1c; color-scheme:dark}}
-*{box-sizing:border-box}
+body.s1{--shift:var(--s1);--shift-deep:var(--s1-deep);--shift-soft:var(--s1-soft)}
+body.s2{--shift:var(--s2);--shift-deep:var(--s2-deep);--shift-soft:var(--s2-soft)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;margin:0;
-  padding:calc(16px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(60px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
-.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:3px solid var(--ink);padding-bottom:12px}
-.brand small{display:block;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ember)}
-h1{font-family:var(--f-display);font-weight:800;font-size:clamp(32px,6vw,50px);line-height:.95;margin:2px 0 0;text-transform:uppercase}
-h2{font-family:var(--f-display);font-weight:600;font-size:24px;text-transform:uppercase;margin:0;letter-spacing:.02em}
-h3{font-family:var(--f-display);font-weight:600;font-size:19px;text-transform:uppercase;margin:0;letter-spacing:.02em}
-.status{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
-.who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);justify-content:flex-end}
-.who b{color:var(--ink);font-weight:600}
-.role{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:2px 8px}
-.linkbtn{background:none;border:0;color:var(--ink);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
-nav{display:flex;gap:4px;flex-wrap:wrap}
-nav button{font:600 14px var(--f-body);background:transparent;color:var(--muted);border:1px solid transparent;border-radius:6px;padding:8px 14px;cursor:pointer}
-nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
-.btn{font:600 15px var(--f-body);border-radius:8px;padding:10px 16px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--bg);min-height:44px}
-.btn.ember{background:var(--ember);border-color:var(--ember);color:#fff}
-.btn.good{background:var(--good);border-color:var(--good);color:#fff}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
-.btn.small{font-size:13px;padding:6px 10px;min-height:34px}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;min-width:0}
-input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
-input.num{font-family:var(--f-mono);text-align:right}
-textarea{resize:vertical;min-height:64px}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
-.empty{background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted)}
-.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
-.msg{font-size:14px} .msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
-.login{max-width:380px;margin:8vh auto 0;display:flex;flex-direction:column;gap:16px}
-.login form{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px;background:var(--surface)}
-.seg button{font:600 14px var(--f-body);border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:6px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-body);min-height:100vh;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--shift);outline-offset:2px}
+input,select,textarea{font:inherit;font-size:17px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-2);border-radius:var(--r-sm);padding:12px 14px;width:100%;min-width:0}
+textarea{min-height:92px;resize:vertical}
+input.num{font-family:var(--f-mono);text-align:center;font-size:22px;font-weight:600}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;min-width:0}
+label.f small{font-weight:400;color:var(--muted)}
 
-/* kartica smene */
-.clock{background:var(--char);color:var(--char-ink);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
-.clock .st{font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--char-muted)}
-.clock .big{font-family:var(--f-display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase}
-.clock .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.clock .nums div{border:1px solid var(--char-line);border-radius:8px;padding:8px 10px}
-.clock .nums small{display:block;font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--char-muted)}
-.clock .nums b{font-family:var(--f-mono);font-size:22px;font-weight:500}
-.clock .acts{display:flex;gap:8px;flex-wrap:wrap}
-.clock .acts .btn{flex:1 1 140px;font-size:17px;min-height:54px}
-.clock .seg{background:transparent;border-color:var(--char-line)}
-.clock .seg button{color:var(--char-muted)} .clock .seg button[aria-pressed="true"]{background:var(--char-ink);color:var(--char)}
-.clock.onbreak{background:var(--warn)} .clock.onbreak .nums div{border-color:rgba(255,255,255,.35)}
+/* gornja traka */
+.top{position:sticky;top:0;z-index:20;background:#1c1715;color:#f4ede7;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top .brand{display:flex;flex-direction:column;line-height:1}
+.top .brand small{font:600 10px var(--f-mono);letter-spacing:.18em;text-transform:uppercase;color:#e2683f}
+.top .brand b{font:800 22px var(--f-display);letter-spacing:.03em;text-transform:uppercase;margin-top:3px}
+.me{display:flex;align-items:center;gap:10px;background:none;border:0;cursor:pointer;padding:4px}
+.me span{font-size:13px;color:#cfc4bb;text-align:right;line-height:1.2}
+.me span b{display:block;color:#fff;font-weight:600;font-size:14px}
+.avatar{width:38px;height:38px;border-radius:50%;background:#e2683f;color:#fff;display:grid;place-items:center;font:700 15px var(--f-body)}
+.menu{position:absolute;right:12px;top:calc(62px + env(safe-area-inset-top,0px));background:var(--surface);color:var(--ink);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.2);min-width:220px;overflow:hidden;z-index:30}
+.menu a,.menu button{display:block;width:100%;text-align:left;padding:14px 16px;background:none;border:0;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink);text-decoration:none;cursor:pointer}
+.menu :last-child{border-bottom:0}
 
-/* ček-lista */
-.progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.bar{flex:1 1 200px;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--good)}
-.pills{display:flex;gap:6px;flex-wrap:wrap}
-.pill{font:600 12px var(--f-body);border-radius:99px;padding:3px 10px;background:var(--line);color:var(--ink)}
-.pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)}
-.sec{display:flex;flex-direction:column;gap:8px}
-.sec>h3{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.sec>h3 span{font:500 12px var(--f-mono);color:var(--muted);text-transform:none;letter-spacing:0}
-.item{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.item.done{border-left-color:var(--good)} .item.late{border-left-color:var(--warn)} .item.over{border-left-color:var(--bad)} .item.alarm{border-left-color:var(--bad);background:var(--bad-soft)}
-.item .top{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
-.item .ttl{font-weight:600}
-.item .hint{font-size:13px;color:var(--muted)}
-.item .due{font:500 12px var(--f-mono);white-space:nowrap;color:var(--muted)}
-.item.over .due{color:var(--bad);font-weight:600}
-.item .meta{font-size:13px;color:var(--muted)}
-.item .meta b{color:var(--ink)}
-.tags{display:flex;gap:6px;flex-wrap:wrap}
-.tag{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line);border-radius:99px;padding:1px 8px;color:var(--muted)}
-.form{display:flex;flex-direction:column;gap:10px;border-top:1px dashed var(--line);padding-top:10px}
-.temps{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-.temps label small{font-weight:400;color:var(--muted)}
-.temps input.bad{border-color:var(--bad);background:var(--bad-soft)}
-.photos{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.thumb{width:72px;height:72px;border-radius:8px;object-fit:cover;border:1px solid var(--line);cursor:pointer;background:var(--line)}
-.camera{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.camera input{display:none}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.handover{background:var(--warn-soft);border-radius:8px;padding:10px 12px;white-space:pre-wrap;font-size:14px}
-.handover small{display:block;font:500 11px var(--f-mono);color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;white-space:normal}
-.reqs{display:flex;flex-direction:column;gap:6px}
-.req{display:flex;justify-content:space-between;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:4px 0;font-size:14px}
-.reqform{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;align-items:end}
-@media (max-width:560px){.reqform{grid-template-columns:1fr 1fr}.reqform .btn{grid-column:1/-1}}
-.tempsout{display:flex;gap:6px;flex-wrap:wrap}
-.tempsout span{font:500 12px var(--f-mono);border-radius:6px;padding:2px 8px;background:var(--good-soft);color:var(--good)}
-.tempsout span.bad{background:var(--bad-soft);color:var(--bad)}
-.sign{border:2px solid var(--ink);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+main{max-width:760px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+main.wide{max-width:1100px}
+h1,h2,h3{margin:0}
+.h-xl{font:800 34px/1 var(--f-display);text-transform:uppercase;letter-spacing:.01em}
+.h-lg{font:800 26px/1.05 var(--f-display);text-transform:uppercase;letter-spacing:.02em}
+.h-md{font:700 20px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.eyebrow{font:600 11px var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 20px;border-radius:12px;border:0;font-weight:700;font-size:16px;cursor:pointer;background:var(--ink);color:#fff;text-decoration:none}
+.btn.shift{background:var(--shift);color:#fff}
+.btn.good{background:var(--good);color:#fff}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line-2)}
+.btn.light{background:rgba(255,255,255,.16);color:#fff}
+.btn.danger{background:var(--bad);color:#fff}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px;border-radius:10px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--f-body);padding:5px 10px;border-radius:99px;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good)} .chip.bad{background:var(--bad-soft);color:var(--bad)} .chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.shift{background:var(--shift-soft);color:var(--shift-deep)}
+.empty{text-align:center;color:var(--muted);padding:28px 16px}
+.empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+.ico{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ico.lg{width:26px;height:26px}
 
-/* pregled */
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
-.toolbar label{width:auto}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+/* izbor smene */
+.shifts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.shifts{grid-template-columns:1fr}}
+.shiftcard{position:relative;border:0;text-align:left;border-radius:18px;padding:20px;cursor:pointer;color:#fff;min-height:170px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;overflow:hidden;box-shadow:var(--shadow)}
+.shiftcard.s1{background:linear-gradient(150deg,#e79a45,#c4661b)}
+.shiftcard.s2{background:linear-gradient(150deg,#4b5cb0,#232d63)}
+.shiftcard .h-lg{font-size:32px}
+.shiftcard .sub{opacity:.9;font-size:14px}
+.shiftcard .meter{height:8px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}
+.shiftcard .meter i{display:block;height:100%;background:#fff}
+.shiftcard .go{display:inline-flex;align-items:center;gap:8px;font-weight:700;background:rgba(255,255,255,.18);padding:10px 14px;border-radius:10px;align-self:flex-start}
+.shiftcard .who{font-size:13px;opacity:.95}
+.gate{display:flex;gap:8px;flex-wrap:wrap}
+.gate .chip{background:var(--surface);box-shadow:var(--shadow)}
+
+/* traka aktivne smene */
+.live{background:linear-gradient(150deg,var(--shift),var(--shift-deep));color:#fff;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.live.pause{background:linear-gradient(150deg,#b26b00,#7a4900)}
+.live .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.live .stats div{background:rgba(255,255,255,.14);border-radius:12px;padding:10px 12px}
+.live .stats small{display:block;font:600 10px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.live .stats b{font:600 22px var(--f-mono)}
+.live .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.live .acts .btn{min-height:56px}
+
+/* napredak */
+.prog{display:flex;align-items:center;gap:14px}
+.ring{--p:0;width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--shift) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;flex:none}
+.ring b{width:50px;height:50px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font:700 15px var(--f-mono)}
+.sectabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.sectabs::-webkit-scrollbar{display:none}
+.sectab{flex:none;border:1.5px solid var(--line-2);background:var(--surface);border-radius:12px;padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:118px}
+.sectab small{font:600 11px var(--f-mono);color:var(--muted)}
+.sectab b{font-size:14px}
+.sectab[aria-pressed="true"]{border-color:var(--shift);background:var(--shift-soft)}
+.sectab.done{border-color:var(--good)} .sectab.done small{color:var(--good)}
+.sectab.bad small{color:var(--bad)}
+
+/* sledeće */
+.next{border:2px solid var(--shift);background:var(--shift-soft)}
+.next .eyebrow{color:var(--shift-deep)}
+
+/* stavke */
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.item .head{display:flex;gap:12px;align-items:center;padding:14px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
+.dot{width:34px;height:34px;border-radius:50%;border:2.5px solid var(--line-2);display:grid;place-items:center;flex:none;color:#fff}
+.item.done .dot{background:var(--good);border-color:var(--good)}
+.item.skip .dot{background:var(--muted);border-color:var(--muted)}
+.item.late .dot{background:var(--warn);border-color:var(--warn)}
+.item.alarm .dot{background:var(--bad);border-color:var(--bad)}
+.item.over .dot{border-color:var(--bad)}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;font-weight:600;font-size:16px;line-height:1.3}
+.item.done .t b,.item.skip .t b{color:var(--muted)}
+.item .t span{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.item .due{font:600 12px var(--f-mono);color:var(--muted);white-space:nowrap;align-self:flex-start;margin-top:4px}
+.item.over .due{color:var(--bad)}
+.item .body{padding:0 14px 16px 60px;display:flex;flex-direction:column;gap:14px}
+@media (max-width:520px){.item .body{padding-left:14px}}
+.hint{font-size:14px;color:var(--muted)}
+.temps{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.temp{border:1.5px solid var(--line-2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--surface-2)}
+.temp .lbl{font-weight:600;font-size:14px}
+.temp .rng{font:500 11px var(--f-mono);color:var(--muted)}
+.temp input{border:0;background:var(--surface);padding:10px}
+.temp.ok{border-color:var(--good);background:var(--good-soft)} .temp.badt{border-color:var(--bad);background:var(--bad-soft)}
+.cam{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cam label.btn{cursor:pointer}
+.cam input{display:none}
+.thumb{width:84px;height:84px;border-radius:12px;object-fit:cover;background:var(--line);cursor:pointer;border:0}
+.done-meta{font-size:14px;color:var(--muted)}
+.done-meta b{color:var(--ink)}
+.tvals{display:flex;gap:6px;flex-wrap:wrap}
+.handover{background:var(--warn-soft);border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:15px}
+.handover small{display:block;font:600 11px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);margin-bottom:4px;white-space:normal}
+.note{background:var(--surface-2);border-radius:12px;padding:12px 14px;white-space:pre-wrap;font-size:15px}
+.err{color:var(--bad);font-weight:600;font-size:14px}
+.sign{border:2px dashed var(--line-2);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--surface)}
+
+/* trebovanje */
+.reqrow{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.reqrow:last-child{border-bottom:0}
+.reqrow{flex-wrap:wrap}
+.reqrow .racts{gap:6px;width:100%;justify-content:flex-end}
+@media (min-width:760px){.reqrow .racts{width:auto}}
+.reqrow .q{font:600 15px var(--f-mono);white-space:nowrap}
+.reqrow .n{flex:1;min-width:0}
+.reqrow .n b{display:block}
+.reqrow .n small{color:var(--muted)}
+.stepper{display:grid;grid-template-columns:52px 1fr 52px;gap:6px}
+.stepper button{border:1.5px solid var(--line-2);background:var(--surface);border-radius:10px;font-size:24px;cursor:pointer}
+.status-novo{background:var(--surface-2);color:var(--ink)}
+.status-poslato{background:#e7eefb;color:#2b4a8f}
+.status-naruceno{background:var(--warn-soft);color:var(--warn)}
+.status-stiglo{background:var(--good-soft);color:var(--good)}
+.status-odbijeno{background:var(--bad-soft);color:var(--bad)}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}
+.toggle input{width:24px;height:24px;accent-color:var(--bad)}
+
+/* donja navigacija */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav .in{display:flex;gap:4px;max-width:760px;width:100%}
+.bnav button{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;position:relative}
+.bnav button[aria-current="page"]{color:var(--ink);background:var(--surface-2)}
+.bnav button[aria-current="page"] .ico{stroke:var(--shift)}
+.bnav .badge{position:absolute;top:4px;right:calc(50% - 22px);background:var(--bad);color:#fff;font:700 11px var(--f-body);min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 5px}
+
+/* kontrola (šef/admin) */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.grid2{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:520px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.kpi small{display:block;font:600 10px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.kpi b{font:700 22px var(--f-mono)}
+.kpi.bad b{color:var(--bad)} .kpi.good b{color:var(--good)}
+.band{height:6px;border-radius:99px}
+.band.s1{background:var(--s1)} .band.s2{background:var(--s2)}
+.people{display:flex;gap:6px;flex-wrap:wrap}
+.tablewrap{overflow-x:auto;border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow)}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font:600 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2)}
 td.n,th.n{text-align:right;font-family:var(--f-mono)}
-tr.click{cursor:pointer} tr.click:hover td{background:var(--bg)}
-tfoot td{font-weight:600}
-.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
-.lightbox img{max-width:100%;max-height:100%;border-radius:8px}
-.lightbox button{position:absolute;top:14px;right:14px}
+tr:last-child td{border-bottom:0}
+.seg{align-self:flex-start;display:inline-flex;background:var(--surface);border-radius:12px;padding:4px;gap:4px;box-shadow:var(--shadow);flex-wrap:wrap}
+.seg button{border:0;background:none;padding:10px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.datebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.datebar input{width:auto;padding:10px 12px;font-size:15px}
 .qrbox{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
-.qrbox svg{width:220px;height:220px;background:#fff;padding:8px;border-radius:8px}
-.geo{font-size:13px;color:var(--char-muted)}
-@media print{body *{visibility:hidden}#qr-print,#qr-print *{visibility:visible}#qr-print{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}#qr-print svg{width:12cm;height:12cm}}
-.foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.qrbox svg{width:200px;height:200px;background:#fff;padding:8px;border-radius:12px;border:1px solid var(--line)}
+
+/* obaveštenja i slike */
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1c1715;color:#fff;padding:14px 18px;border-radius:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.25);z-index:60;width:max-content;max-width:92vw;display:flex;gap:10px;align-items:center}
+.toast.bad{background:var(--bad)} .toast.good{background:var(--good)}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:70;padding:16px}
+.lightbox img{max-width:100%;max-height:100%;border-radius:12px}
+.lightbox button{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px}
+.modal-bg{position:fixed;inset:0;background:rgba(28,23,21,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px;max-height:92vh;overflow:auto}
+@media (min-width:700px){.modal-bg{align-items:center}.modal{border-radius:20px}}
+
+.install{display:flex;gap:14px;align-items:center;background:#1c1715;color:#f4ede7;border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.install img{width:52px;height:52px;border-radius:12px;flex:none}
+.install .t{flex:1;font-size:14px;line-height:1.35}
+.install .t b{display:block;font-size:15px;color:#fff}
+.install .x{background:none;border:0;color:#cfc4bb;cursor:pointer;padding:8px}
+/* prijava */
+.login{max-width:420px;margin:0 auto;padding:10vh 18px 40px;display:flex;flex-direction:column;gap:18px}
+.login .logo{font:900 44px/0.95 var(--f-display);text-transform:uppercase}
+.login .logo small{display:block;font:600 12px var(--f-mono);letter-spacing:.18em;color:var(--ember);margin-bottom:8px}
+
+@media print{body *{visibility:hidden}#qr-print,#qr-print *{visibility:visible}#qr-print{position:absolute;inset:0;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}#qr-print svg{width:12cm;height:12cm}}
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+  <symbol id="i-thermo" viewBox="0 0 24 24"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2v2h-2zM18 14h2v2h-2z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9zM17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 16l4-4-4-4M14 12H3"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M14 16l4-4-4-4M18 12H7"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+</svg>
+
+<!-- PRIJAVA -->
 <div class="login" id="login-view" hidden>
-  <div class="brand"><small>In Smoke We Trust</small><h1>Kuhinja osoblje</h1></div>
-  <form id="login-form" novalidate>
-    <h2>Prijava</h2>
-    <label>Email<input type="email" id="l-email" autocomplete="username" required></label>
-    <label>Lozinka<input type="password" id="l-pass" autocomplete="current-password" required></label>
-    <button class="btn ember" type="submit" id="l-btn">Prijavi se</button>
-    <span class="msg" id="l-msg" role="status"></span>
+  <div class="logo"><small>In Smoke We Trust</small>Kuhinja</div>
+  <form class="card" id="login-form" novalidate>
+    <div class="h-md">Prijava</div>
+    <label class="f">Email<input type="email" id="l-email" autocomplete="username" required></label>
+    <label class="f">Lozinka<input type="password" id="l-pass" autocomplete="current-password" required></label>
+    <button class="btn shift block" type="submit" id="l-btn" style="background:var(--ember)">Prijavi se</button>
+    <span class="err" id="l-msg" role="status"></span>
   </form>
-  <p class="status">Isti nalog kao za Kitchen Control. Nemaš nalog ili si zaboravio/la lozinku? <a class="linkbtn" href="./">Otvori Kitchen Control</a></p>
+  <p class="muted" style="font-size:14px;margin:0">Isti nalog kao za Kitchen Control. Nemaš nalog? Javi se šefu kuhinje.</p>
 </div>
 <div class="login" id="noaccess-view" hidden>
-  <div class="brand"><small>In Smoke We Trust</small><h1>Kuhinja osoblje</h1></div>
-  <div class="empty" style="text-align:left"><strong id="na-title">Nemaš pristup</strong><span id="na-text"></span></div>
-  <button class="btn ghost" id="na-logout" type="button">Odjavi se</button>
+  <div class="logo"><small>In Smoke We Trust</small>Kuhinja</div>
+  <div class="card"><b id="na-title">Nemaš pristup</b><span class="muted" id="na-text"></span><button class="btn ghost" id="na-logout" type="button">Odjavi se</button></div>
 </div>
-<div class="login" id="config-view" hidden>
-  <div class="empty"><strong>Nedostaje veza sa bazom</strong>Fajl config.js nije učitan.</div>
-</div>
+<div class="login" id="config-view" hidden><div class="card"><b>Nedostaje veza sa bazom</b><span class="muted">Fajl config.js nije učitan.</span></div></div>
 
-<div class="wrap" id="app-view" hidden>
-  <header>
-    <div class="brand"><small>In Smoke We Trust · Kitchen Control</small><h1>Kuhinja osoblje</h1></div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <div class="who"><b id="me-name"></b><span class="role" id="me-role"></span><a class="linkbtn" href="./">Kitchen Control</a><button class="linkbtn" id="logout" type="button">Odjavi se</button></div>
-      <div class="status" id="status">Učitavanje…</div>
-    </div>
+<!-- APLIKACIJA -->
+<div id="app-view" hidden>
+  <header class="top">
+    <div class="brand"><small>In Smoke We Trust</small><b>Kuhinja</b></div>
+    <button class="me" id="me-btn" type="button" aria-haspopup="true" aria-expanded="false"><span><b id="me-name"></b><span id="me-role"></span></span><i class="avatar" id="me-av"></i></button>
   </header>
+  <div class="menu" id="menu" hidden>
+    <a href="./">Kitchen Control</a>
+    <a href="zadaci.html">Zadaci</a>
+    <button type="button" id="logout">Odjavi se</button>
+  </div>
 
-  <nav role="tablist" aria-label="Sekcije">
-    <button role="tab" data-view="smena" aria-selected="true">Moja smena</button>
-    <button role="tab" data-view="pregled" class="sefonly" aria-selected="false">Pregled ček-lista</button>
-    <button role="tab" data-view="rad" class="sefonly" aria-selected="false">Radno vreme</button>
-    <button role="tab" data-view="trebovanje" class="sefonly" aria-selected="false">Trebovanje</button>
-    <button role="tab" data-view="podesavanja" class="adminonly" aria-selected="false">Podešavanja</button>
-  </nav>
+  <main id="v-smena"></main>
+  <main id="v-treb" hidden></main>
+  <main id="v-vreme" hidden></main>
+  <main id="v-kontrola" class="wide" hidden></main>
+  <main id="v-podes" class="wide" hidden></main>
 
-  <!-- MOJA SMENA -->
-  <section id="view-smena" class="wrap" style="gap:16px">
-    <div class="clock" id="clock"></div>
-    <div id="list-head"></div>
-    <div id="list"></div>
-    <div id="signbox"></div>
-  </section>
-
-  <!-- PREGLED ČEK-LISTA -->
-  <section id="view-pregled" class="wrap" style="gap:14px" hidden>
-    <div class="toolbar">
-      <label>Od<input type="date" id="p-from"></label>
-      <label>Do<input type="date" id="p-to"></label>
-    </div>
-    <div id="p-table"></div>
-    <div id="p-detail"></div>
-  </section>
-
-  <!-- RADNO VREME -->
-  <section id="view-rad" class="wrap" style="gap:14px" hidden>
-    <div class="toolbar">
-      <label>Od<input type="date" id="r-from"></label>
-      <label>Do<input type="date" id="r-to"></label>
-      <label>Osoba<select id="r-who"><option value="">Svi</option></select></label>
-    </div>
-    <div id="r-sum"></div>
-    <div id="r-table"></div>
-  </section>
-
-  <!-- TREBOVANJE -->
-  <section id="view-trebovanje" class="wrap" style="gap:14px" hidden>
-    <div class="toolbar">
-      <label>Od<input type="date" id="t-from"></label>
-      <label>Do<input type="date" id="t-to"></label>
-    </div>
-    <div id="t-out"></div>
-  </section>
-
-  <!-- PODEŠAVANJA -->
-  <section id="view-podesavanja" class="wrap" style="gap:14px" hidden>
-    <div class="panel">
-      <h2>Lokal i QR kod</h2>
-      <p class="status" style="margin:0">Dolazak, pauza, odlazak i čekiranje rade samo u krugu oko lokala (proverava server). Dolazak i odlazak traže i skeniran QR kod sa zida u kuhinji. Šef smene i administrator mogu da dopune ček-listu i van lokala.</p>
-      <div class="reqform" style="grid-template-columns:1fr 1fr 1fr auto">
-        <label>Geografska širina<input class="num" id="st-lat" inputmode="decimal"></label>
-        <label>Geografska dužina<input class="num" id="st-lng" inputmode="decimal"></label>
-        <label>Krug (m)<input class="num" id="st-rad" inputmode="numeric"></label>
-        <button class="btn ghost" type="button" id="st-here">📍 Moja lokacija</button>
-      </div>
-      <div class="row"><label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" id="st-geo" style="width:auto"> Provera lokacije (GPS)</label>
-        <label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" id="st-qr" style="width:auto"> QR kod za dolazak i odlazak</label>
-        <button class="btn" type="button" id="st-save">Sačuvaj</button><span class="status" id="st-msg"></span></div>
-      <div class="qrbox"><div id="qr-img"></div><div style="display:flex;flex-direction:column;gap:8px;max-width:380px">
-        <b>QR kod za zid u kuhinji</b><span class="status">Odštampaj i zalepi pored ulaza u kuhinju. Radnik ga skenira kamerom telefona pri dolasku i odlasku. Ako neko pošalje sliku koda, napravi nov kod — stari odmah prestaje da važi.</span>
-        <div class="row"><button class="btn" type="button" id="qr-print-btn">🖨️ Štampaj</button><button class="btn ghost" type="button" id="qr-new">Nov QR kod</button></div></div></div>
-      <div id="qr-print" style="display:none"></div>
-    </div>
-    <div class="panel">
-      <h2>Mesta za temperaturu</h2>
-      <p class="status" style="margin:0">Svaki frižider, zamrzivač i holding orman koji se meri. Granice su u °C; prazno znači bez granice. Kad unos izađe iz granica, stavka pocrveni i vidi se u pregledu.</p>
-      <div id="pt-list"></div>
-      <div class="reqform" style="grid-template-columns:2fr 1fr 1fr 1fr auto">
-        <label>Naziv<input id="pt-label" placeholder="npr. Frižider 3"></label>
-        <label>Vrsta<select id="pt-kind"><option value="frizider">frižider</option><option value="zamrzivac">zamrzivač</option><option value="holding">holding</option></select></label>
-        <label>Min °C<input class="num" id="pt-min" inputmode="decimal"></label>
-        <label>Max °C<input class="num" id="pt-max" inputmode="decimal"></label>
-        <button class="btn" type="button" id="pt-add">Dodaj</button>
-      </div>
-    </div>
-    <div class="panel">
-      <h2>Stavke ček-lista</h2>
-      <p class="status" style="margin:0">Rok, uključeno/isključeno. Nove stavke i promena teksta: javi Vuksanu.</p>
-      <div id="it-list"></div>
-    </div>
-  </section>
-
-  <p class="foot">Vreme dolaska, pauze, odlaska i svakog čekiranja upisuje server, ne telefon. Slike se prave kamerom u trenutku čekiranja i na njih se upisuje datum, vreme i ime. Petkom i subotom rokovi za zatvaranje kuhinje pomeraju se sat kasnije. Dolazak, pauza, odlazak i čekiranje rade samo u lokalu (lokacija telefona); dolazak i odlazak traže QR kod sa zida u kuhinji.</p>
+  <nav class="bnav" aria-label="Glavni meni"><div class="in" id="bnav"></div></nav>
 </div>
 
-<div class="lightbox" id="lightbox" hidden><img id="lb-img" alt="Slika"><button class="btn ghost" id="lb-x" type="button" style="background:#fff;color:#000">Zatvori</button></div>
+<div class="toast" id="toast" hidden role="status"></div>
+<div class="lightbox" id="lightbox" hidden><img id="lb-img" alt="Slika"><button class="btn ghost sm" id="lb-x" type="button">Zatvori</button></div>
+<div class="modal-bg" id="modal-bg" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="qr-print" style="display:none"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
+  'use strict';
   const $ = id => document.getElementById(id);
   const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const ico = (n,cls) => `<svg class="ico${cls?' '+cls:''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
   const pad = n => String(n).padStart(2,'0');
   const TZ='Europe/Belgrade';
-  // datum i sat u Beogradu, bez obzira na zonu telefona
   const bgParts = d => { const p={}; new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).forEach(x=>p[x.type]=x.value); return p; };
   const bgDate = d => { const p=bgParts(d); return `${p.year}-${p.month}-${p.day}`; };
   const bgHM = d => { const p=bgParts(d); return `${p.hour}:${p.minute}`; };
   const today = () => bgDate(new Date());
   const addDays = (ds,n) => { const d=new Date(ds+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
   const fmtD = ds => ds ? ds.slice(8,10)+'.'+ds.slice(5,7)+'.' : '';
-  const DAYS=['Ned','Pon','Uto','Sre','Čet','Pet','Sub'];
+  const DAYS=['nedelja','ponedeljak','utorak','sreda','četvrtak','petak','subota'];
+  const DSH=['Ned','Pon','Uto','Sre','Čet','Pet','Sub'];
   const dow = ds => new Date(ds+'T12:00:00Z').getUTCDay();
-  const dur = ms => { if(ms==null||ms<0) ms=0; const m=Math.round(ms/60000); return `${Math.floor(m/60)}h ${pad(m%60)}m`; };
-  const hrs = ms => (Math.max(0,ms)/3600000).toLocaleString('sr-Latn',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const dur = ms => { if(ms==null||ms<0) ms=0; const m=Math.floor(ms/60000); return `${Math.floor(m/60)}:${pad(m%60)}`; };
+  const hrs = ms => (Math.max(0,ms)/3600000).toLocaleString('sr-Latn',{minimumFractionDigits:1,maximumFractionDigits:1});
   const num = v => { if(v==null) return null; const s=String(v).trim().replace(',','.'); if(s==='') return null; const n=Number(s); return isFinite(n)?n:null; };
-  const ROLE_LABEL = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja', ceka:'čeka odobrenje', odbijen:'odbijen'};
-  const KIND_LABEL = {frizider:'frižider', zamrzivac:'zamrzivač', holding:'holding'};
+  const fnum = v => String(Math.round(Number(v)*100)/100).replace('.',',');
+  const initials = n => String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join('');
+  const ROLE = {admin:'administrator', menadzer:'menadžer', sef:'šef smene', kuvar:'kuhinja'};
+  const KIND = {frizider:'frižider', zamrzivac:'zamrzivač', holding:'holding'};
+  const SHIFT = {1:{name:'1. smena',sub:'Jutro · priprema i servis',ico:'sun'},2:{name:'2. smena',sub:'Veče · špica i zatvaranje',ico:'moon'}};
+  const TS = {novo:'Novo',poslato:'Poslato',naruceno:'Naručeno',stiglo:'Stiglo',odbijeno:'Odbijeno'};
 
-  const S = {uid:null, name:'', role:'', sef:false, admin:false, people:[], items:[], points:[], done:[], reqs:[], signs:[], open:null, breaks:[], wasteItems:[],
-             site:null, view:'smena', ckDate:null, ckShift:null, shifts:[], allBreaks:[], drafts:{}, pending:{}};
-  const status = t => { $('status').textContent=t; };
+  const S = {uid:null,name:'',role:'',sef:false,admin:false,site:null,people:[],items:[],points:[],wasteItems:[],
+             open:null,breaks:[],date:null,shift:null,done:[],reqs:[],signs:[],onShift:[],
+             view:'smena',sec:null,expand:null,drafts:{},pending:{},kDate:null,kShift:null,
+             treb:{name:'',qty:1,unit:'kom',urgent:false}};
   const person = id => (S.people.find(p=>p.id===id)||{}).full_name || '—';
+
+  // ---------- obaveštenja ----------
+  let tt=null;
+  function toast(msg, kind){ const t=$('toast'); t.className='toast'+(kind?' '+kind:''); t.innerHTML=(kind==='bad'?ico('alert'):kind==='good'?ico('check'):'')+`<span>${esc(msg)}</span>`; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true, kind==='bad'?6000:3000); }
+  function modal(html){ $('modal').innerHTML=html; $('modal-bg').hidden=false; }
+  function closeModal(){ $('modal-bg').hidden=true; $('modal').innerHTML=''; }
+  $('modal-bg').addEventListener('click',e=>{ if(e.target.id==='modal-bg') closeModal(); });
+  function ask(title, text, okLabel, danger){ return new Promise(res=>{
+    modal(`<div class="h-md">${esc(title)}</div><div class="muted">${esc(text)}</div><div class="row"><button class="btn ${danger?'danger':'shift'}" id="ask-ok" type="button" style="flex:1">${esc(okLabel||'Da')}</button><button class="btn ghost" id="ask-no" type="button" style="flex:1">Odustani</button></div>`);
+    $('ask-ok').onclick=()=>{ closeModal(); res(true); }; $('ask-no').onclick=()=>{ closeModal(); res(false); };
+  }); }
+
+  // ---------- baza ----------
+  const showV = id => ['login-view','noaccess-view','config-view','app-view'].forEach(v=>$(v).hidden = v!==id);
+  const appCfg = window.APP_CONFIG || {};
+  if(!window.supabase || !appCfg.SUPABASE_URL){ showV('config-view'); return; }
+  const sb = window.supabase.createClient(appCfg.SUPABASE_URL, appCfg.SUPABASE_ANON_KEY);
+  async function q(p){ const {data,error}=await p; if(error) throw error; return data; }
+  const errText = e => ((e&&e.message)||String(e)).replace(/^.*?ERROR:\s*/,'');
 
   // ---------- QR iz adrese i lokacija ----------
   (function(){ try{ const u=new URL(location.href); const k=u.searchParams.get('k'); if(k){ sessionStorage.setItem('osoblje-qr',JSON.stringify({k,t:Date.now()})); u.searchParams.delete('k'); history.replaceState(null,'',u.pathname+u.search+u.hash); } }catch(_){} })();
@@ -296,19 +379,11 @@ tfoot td{font-weight:600}
       navigator.geolocation.getCurrentPosition(
         p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}),
         e=>{ if(!required){ res({lat:null,lng:null,acc:null}); return; }
-          rej(new Error(e.code===1?'Lokacija je blokirana. Dozvoli lokaciju za insmoke.rs u podešavanjima telefona (Safari/Chrome → Lokacija), pa pokušaj ponovo.':'Lokacija nije dobijena. Proveri da je lokacija uključena i pokušaj ponovo.')); },
+          rej(new Error(e.code===1?'Lokacija je blokirana. Dozvoli lokaciju za insmoke.rs (podešavanja telefona → Safari/Chrome → Lokacija) i pokušaj ponovo.':'Lokacija nije dobijena. Proveri da je lokacija uključena i pokušaj ponovo.')); },
         {enableHighAccuracy:true, timeout:required?20000:6000, maximumAge:required?0:30000});
     });
   }
   const geoArgs = g => ({p_lat:g.lat, p_lng:g.lng, p_acc:g.acc==null?null:Math.round(g.acc)});
-
-  // ---------- baza ----------
-  const showV = id => ['login-view','noaccess-view','config-view','app-view'].forEach(v=>$(v).hidden = v!==id);
-  const appCfg = window.APP_CONFIG || {};
-  if(!window.supabase || !appCfg.SUPABASE_URL){ showV('config-view'); return; }
-  const sb = window.supabase.createClient(appCfg.SUPABASE_URL, appCfg.SUPABASE_ANON_KEY);
-  async function q(p){ const {data,error}=await p; if(error) throw error; return data; }
-  const errText = e => ((e&&e.message)||String(e)).replace(/^.*?ERROR:\s*/,'');
 
   async function loadBase(){
     const [people, items, points, wi] = await Promise.all([
@@ -318,423 +393,484 @@ tfoot td{font-weight:600}
       q(sb.from('waste_items').select('id,name,unit,area,active').eq('active',true).order('name'))
     ]);
     try{ const st=await q(sb.rpc('staff_site_public')); S.site=(st&&st[0])||null; }catch(_){ S.site=null; }
-    S.people=people||[]; S.items=items||[]; S.points=(points||[]).map(p=>({...p,t_min:p.t_min==null?null:Number(p.t_min),t_max:p.t_max==null?null:Number(p.t_max)})); S.wasteItems=wi||[];
+    S.people=people||[]; S.items=items||[]; S.wasteItems=wi||[];
+    S.points=(points||[]).map(p=>({...p,t_min:p.t_min==null?null:Number(p.t_min),t_max:p.t_max==null?null:Number(p.t_max)}));
   }
   async function loadMine(){
     const open = await q(sb.from('staff_shifts').select('*').eq('user_id',S.uid).is('clock_out',null).limit(1));
-    S.open = (open&&open[0])||null;
+    S.open=(open&&open[0])||null;
     S.breaks = S.open ? await q(sb.from('staff_breaks').select('*').eq('staff_shift_id',S.open.id).order('start_at')) : [];
-    if(S.open){ S.ckDate=S.open.work_date; S.ckShift=S.open.shift; }
-    else if(!S.ckDate){ S.ckDate=today(); S.ckShift = Number(bgHM(new Date()).slice(0,2))<16 ? 1 : 2; }
+    if(S.open){ S.date=S.open.work_date; S.shift=S.open.shift; } else { S.date=today(); }
+    document.body.className = S.open ? 's'+S.open.shift : '';
   }
-  async function loadDay(){
-    // ček-lista dana + prethodna primopredaja (do 3 dana unazad)
-    const from=addDays(S.ckDate,-3);
-    const [done, reqs, signs] = await Promise.all([
-      q(sb.from('chk_done').select('*').gte('work_date',from).lte('work_date',S.ckDate)),
-      q(sb.from('chk_requests').select('*').eq('work_date',S.ckDate).eq('shift',S.ckShift).order('created_at')),
-      q(sb.from('chk_signoff').select('*').gte('work_date',from).lte('work_date',S.ckDate))
+  async function loadDay(date){
+    const from=addDays(date,-3);
+    const [done, signs] = await Promise.all([
+      q(sb.from('chk_done').select('*').gte('work_date',from).lte('work_date',date)),
+      q(sb.from('chk_signoff').select('*').gte('work_date',from).lte('work_date',date))
     ]);
-    S.done=done||[]; S.reqs=reqs||[]; S.signs=signs||[];
+    S.done=done||[]; S.signs=signs||[];
+    if(S.sef){ try{ S.onShift=await q(sb.from('staff_shifts').select('user_id,shift,clock_in,work_date').is('clock_out',null)); }catch(_){ S.onShift=[]; } }
   }
-  async function reloadSmena(){
-    const ae=document.activeElement; if(ae && $('list').contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ clearTimeout(reloadSmena._t); reloadSmena._t=setTimeout(reloadSmena,4000); return; }
-    try{ await loadMine(); await loadDay(); renderSmena(); status('Ažurirano '+bgHM(new Date())); }catch(e){ status('Greška: '+errText(e)); } }
+  async function loadReqs(){
+    const from=addDays(today(),-14);
+    S.reqs = await q(sb.from('chk_requests').select('*').gte('work_date',from).order('created_at',{ascending:false}).limit(500)) || [];
+  }
 
   // ---------- slike ----------
   async function stampAndShrink(file){
     try{
-      const bmp = await createImageBitmap(file);
-      const k = Math.min(1, 1600/Math.max(bmp.width,bmp.height));
-      const c = document.createElement('canvas'); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+      const bmp=await createImageBitmap(file); const k=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+      const c=document.createElement('canvas'); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
       const g=c.getContext('2d'); g.drawImage(bmp,0,0,c.width,c.height);
-      const now=new Date(); const p=bgParts(now);
-      const txt=`${p.day}.${p.month}.${p.year} ${p.hour}:${p.minute} · ${S.name}`;
-      const fs=Math.max(16,Math.round(c.width/34));
-      g.font=`600 ${fs}px sans-serif`; const w=g.measureText(txt).width;
-      g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(0,c.height-fs*1.8,Math.min(c.width,w+fs*1.2),fs*1.8);
-      g.fillStyle='#fff'; g.fillText(txt,fs*0.6,c.height-fs*0.6);
-      const blob = await new Promise(res=>c.toBlob(res,'image/jpeg',0.8));
-      if(blob) return blob;
+      const p=bgParts(new Date()); const txt=`${p.day}.${p.month}.${p.year} ${p.hour}:${p.minute} · ${S.name}`;
+      const fs=Math.max(16,Math.round(c.width/34)); g.font=`600 ${fs}px sans-serif`; const w=g.measureText(txt).width;
+      g.fillStyle='rgba(0,0,0,.6)'; g.fillRect(0,c.height-fs*1.8,Math.min(c.width,w+fs*1.2),fs*1.8); g.fillStyle='#fff'; g.fillText(txt,fs*.6,c.height-fs*.6);
+      const blob=await new Promise(res=>c.toBlob(res,'image/jpeg',.8)); if(blob) return blob;
     }catch(_){}
     return file;
   }
-  async function upload(blob, key){
-    const path=`${S.ckDate}/s${S.ckShift}/${key}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
-    const {error}=await sb.storage.from('osoblje').upload(path, blob, {contentType:'image/jpeg', upsert:false});
-    if(error) throw new Error('Slika nije poslata: '+error.message);
-    return path;
+  async function upload(blob,key){
+    const path=`${S.date}/s${S.shift}/${key}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
+    const {error}=await sb.storage.from('osoblje').upload(path,blob,{contentType:'image/jpeg',upsert:false});
+    if(error) throw new Error('Slika nije poslata: '+error.message); return path;
   }
   const urlCache={};
-  async function signedUrl(path){
-    if(urlCache[path] && urlCache[path].t>Date.now()-500000) return urlCache[path].u;
-    const {data,error}=await sb.storage.from('osoblje').createSignedUrl(path, 600);
-    if(error) return null; urlCache[path]={u:data.signedUrl,t:Date.now()}; return data.signedUrl;
-  }
-  async function fillThumbs(root){
-    const imgs=[...(root||document).querySelectorAll('img[data-path]:not([src])')];
-    await Promise.all(imgs.map(async im=>{ const u=await signedUrl(im.dataset.path); if(u) im.src=u; }));
-  }
-  document.addEventListener('click',async e=>{
-    const t=e.target.closest('img.thumb'); if(!t) return;
-    let u=t.dataset.path?await signedUrl(t.dataset.path):t.src; if(!u) return; $('lb-img').src=u; $('lightbox').hidden=false;
-  });
+  async function signedUrl(path){ if(urlCache[path]&&urlCache[path].t>Date.now()-500000) return urlCache[path].u;
+    const {data,error}=await sb.storage.from('osoblje').createSignedUrl(path,600); if(error) return null; urlCache[path]={u:data.signedUrl,t:Date.now()}; return data.signedUrl; }
+  async function fillThumbs(root){ const imgs=[...(root||document).querySelectorAll('img[data-path]:not([src])')]; await Promise.all(imgs.map(async im=>{ const u=await signedUrl(im.dataset.path); if(u) im.src=u; })); }
+  document.addEventListener('click',async e=>{ const t=e.target.closest('img.thumb'); if(!t) return; e.stopPropagation(); const u=t.dataset.path?await signedUrl(t.dataset.path):t.src; if(!u) return; $('lb-img').src=u; $('lightbox').hidden=false; });
   const closeLb=()=>{ $('lightbox').hidden=true; $('lb-img').src=''; };
-  $('lb-x').addEventListener('click',closeLb); $('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') closeLb(); });
+  $('lb-x').onclick=closeLb; $('lightbox').addEventListener('click',e=>{ if(e.target.id==='lightbox') closeLb(); });
 
-  // ---------- rokovi ----------
-  function dueOf(it, date){
-    if(!it.due) return null;
-    let [h,m]=it.due.slice(0,5).split(':').map(Number);
-    if(it.late_close && [5,6].includes(dow(date))) h+=1;
-    return pad(h)+':'+pad(m);
-  }
-  // vreme u Beogradu kao minuti od ponoći radnog dana (2. smena posle ponoći: +24h)
-  function minutesOn(date, d){ const ds=bgDate(d); const [h,m]=bgHM(d).split(':').map(Number); return (ds>date?24*60:0)+h*60+m; }
+  // ---------- rokovi i stanje ----------
+  function dueOf(it,date){ if(!it.due) return null; let [h,m]=it.due.slice(0,5).split(':').map(Number); if(it.late_close && [5,6].includes(dow(date))) h+=1; return pad(h)+':'+pad(m); }
+  function minutesOn(date,d){ const ds=bgDate(d); const [h,m]=bgHM(d).split(':').map(Number); return (ds>date?24*60:0)+h*60+m; }
   const toMin = hm => { const [h,m]=hm.split(':').map(Number); return h*60+m; };
-  function itemState(it, date, shift){
-    const d=S.done.find(x=>x.item_id===it.id && x.work_date===date && x.shift===shift);
-    const due=dueOf(it,date);
-    if(d){
-      const late = due && !d.skipped && minutesOn(date,new Date(d.done_at)) > toMin(due);
-      return {d, due, cls: d.alarm?'alarm':(late?'late':'done'), late};
-    }
-    const now=new Date(); const isPast = date<today() || (date===today() && due && minutesOn(date,now)>toMin(due));
-    return {d:null, due, cls: isPast&&due?'over':'', over: isPast&&!!due};
+  function st(it,date,shift,done){
+    done=done||S.done; const d=done.find(x=>x.item_id===it.id&&x.work_date===date&&x.shift===shift); const due=dueOf(it,date);
+    if(d){ const late=due&&!d.skipped&&minutesOn(date,new Date(d.done_at))>toMin(due); return {d,due,late,cls:d.alarm?'alarm':d.skipped?'skip':late?'late':'done'}; }
+    const over = !!due && (date<today() || (date===today() && minutesOn(date,new Date())>toMin(due)));
+    return {d:null,due,over,cls:over?'over':''};
+  }
+  const itemsOf = sh => S.items.filter(i=>i.active&&i.shift===sh);
+  function sections(sh){ const out=[]; itemsOf(sh).forEach(i=>{ let s=out.find(x=>x.name===i.section); if(!s){ s={name:i.section,items:[]}; out.push(s); } s.items.push(i); }); return out; }
+  function summary(date,sh,done){ let total=0,ok=0,late=0,over=0,alarm=0; itemsOf(sh).forEach(i=>{ total++; const s=st(i,date,sh,done); if(s.d){ ok++; if(s.late) late++; if(s.d.alarm) alarm++; } else if(s.over) over++; }); return {total,ok,late,over,alarm,pct:total?Math.round(ok/total*100):0}; }
+  function nextItem(date,sh){ const open=itemsOf(sh).filter(i=>!st(i,date,sh).d); open.sort((a,b)=>{ const da=dueOf(a,date)||'99:99', db=dueOf(b,date)||'99:99'; return da===db ? a.sort-b.sort : da.localeCompare(db); }); return open.find(i=>!i.optional)||open[0]||null; }
+  function lastHandover(date,shift,done){ done=done||S.done; const key=(d,s)=>d+'|'+s, cur=key(date,shift);
+    const hw=S.items.filter(i=>i.code==='handover_write').map(i=>i.id);
+    return done.filter(x=>hw.includes(x.item_id)&&key(x.work_date,x.shift)<cur&&x.note).sort((a,b)=>key(b.work_date,b.shift).localeCompare(key(a.work_date,a.shift)))[0]||null; }
+
+  // ---------- donja navigacija ----------
+  function renderNav(){
+    const tabs=[['smena','list','Smena'],['treb','cart','Trebovanje'],['vreme','clock','Moje vreme']];
+    if(S.sef) tabs.push(['kontrola','chart','Kontrola']);
+    if(S.admin) tabs.push(['podes','gear','Podešavanja']);
+    const newReq = S.sef ? S.reqs.filter(r=>r.status==='poslato').length : 0;
+    $('bnav').innerHTML=tabs.map(([v,i,l])=>`<button type="button" data-v="${v}" ${S.view===v?'aria-current="page"':''}>${ico(i,'lg')}<span>${l}</span>${v==='treb'&&newReq?`<i class="badge">${newReq}</i>`:''}</button>`).join('');
+  }
+  $('bnav').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(b) go(b.dataset.v); });
+  async function go(v){
+    if(v==='kontrola'&&!S.sef) v='smena'; if(v==='podes'&&!S.admin) v='smena';
+    S.view=v; ['smena','treb','vreme','kontrola','podes'].forEach(x=>$('v-'+x).hidden=x!==v);
+    if(location.hash!=='#'+v) history.replaceState(null,'','#'+v); window.scrollTo(0,0); renderNav();
+    if(v==='smena') await reloadSmena(); if(v==='treb') await renderTreb(); if(v==='vreme') await renderVreme(); if(v==='kontrola') await renderKontrola(); if(v==='podes') await renderPodes();
   }
 
-  // ---------- MOJA SMENA ----------
+  // ---------- SMENA ----------
+  async function reloadSmena(){
+    const ae=document.activeElement; if(ae && $('v-smena').contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ clearTimeout(reloadSmena._t); reloadSmena._t=setTimeout(reloadSmena,4000); return; }
+    try{ await loadMine(); await loadDay(S.date); renderSmena(); }catch(e){ toast(errText(e),'bad'); }
+  }
   let tick=null;
-  function renderClock(){
-    const el=$('clock');
-    if(!S.open){
-      el.className='clock';
-      const def = Number(bgHM(new Date()).slice(0,2))<16 ? 1 : 2;
-      el.innerHTML=`<div><div class="st">Nisi na smeni</div><div class="big">Dobrodošao/la</div></div>
-        <div class="row"><span class="st">Smena</span><div class="seg" role="group" aria-label="Smena"><button type="button" data-ns="1" aria-pressed="${def===1}">1. smena</button><button type="button" data-ns="2" aria-pressed="${def===2}">2. smena</button></div></div>
-        <div class="acts"><button class="btn good" type="button" id="c-in">✅ Dolazak</button></div>
-        ${S.site&&S.site.qr_required?`<div class="geo">${qrCode()?'✓ QR kod skeniran':'📷 Prvo skeniraj QR kod na zidu u kuhinji'}${S.site.geo_required?' · lokacija se proverava':''}</div>`:''}`;
-      el.querySelectorAll('[data-ns]').forEach(b=>b.addEventListener('click',()=>el.querySelectorAll('[data-ns]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))));
-      $('c-in').addEventListener('click',async()=>{
-        const sh=Number(el.querySelector('[data-ns][aria-pressed="true"]').dataset.ns);
-        if(S.site&&S.site.qr_required&&!qrCode()){ alert('Prvo skeniraj QR kod na zidu u kuhinji kamerom telefona. Otvoriće se ova stranica, pa klikni Dolazak.'); return; }
-        $('c-in').disabled=true; $('c-in').textContent='Proveravam lokaciju…';
-        try{ const g=await getPos(true); await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); await reloadSmena(); }catch(e){ alert(errText(e)); renderClock(); }
-      });
+  function renderSmena(){
+    clearInterval(tick);
+    if(!S.open){ renderPick(); return; }
+    const date=S.date, sh=S.shift, sm=summary(date,sh), secs=sections(sh);
+    if(!S.sec || !secs.some(s=>s.name===S.sec)){ const nx=nextItem(date,sh); S.sec = nx ? nx.section : secs[0]&&secs[0].name; }
+    const onBreak=S.breaks.some(b=>!b.end_at); const nx=nextItem(date,sh);
+    const qrOk=!!qrCode(), needQr=S.site&&S.site.qr_required;
+    let h=`<section class="live${onBreak?' pause':''}">
+      <div class="spread"><div><div class="eyebrow" style="color:rgba(255,255,255,.8)">${onBreak?'Na pauzi':'Na smeni'} · ${DAYS[dow(date)]} ${fmtD(date)}</div><div class="h-xl">${SHIFT[sh].name}</div></div>${ico(SHIFT[sh].ico,'lg')}</div>
+      <div class="stats"><div><small>Dolazak</small><b>${bgHM(new Date(S.open.clock_in))}</b></div><div><small>Pauze</small><b id="c-br-t">0:00</b></div><div><small>Rad</small><b id="c-net">0:00</b></div></div>
+      <div class="acts"><button class="btn light" type="button" id="c-br">${ico(onBreak?'check':'coffee')} ${onBreak?'Kraj pauze':'Pauza'}</button><button class="btn" type="button" id="c-out" style="background:#fff;color:var(--ink)">${ico('in')} Odlazak</button></div>
+      ${needQr?`<div style="font-size:13px;opacity:.9">${ico('qr')} ${qrOk?'QR kod skeniran — možeš na odlazak.':'Za odlazak skeniraj QR kod na zidu u kuhinji.'}</div>`:''}
+    </section>`;
+    h+=`<section class="card"><div class="prog"><div class="ring" style="--p:${sm.pct}"><b>${sm.pct}%</b></div><div style="flex:1"><div class="h-md">Ček-lista</div><div class="muted">${sm.ok} od ${sm.total} urađeno</div>
+      <div class="row" style="margin-top:8px">${sm.over?`<span class="chip bad">${sm.over} kasni</span>`:''}${sm.alarm?`<span class="chip bad">${ico('thermo')} ${sm.alarm} temperatura</span>`:''}${sm.late?`<span class="chip warn">${sm.late} posle roka</span>`:''}${!sm.over&&!sm.alarm&&sm.ok===sm.total?'<span class="chip good">Sve urađeno</span>':''}</div></div></div></section>`;
+    if(nx){ const s=st(nx,date,sh); h+=`<section class="card next"><div class="spread"><span class="eyebrow">Sledeće</span>${s.due?`<span class="chip ${s.over?'bad':'shift'}">${s.over?'kasni · ':''}do ${s.due}</span>`:''}</div><div style="font-weight:700;font-size:18px">${esc(nx.title)}</div><button class="btn shift" type="button" data-open="${nx.id}" data-sec="${esc(nx.section)}">Otvori</button></section>`; }
+    h+=`<div class="sectabs" role="tablist">${secs.map(s=>{ const dn=s.items.filter(i=>st(i,date,sh).d).length, ov=s.items.some(i=>st(i,date,sh).over);
+      return `<button type="button" class="sectab ${dn===s.items.length?'done':ov?'bad':''}" data-sec="${esc(s.name)}" aria-pressed="${S.sec===s.name}"><b>${esc(s.name)}</b><small>${dn}/${s.items.length}${ov&&dn<s.items.length?' · kasni':''}</small></button>`; }).join('')}</div>`;
+    const cur=secs.find(s=>s.name===S.sec);
+    h+=`<div class="list">${cur?cur.items.map(i=>itemHtml(i,date,sh,false)).join(''):''}</div>`;
+    h+=signHtml(date,sh,sm);
+    h+=`<datalist id="wi-list">${S.wasteItems.map(w=>`<option value="${esc(w.name)}">`).join('')}</datalist>`;
+    $('v-smena').innerHTML=h; fillThumbs($('v-smena'));
+    const upd=()=>{ const now=Date.now(); const tot=now-new Date(S.open.clock_in).getTime(); const br=S.breaks.reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0); if($('c-net')){ $('c-net').textContent=dur(tot-br); $('c-br-t').textContent=dur(br); } };
+    upd(); tick=setInterval(upd,30000);
+  }
+  let deferredInstall=null;
+  window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredInstall=e; if(S.view==='smena'&&!S.open) renderPick(); });
+  const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  function installHtml(){
+    if(standalone()) return ''; try{ if(localStorage.getItem('osoblje-install-x')) return ''; }catch(_){}
+    if(!deferredInstall && !isIOS()) return '';
+    const how = deferredInstall ? 'Jedan klik — dobijaš ikonicu ISWT Kuhinja na ekranu telefona.' : 'U Safari-ju dodirni dugme Deli (kvadrat sa strelicom), pa „Dodaj na početni ekran”.';
+    return `<section class="install"><img src="osoblje-icon-192.png" alt=""><div class="t"><b>Instaliraj aplikaciju</b>${how}</div>${deferredInstall?'<button class="btn sm" type="button" id="inst-go" style="background:var(--ember)">Instaliraj</button>':''}<button class="x" type="button" id="inst-x" aria-label="Zatvori">${ico('x')}</button></section>`;
+  }
+  document.addEventListener('click',async e=>{ const b=e.target.closest('#inst-go,#inst-x'); if(!b) return;
+    if(b.id==='inst-x'){ try{ localStorage.setItem('osoblje-install-x','1'); }catch(_){} b.closest('.install').remove(); return; }
+    if(deferredInstall){ deferredInstall.prompt(); try{ await deferredInstall.userChoice; }catch(_){} deferredInstall=null; const c=document.querySelector('.install'); if(c) c.remove(); } });
+  function renderPick(){
+    document.body.className='';
+    const t=today(), needQr=S.site&&S.site.qr_required, qrOk=!!qrCode();
+    const card=sh=>{ const sm=summary(t,sh); const who=(S.onShift||[]).filter(x=>x.shift===sh&&x.work_date===t).map(x=>person(x.user_id));
+      return `<button type="button" class="shiftcard s${sh}" data-in="${sh}"><div class="spread"><div><div class="eyebrow" style="color:rgba(255,255,255,.85)">${SHIFT[sh].sub}</div><div class="h-lg">${SHIFT[sh].name}</div></div>${ico(SHIFT[sh].ico,'lg')}</div>
+        <div><div class="meter"><i style="width:${sm.pct}%"></i></div><div class="spread" style="margin-top:6px;font-size:13px"><span>Ček-lista ${sm.ok}/${sm.total}</span>${who.length?`<span class="who">${esc(who.join(', '))}</span>`:''}</div></div>
+        <span class="go">${ico('out')} Dolazak</span></button>`; };
+    $('v-smena').innerHTML=`<section><div class="eyebrow">${DAYS[dow(t)]}, ${fmtD(t)}</div><div class="h-xl" style="margin-top:4px">Zdravo, ${esc(S.name.split(' ')[0])}</div><div class="muted" style="margin-top:6px">Izaberi svoju smenu i prijavi dolazak.</div></section>
+      ${(needQr||(S.site&&S.site.geo_required))?`<div class="gate">${needQr?`<span class="chip ${qrOk?'good':''}">${ico(qrOk?'check':'qr')} ${qrOk?'QR kod skeniran':'Prvo skeniraj QR kod na zidu'}</span>`:''}${S.site&&S.site.geo_required?`<span class="chip">${ico('pin')} Lokacija se proverava</span>`:''}</div>`:''}
+      <div class="shifts">${card(1)}${card(2)}</div>
+      ${installHtml()}
+      ${S.sef?`<section class="card"><div class="h-md">Šef smene</div><div class="muted">Ček-liste obe smene, potvrde i slike su u tabu Kontrola.</div><button class="btn ghost" type="button" data-goto="kontrola">${ico('chart')} Otvori Kontrolu</button></section>`:''}`;
+  }
+  function signHtml(date,sh,sm){
+    if(!S.sef) return '';
+    const sign=S.signs.find(s=>s.work_date===date&&s.shift===sh);
+    return sign ? `<section class="sign"><div class="row">${ico('check')}<b>Smena potvrđena</b></div><div class="muted">${esc(person(sign.signed_by))} · ${bgHM(new Date(sign.signed_at))}${sign.note?' · '+esc(sign.note):''}</div><button class="btn ghost sm" type="button" data-unsign="${date}|${sh}">Poništi potvrdu</button></section>`
+      : `<section class="sign"><b>Potvrda šefa smene</b><div class="muted">Potvrđuješ da je ček-lista tačna. Posle potvrde kuvari ne mogu da poništavaju stavke.</div><label class="f">Napomena<textarea data-signnote="1" placeholder="opciono"></textarea></label><button class="btn" type="button" data-sign="${date}|${sh}">${ico('check')} Potvrđujem smenu (${sm.ok}/${sm.total})</button></section>`;
+  }
+
+  function itemHtml(it,date,sh,readonly,done){
+    const s=st(it,date,sh,done); const d=s.d; const open=S.expand===it.id || readonly;
+    const tags=[]; if(it.need_photo) tags.push(`<span class="chip">${ico('camera')} slika</span>`); if((it.temp_kinds||[]).length) tags.push(`<span class="chip">${ico('thermo')} temperatura</span>`);
+    if(it.text_label) tags.push(`<span class="chip">${ico('pen')} upis</span>`); if(it.code==='requests') tags.push(`<span class="chip">${ico('cart')} trebovanje</span>`); if(it.optional) tags.push('<span class="chip">ako ima</span>');
+    let body='';
+    if(open){
+      if(it.hint) body+=`<div class="hint">${esc(it.hint)}</div>`;
+      if(it.code==='handover_read'){ const ho=lastHandover(date,sh,done);
+        body+= ho ? `<div class="handover"><small>${fmtD(ho.work_date)} · ${ho.shift}. smena · ${esc(person(ho.done_by))} u ${bgHM(new Date(ho.done_at))}</small>${esc(ho.note)}</div>` : `<div class="handover"><small>Primopredaja</small>Prethodna smena nije napisala primopredaju.</div>`; }
+      if(it.code==='requests'){ const mine=S.reqs.filter(r=>r.work_date===date&&r.shift===sh);
+        body+=`<div class="note">${mine.length?mine.map(r=>`${esc(r.name)} — ${fnum(r.qty)} ${esc(r.unit)}${r.urgent?' · HITNO':''} · ${TS[r.status]}`).join('\n'):'Još ništa nije trebovano u ovoj smeni.'}</div>${readonly?'':`<button class="btn ghost" type="button" data-goto="treb">${ico('cart')} Otvori trebovanje</button>`}`; }
+      if(d){
+        body+=`<div class="done-meta">${d.skipped?'Danas nije bilo':'Urađeno'} · <b>${esc(person(d.done_by))}</b> u ${bgHM(new Date(d.done_at))}${s.late?' · <span style="color:var(--warn);font-weight:600">posle roka</span>':''}${d.dist_m!=null?` · ${Math.round(d.dist_m)} m od lokala`:''}</div>`;
+        if(d.temps&&d.temps.length) body+=`<div class="tvals">${d.temps.map(t=>`<span class="chip ${t.ok?'good':'bad'}">${esc(t.label)}: ${fnum(t.value)}°C</span>`).join('')}</div>`;
+        if(d.note && it.code!=='handover_read') body+=`<div class="note">${esc(d.note)}</div>`;
+        if(d.photos&&d.photos.length) body+=`<div class="cam">${d.photos.map(p=>`<img class="thumb" data-path="${esc(p)}" alt="Slika">`).join('')}</div>`;
+        const signed=S.signs.some(x=>x.work_date===date&&x.shift===sh);
+        if(!readonly && (!signed||S.admin) && (d.done_by===S.uid||S.sef)) body+=`<button class="btn ghost sm" type="button" data-undo="${d.id}" style="align-self:flex-start">Poništi</button>`;
+      } else if(!readonly){
+        const dr=S.drafts[it.id]||{};
+        const pts=S.points.filter(p=>p.active&&(it.temp_kinds||[]).includes(p.kind));
+        if(pts.length) body+=`<div class="temps">${pts.map(p=>{ const v=(dr.temps||{})[p.id]??''; const n=num(v); const bad=n!=null&&((p.t_min!=null&&n<p.t_min)||(p.t_max!=null&&n>p.t_max));
+          const rng=p.t_min!=null&&p.t_max!=null?`${p.t_min} do ${p.t_max}°C`:p.t_min!=null?`iznad ${p.t_min}°C`:p.t_max!=null?`${p.t_max}°C ili niže`:'';
+          return `<label class="temp ${n==null?'':bad?'badt':'ok'}"><span class="lbl">${esc(p.label)}</span><span class="rng">${rng}</span><input class="num" inputmode="decimal" data-temp="${p.id}" value="${esc(v)}" placeholder="°C"></label>`; }).join('')}</div>`;
+        if(it.text_label) body+=`<label class="f">${esc(it.text_label)}<textarea data-note="1">${esc(dr.note||'')}</textarea></label>`;
+        if(it.need_photo){ const ph=dr.photos||[]; body+=`<div class="cam">${ph.map(p=>`<img class="thumb" data-path="${esc(p)}" alt="Slika">`).join('')}<label class="btn ghost">${ico('camera')} ${ph.length?'Još jedna slika':'Slikaj'}<input type="file" accept="image/*" capture="environment" data-cam="1"></label>${S.pending[it.id]?'<span class="muted">Šaljem sliku…</span>':''}</div>`; }
+        body+=`<div class="row"><button class="btn good" type="button" data-check="1" style="flex:1">${ico('check')} ${it.code==='requests'?'Trebovanje završeno':'Urađeno'}</button>${it.optional?`<button class="btn ghost" type="button" data-skip="1">Danas nije bilo</button>`:''}</div><div class="err" data-err="1"></div>`;
+      }
+    }
+    return `<article class="item ${s.cls}" data-item="${it.id}">
+      <button class="head" type="button" data-toggle="${it.id}" aria-expanded="${open}"><span class="dot">${d?ico('check'):''}</span><span class="t"><b>${esc(it.title)}</b>${!d&&!open&&tags.length?`<span>${tags.join('')}</span>`:''}</span>${s.due?`<span class="due">${s.over?'kasni ':''}${s.due}</span>`:''}</button>
+      ${body?`<div class="body">${body}</div>`:''}</article>`;
+  }
+
+  // događaji — smena
+  $('v-smena').addEventListener('click',async e=>{
+    const b=e.target.closest('button,[data-goto]'); if(!b) return;
+    if(b.dataset.goto){ go(b.dataset.goto); return; }
+    if(b.dataset.in){ await clockIn(Number(b.dataset.in)); return; }
+    if(b.id==='c-br'){ b.disabled=true; try{ const g=await getPos(true); const r=await q(sb.rpc('staff_break_toggle',geoArgs(g))); toast(r==='pocetak'?'Pauza je počela.':'Pauza je završena.','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); b.disabled=false; } return; }
+    if(b.id==='c-out'){ await clockOut(); return; }
+    if(b.dataset.sec && !b.dataset.open){ S.sec=b.dataset.sec; S.expand=null; renderSmena(); return; }
+    if(b.dataset.open){ S.sec=b.dataset.sec; S.expand=b.dataset.open; renderSmena(); const el=document.querySelector(`[data-item="${b.dataset.open}"]`); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+    if(b.dataset.toggle){ S.expand = S.expand===b.dataset.toggle ? null : b.dataset.toggle; renderSmena(); return; }
+    if(b.dataset.sign||b.dataset.unsign){ const [d,sh]=(b.dataset.sign||b.dataset.unsign).split('|');
+      if(b.dataset.unsign && !(await ask('Poništiti potvrdu?','Kuvari ponovo mogu da menjaju stavke ove smene.','Poništi',true))) return;
+      try{ await q(sb.rpc('chk_sign',{p_date:d,p_shift:Number(sh),p_note:b.dataset.sign?(document.querySelector('[data-signnote]')||{}).value||null:null,p_undo:!!b.dataset.unsign})); toast(b.dataset.sign?'Smena je potvrđena.':'Potvrda je poništena.','good'); if(S.view==='kontrola') renderKontrola(); else reloadSmena(); }catch(err){ toast(errText(err),'bad'); } return; }
+    const card=b.closest('[data-item]'); if(!card) return; const id=card.dataset.item; const it=S.items.find(i=>i.id===id); const errEl=card.querySelector('[data-err]');
+    if(b.dataset.check||b.dataset.skip){
+      const skip=!!b.dataset.skip, dr=S.drafts[id]||{};
+      if(!skip){ const pts=S.points.filter(p=>p.active&&(it.temp_kinds||[]).includes(p.kind));
+        const miss=pts.find(p=>num((dr.temps||{})[p.id])==null); if(miss){ errEl.textContent='Upiši temperaturu: '+miss.label; return; }
+        if(it.need_photo&&!(dr.photos||[]).length){ errEl.textContent='Potrebna je slika.'; return; }
+        if(it.text_label&&!(dr.note||'').trim()){ errEl.textContent='Upiši: '+it.text_label; return; }
+        if(S.pending[id]){ errEl.textContent='Sačekaj da se slika pošalje.'; return; } }
+      const temps=Object.entries(dr.temps||{}).map(([k,v])=>({point_id:k,value:num(v)})).filter(x=>x.value!=null);
+      b.disabled=true; errEl.textContent='';
+      try{ const g=await getPos(!S.sef); await q(sb.rpc('chk_check',{p_date:S.date,p_shift:S.shift,p_item:id,p_temps:temps,p_note:dr.note||null,p_photos:skip?[]:(dr.photos||[]),p_skip:skip,...geoArgs(g)}));
+        delete S.drafts[id]; S.expand=null; await loadDay(S.date);
+        const nx=nextItem(S.date,S.shift); if(nx && nx.section!==S.sec && sections(S.shift).find(s=>s.name===S.sec).items.every(i=>st(i,S.date,S.shift).d)){ S.sec=nx.section; toast('Sekcija završena. Sledeća: '+nx.section,'good'); } else toast('Sačuvano.','good');
+        renderSmena(); }
+      catch(err){ errEl.textContent=errText(err); b.disabled=false; }
       return;
     }
-    const onBreak=S.breaks.some(b=>!b.end_at);
-    el.className='clock'+(onBreak?' onbreak':'');
-    el.innerHTML=`<div><div class="st">${onBreak?'Na pauzi':'Na smeni'} · ${S.open.shift}. smena · ${fmtD(S.open.work_date)}</div><div class="big">Dolazak ${bgHM(new Date(S.open.clock_in))}</div></div>
-      <div class="nums"><div><small>Na poslu</small><b id="c-total">—</b></div><div><small>Pauze</small><b id="c-break">—</b></div><div><small>Rad bez pauza</small><b id="c-net">—</b></div></div>
-      ${S.site&&S.site.qr_required?`<div class="geo">${qrCode()?'✓ QR kod skeniran — možeš na odlazak':'Za odlazak: skeniraj QR kod na zidu'}</div>`:''}
-      <div class="acts"><button class="btn ${onBreak?'good':'ghost'}" type="button" id="c-br" style="${onBreak?'':'background:transparent;color:var(--char-ink);border-color:var(--char-line)'}">${onBreak?'▶️ Kraj pauze':'☕ Pauza'}</button><button class="btn ember" type="button" id="c-out">🏁 Odlazak</button></div>`;
-    const upd=()=>{ const now=Date.now(); const tot=now-new Date(S.open.clock_in).getTime(); const br=S.breaks.reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0);
-      if($('c-total')){ $('c-total').textContent=dur(tot); $('c-break').textContent=dur(br); $('c-net').textContent=dur(tot-br); } };
-    upd(); clearInterval(tick); tick=setInterval(()=>{ upd(); },30000);
-    $('c-br').addEventListener('click',async()=>{ $('c-br').disabled=true; try{ const g=await getPos(true); await q(sb.rpc('staff_break_toggle',geoArgs(g))); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-br').disabled=false; } });
-    $('c-out').addEventListener('click',async()=>{
-      const open=S.items.filter(it=>it.active && it.shift===S.open.shift && !itemState(it,S.open.work_date,S.open.shift).d).length;
-      if(!confirm(open?`Ostalo je ${open} nečekiranih stavki. Ipak se odjaviti?`:'Odjaviti se sa smene?')) return;
-      if(S.site&&S.site.qr_required&&!qrCode()){ alert('Za odlazak skeniraj QR kod na zidu u kuhinji kamerom telefona, pa klikni Odlazak.'); return; }
-      $('c-out').disabled=true; try{ const g=await getPos(true); await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-out').disabled=false; }
-    });
-  }
-
-  function lastHandover(date, shift){
-    // primopredaja prethodne smene: za 1. smenu → 2. smena dan ranije; za 2. → 1. smena istog dana (ako nema, najnovija pre toga)
-    const order=(d,s)=>d+'|'+s;
-    const cur=order(date,shift);
-    const hw=S.items.filter(i=>i.code==='handover_write').map(i=>i.id);
-    const c=S.done.filter(x=>hw.includes(x.item_id) && order(x.work_date,x.shift)<cur && x.note).sort((a,b)=>order(b.work_date,b.shift).localeCompare(order(a.work_date,a.shift)));
-    return c[0]||null;
-  }
-
-  function itemHtml(it, date, shift, readonly){
-    const st=itemState(it,date,shift); const d=st.d;
-    const tags=[]; if(it.need_photo) tags.push('📷 slika'); if(it.temp_kinds&&it.temp_kinds.length) tags.push('🌡️ temperatura'); if(it.text_label) tags.push('✍️ upis'); if(it.code==='requests') tags.push('🛒 trebovanje'); if(it.optional) tags.push('ako ima');
-    let body='';
-    if(it.code==='handover_read'){
-      const h=lastHandover(date,shift);
-      body+= h ? `<div class="handover"><small>Primopredaja · ${fmtD(h.work_date)} ${h.shift}. smena · ${esc(person(h.done_by))} u ${bgHM(new Date(h.done_at))}</small>${esc(h.note)}</div>` : `<div class="handover"><small>Primopredaja</small>Nema napisane primopredaje od prethodne smene.</div>`;
-    }
-    if(it.code==='requests'){
-      const reqs=S.reqs;
-      body+=`<div class="reqs">${reqs.length?reqs.map(r=>`<div class="req"><span><b>${esc(r.name)}</b> · ${String(r.qty).replace('.',',')} ${esc(r.unit)}${r.note?' · '+esc(r.note):''} <span class="status">${esc(person(r.created_by))}</span></span>${!readonly&&(r.created_by===S.uid||S.sef)&&!d?`<button class="btn ghost small" data-delreq="${r.id}" type="button">×</button>`:''}</div>`).join(''):'<span class="status">Još ništa nije trebovano.</span>'}</div>`;
-      if(!readonly && !d) body+=`<div class="reqform"><label>Artikal<input list="wi-list" data-rq="name" placeholder="izaberi ili upiši"></label><label>Količina<input class="num" data-rq="qty" inputmode="decimal"></label><label>Jedinica<select data-rq="unit"><option>kom</option><option>kg</option><option>l</option><option>pak</option></select></label><button class="btn" type="button" data-addreq="1">Dodaj</button></div>`;
-    }
-    if(d){
-      const meta=`${d.skipped?'Danas nije bilo':'Urađeno'} · <b>${esc(person(d.done_by))}</b> u ${bgHM(new Date(d.done_at))}${st.late?' · <span style="color:var(--warn);font-weight:600">posle roka</span>':''}`;
-      body+=`<div class="meta">${meta}</div>`;
-      if(d.temps&&d.temps.length) body+=`<div class="tempsout">${d.temps.map(t=>`<span class="${t.ok?'':'bad'}">${esc(t.label)}: ${String(t.value).replace('.',',')}°C${t.ok?'':' ⚠️'}</span>`).join('')}</div>`;
-      if(d.note && it.code!=='handover_read') body+=`<div class="handover" style="background:var(--bg)">${esc(d.note)}</div>`;
-      if(d.photos&&d.photos.length) body+=`<div class="photos">${d.photos.map(p=>`<img class="thumb" data-path="${esc(p)}" alt="Slika">`).join('')}</div>`;
-      const signed=S.signs.some(s=>s.work_date===date&&s.shift===shift);
-      if(!readonly && (!signed||S.admin) && (d.done_by===S.uid||S.sef)) body+=`<div class="row"><button class="btn ghost small" type="button" data-undo="${d.id}">Poništi</button></div>`;
-    } else if(!readonly){
-      const dr=S.drafts[it.id]||{};
-      let f='';
-      const pts=S.points.filter(p=>p.active && (it.temp_kinds||[]).includes(p.kind));
-      if(pts.length) f+=`<div class="temps">${pts.map(p=>{ const v=(dr.temps||{})[p.id]??''; const n=num(v); const bad=n!=null && ((p.t_min!=null&&n<p.t_min)||(p.t_max!=null&&n>p.t_max));
-          const rng=p.t_min!=null&&p.t_max!=null?`${p.t_min} do ${p.t_max}°C`:p.t_min!=null?`iznad ${p.t_min}°C`:p.t_max!=null?`${p.t_max}°C ili hladnije`:'';
-          return `<label>${esc(p.label)} <small>${rng}</small><input class="num${bad?' bad':''}" inputmode="decimal" data-temp="${p.id}" value="${esc(v)}" placeholder="°C"></label>`; }).join('')}</div>`;
-      if(it.text_label) f+=`<label>${esc(it.text_label)}<textarea data-note="1">${esc(dr.note||'')}</textarea></label>`;
-      if(it.need_photo){
-        const ph=dr.photos||[];
-        f+=`<div class="photos">${ph.map((p,i)=>`<img class="thumb" data-path="${esc(p)}" alt="Slika ${i+1}">`).join('')}<label class="camera btn ghost small"><input type="file" accept="image/*" capture="environment" data-cam="1">📷 ${ph.length?'Još jedna slika':'Slikaj'}</label>${S.pending[it.id]?'<span class="status">Šaljem sliku…</span>':''}</div>`;
-      }
-      const btn=`<button class="btn good" type="button" data-check="1">✓ ${it.code==='requests'?'Trebovanje završeno':'Urađeno'}</button>${it.optional?`<button class="btn ghost" type="button" data-skip="1">Danas nije bilo</button>`:''}`;
-      body+=`<div class="form">${f}<div class="row">${btn}<span class="msg err" data-err="1"></span></div></div>`;
-    }
-    return `<div class="item ${st.cls}" data-item="${it.id}">
-      <div class="top"><div><div class="ttl">${d?'✅ ':''}${esc(it.title)}</div>${it.hint?`<div class="hint">${esc(it.hint)}</div>`:''}</div>${st.due?`<span class="due">${st.over?'kasni · ':''}do ${st.due}</span>`:''}</div>
-      ${tags.length&&!d?`<div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
-      ${body}</div>`;
-  }
-
-  function summary(date, shift){
-    const its=S.items.filter(i=>i.active&&i.shift===shift);
-    let done=0,late=0,over=0,alarm=0;
-    its.forEach(it=>{ const st=itemState(it,date,shift); if(st.d){ done++; if(st.late) late++; if(st.d.alarm) alarm++; } else if(st.over) over++; });
-    return {total:its.length, done, late, over, alarm};
-  }
-
-  function renderSmena(){
-    renderClock();
-    const date=S.ckDate, shift=S.ckShift; const readonly=!S.open && !S.sef;
-    const sm=summary(date,shift);
-    const pct=sm.total?Math.round(sm.done/sm.total*100):0;
-    const sign=S.signs.find(s=>s.work_date===date&&s.shift===shift);
-    $('list-head').innerHTML=`<div class="panel">
-      <div class="row" style="justify-content:space-between"><h2>Ček-lista · ${shift}. smena · ${DAYS[dow(date)]} ${fmtD(date)}</h2>
-        ${!S.open?`<div class="row"><input type="date" id="ck-date" value="${date}" style="width:auto"><div class="seg"><button type="button" data-cks="1" aria-pressed="${shift===1}">1.</button><button type="button" data-cks="2" aria-pressed="${shift===2}">2.</button></div></div>`:''}</div>
-      ${!S.open?`<div class="status">${S.sef?'Nisi prijavljen/a na smenu — kao šef možeš da pregledaš i dopuniš ček-listu.':'Prvo klikni „Dolazak“ gore, pa čekiraj stavke svoje smene.'}</div>`:''}
-      <div class="progress"><div class="bar"><i style="width:${pct}%"></i></div><b>${sm.done}/${sm.total}</b></div>
-      <div class="pills">${sm.over?`<span class="pill bad">${sm.over} kasni</span>`:''}${sm.late?`<span class="pill warn">${sm.late} posle roka</span>`:''}${sm.alarm?`<span class="pill bad">⚠️ ${sm.alarm} temperatura van granica</span>`:''}${sign?`<span class="pill good">Potvrdio/la ${esc(person(sign.signed_by))} u ${bgHM(new Date(sign.signed_at))}</span>`:''}</div>
-    </div>`;
-    if(!S.open){
-      $('ck-date').addEventListener('change',async e=>{ S.ckDate=e.target.value||today(); await loadDay(); renderSmena(); });
-      document.querySelectorAll('[data-cks]').forEach(b=>b.addEventListener('click',async()=>{ S.ckShift=Number(b.dataset.cks); await loadDay(); renderSmena(); }));
-    }
-    const its=S.items.filter(i=>i.active&&i.shift===shift);
-    const secs=[]; its.forEach(i=>{ let s=secs.find(x=>x.name===i.section); if(!s){ s={name:i.section,items:[]}; secs.push(s); } s.items.push(i); });
-    $('list').innerHTML=secs.map(s=>{ const dn=s.items.filter(i=>itemState(i,date,shift).d).length;
-      return `<div class="sec"><h3>${esc(s.name)} <span>${dn}/${s.items.length}</span></h3>${s.items.map(i=>itemHtml(i,date,shift,readonly)).join('')}</div>`; }).join('')
-      + `<datalist id="wi-list">${S.wasteItems.map(w=>`<option value="${esc(w.name)}">`).join('')}</datalist>`;
-    fillThumbs($('list'));
-    // potvrda šefa
-    if(S.sef){
-      $('signbox').innerHTML = sign
-        ? `<div class="sign"><h3>Smena potvrđena</h3><div class="meta">${esc(person(sign.signed_by))} · ${bgHM(new Date(sign.signed_at))}${sign.note?' · '+esc(sign.note):''}</div><div class="row"><button class="btn ghost small" type="button" id="sg-undo">Poništi potvrdu</button></div></div>`
-        : `<div class="sign"><h3>Potvrda šefa smene</h3><div class="status">Potvrđuješ da je ček-lista tačna. Posle potvrde kuvari više ne mogu da poništavaju stavke.</div><label>Napomena<textarea id="sg-note" placeholder="opciono"></textarea></label><div class="row"><button class="btn" type="button" id="sg-ok">Potvrđujem smenu (${sm.done}/${sm.total})</button></div></div>`;
-      if($('sg-ok')) $('sg-ok').addEventListener('click',async()=>{ try{ await q(sb.rpc('chk_sign',{p_date:date,p_shift:shift,p_note:$('sg-note').value,p_undo:false})); await reloadSmena(); }catch(e){ alert(errText(e)); } });
-      if($('sg-undo')) $('sg-undo').addEventListener('click',async()=>{ if(!confirm('Poništiti potvrdu smene?')) return; try{ await q(sb.rpc('chk_sign',{p_date:date,p_shift:shift,p_note:null,p_undo:true})); await reloadSmena(); }catch(e){ alert(errText(e)); } });
-    } else $('signbox').innerHTML='';
-  }
-
-  // događaji u ček-listi
-  $('list').addEventListener('input',e=>{
-    const card=e.target.closest('[data-item]'); if(!card) return; const id=card.dataset.item; const dr=S.drafts[id]=S.drafts[id]||{};
-    if(e.target.dataset.temp){ dr.temps=dr.temps||{}; dr.temps[e.target.dataset.temp]=e.target.value;
-      const p=S.points.find(x=>x.id===e.target.dataset.temp); const n=num(e.target.value);
-      e.target.classList.toggle('bad', n!=null && p && ((p.t_min!=null&&n<p.t_min)||(p.t_max!=null&&n>p.t_max))); }
-    if(e.target.dataset.note) dr.note=e.target.value;
+    if(b.dataset.undo){ if(!(await ask('Poništiti čekiranje?','Stavka se vraća kao neurađena.','Poništi',true))) return;
+      try{ await q(sb.rpc('chk_uncheck',{p_id:b.dataset.undo})); await loadDay(S.date); renderSmena(); }catch(err){ toast(errText(err),'bad'); } }
   });
-  $('list').addEventListener('change',async e=>{
-    if(!e.target.dataset.cam) return;
-    const card=e.target.closest('[data-item]'); const id=card.dataset.item; const file=e.target.files&&e.target.files[0]; if(!file) return;
+  $('v-smena').addEventListener('input',e=>{ const card=e.target.closest('[data-item]'); if(!card) return; const dr=S.drafts[card.dataset.item]=S.drafts[card.dataset.item]||{};
+    if(e.target.dataset.temp){ dr.temps=dr.temps||{}; dr.temps[e.target.dataset.temp]=e.target.value; const p=S.points.find(x=>x.id===e.target.dataset.temp), n=num(e.target.value), box=e.target.closest('.temp');
+      box.classList.toggle('ok', n!=null && !((p.t_min!=null&&n<p.t_min)||(p.t_max!=null&&n>p.t_max))); box.classList.toggle('badt', n!=null && ((p.t_min!=null&&n<p.t_min)||(p.t_max!=null&&n>p.t_max))); }
+    if(e.target.dataset.note) dr.note=e.target.value; });
+  $('v-smena').addEventListener('change',async e=>{ if(!e.target.dataset.cam) return; const id=e.target.closest('[data-item]').dataset.item, file=e.target.files&&e.target.files[0]; if(!file) return;
     const dr=S.drafts[id]=S.drafts[id]||{}; S.pending[id]=true; renderSmena();
-    try{ const blob=await stampAndShrink(file); const path=await upload(blob,id.slice(0,8)); dr.photos=(dr.photos||[]).concat(path); }
-    catch(err){ alert(errText(err)); }
-    delete S.pending[id]; renderSmena();
-  });
-  $('list').addEventListener('click',async e=>{
-    const card=e.target.closest('[data-item]'); if(!card) return; const id=card.dataset.item; const it=S.items.find(i=>i.id===id);
-    const errEl=card.querySelector('[data-err]');
-    if(e.target.dataset.check || e.target.dataset.skip){
-      const skip=!!e.target.dataset.skip; const dr=S.drafts[id]||{};
-      if(!skip){
-        const pts=S.points.filter(p=>p.active && (it.temp_kinds||[]).includes(p.kind));
-        const miss=pts.find(p=>num((dr.temps||{})[p.id])==null); if(miss){ errEl.textContent='Upiši temperaturu: '+miss.label; return; }
-        if(it.need_photo && !(dr.photos||[]).length){ errEl.textContent='Potrebna je slika.'; return; }
-        if(it.text_label && !(dr.note||'').trim()){ errEl.textContent='Upiši: '+it.text_label; return; }
-        if(S.pending[id]){ errEl.textContent='Sačekaj da se slika pošalje.'; return; }
-      }
-      const temps=Object.entries(dr.temps||{}).map(([k,v])=>({point_id:k,value:num(v)})).filter(x=>x.value!=null);
-      e.target.disabled=true; errEl.textContent='';
-      try{ const g=await getPos(!S.sef); await q(sb.rpc('chk_check',{p_date:S.ckDate,p_shift:S.ckShift,p_item:id,p_temps:temps,p_note:dr.note||null,p_photos:skip?[]:(dr.photos||[]),p_skip:skip,...geoArgs(g)}));
-        delete S.drafts[id]; await loadDay(); renderSmena(); }
-      catch(err){ errEl.textContent=errText(err); e.target.disabled=false; }
-    }
-    if(e.target.dataset.undo){ if(!confirm('Poništiti ovo čekiranje?')) return;
-      try{ await q(sb.rpc('chk_uncheck',{p_id:e.target.dataset.undo})); await loadDay(); renderSmena(); }catch(err){ alert(errText(err)); } }
-    if(e.target.dataset.addreq){
-      const name=card.querySelector('[data-rq="name"]').value.trim(), qty=num(card.querySelector('[data-rq="qty"]').value), unit=card.querySelector('[data-rq="unit"]').value;
-      if(!name||!qty||qty<=0){ alert('Upiši artikal i količinu.'); return; }
-      const wi=S.wasteItems.find(w=>w.name.toLowerCase()===name.toLowerCase());
-      try{ await q(sb.from('chk_requests').insert({work_date:S.ckDate,shift:S.ckShift,waste_item_id:wi?wi.id:null,name:wi?wi.name:name,qty,unit})); await loadDay(); renderSmena(); }
-      catch(err){ alert(errText(err)); }
-    }
-    if(e.target.dataset.delreq){ try{ await q(sb.from('chk_requests').delete().eq('id',e.target.dataset.delreq)); await loadDay(); renderSmena(); }catch(err){ alert(errText(err)); } }
-  });
-  // jedinica iz šifarnika kad se izabere artikal
-  $('list').addEventListener('change',e=>{ if(e.target.dataset.rq!=='name') return; const wi=S.wasteItems.find(w=>w.name.toLowerCase()===e.target.value.trim().toLowerCase()); if(wi){ const u=e.target.closest('.reqform').querySelector('[data-rq="unit"]'); if(![...u.options].some(o=>o.value===wi.unit)) u.add(new Option(wi.unit,wi.unit)); u.value=wi.unit; } });
+    try{ const p=await upload(await stampAndShrink(file),id.slice(0,8)); dr.photos=(dr.photos||[]).concat(p); }catch(err){ toast(errText(err),'bad'); }
+    delete S.pending[id]; renderSmena(); });
 
-  // ---------- PREGLED ČEK-LISTA ----------
-  async function renderPregled(){
-    const from=$('p-from').value, to=$('p-to').value; if(!from||!to) return;
-    let done, signs;
-    try{ [done,signs]=await Promise.all([ q(sb.from('chk_done').select('*').gte('work_date',addDays(from,-3)).lte('work_date',to)), q(sb.from('chk_signoff').select('*').gte('work_date',from).lte('work_date',to)) ]); }
-    catch(e){ $('p-table').innerHTML=`<div class="empty">${esc(errText(e))}</div>`; return; }
-    const keepDone=S.done, keepSigns=S.signs; S.done=done; S.signs=signs;
-    const rows=[]; for(let d=to; d>=from; d=addDays(d,-1)) for(const sh of [2,1]){ const sm=summary(d,sh); if(d===today()||sm.done) rows.push({d,sh,sm,sign:signs.find(s=>s.work_date===d&&s.shift===sh), photos:done.filter(x=>x.work_date===d&&x.shift===sh).reduce((a,x)=>a+(x.photos||[]).length,0)}); }
-    $('p-table').innerHTML = rows.length ? `<div class="tablewrap"><table><thead><tr><th>Dan</th><th>Smena</th><th class="n">Urađeno</th><th class="n">%</th><th class="n">Kasni / nije</th><th class="n">Posle roka</th><th class="n">Temp. ⚠️</th><th class="n">Slike</th><th>Potvrda šefa</th></tr></thead><tbody>${
-      rows.map(r=>`<tr class="click" data-pd="${r.d}" data-ps="${r.sh}"><td>${DAYS[dow(r.d)]} ${fmtD(r.d)}</td><td>${r.sh}.</td><td class="n">${r.sm.done}/${r.sm.total}</td><td class="n">${r.sm.total?Math.round(r.sm.done/r.sm.total*100):0}%</td><td class="n" style="${r.sm.over?'color:var(--bad);font-weight:600':''}">${r.sm.over||''}</td><td class="n">${r.sm.late||''}</td><td class="n" style="${r.sm.alarm?'color:var(--bad);font-weight:600':''}">${r.sm.alarm||''}</td><td class="n">${r.photos||''}</td><td>${r.sign?'✅ '+esc(person(r.sign.signed_by)):'—'}</td></tr>`).join('')
-    }</tbody></table></div>` : `<div class="empty"><strong>Nema čekiranih smena u ovom periodu</strong></div>`;
-    S.done=keepDone; S.signs=keepSigns;
-    $('p-table').querySelectorAll('[data-pd]').forEach(tr=>tr.addEventListener('click',()=>{
-      const d=tr.dataset.pd, sh=Number(tr.dataset.ps); const kd=S.done, ks=S.signs; S.done=done; S.signs=signs;
-      const its=S.items.filter(i=>i.active&&i.shift===sh); const secs=[]; its.forEach(i=>{ let s=secs.find(x=>x.name===i.section); if(!s){ s={name:i.section,items:[]}; secs.push(s); } s.items.push(i); });
-      $('p-detail').innerHTML=`<div class="panel"><div class="row" style="justify-content:space-between"><h2>${DAYS[dow(d)]} ${fmtD(d)} · ${sh}. smena</h2><button class="btn ghost small" type="button" id="pd-x">Zatvori</button></div>${secs.map(s=>`<div class="sec"><h3>${esc(s.name)}</h3>${s.items.map(i=>itemHtml(i,d,sh,true)).join('')}</div>`).join('')}</div>`;
-      S.done=kd; S.signs=ks; fillThumbs($('p-detail')); $('pd-x').addEventListener('click',()=>$('p-detail').innerHTML='');
-      $('p-detail').scrollIntoView({behavior:'smooth'});
-    }));
+  async function clockIn(sh){
+    if(S.site&&S.site.qr_required&&!qrCode()){ modal(`<div class="h-md">${ico('qr','lg')} Skeniraj QR kod</div><div class="muted">Otvori kameru telefona i skeniraj QR kod na zidu u kuhinji. Otvoriće se ova aplikacija — onda klikni Dolazak.</div><button class="btn ghost" type="button" onclick="document.getElementById('modal-bg').hidden=true">U redu</button>`); return; }
+    const card=document.querySelector(`[data-in="${sh}"]`); if(card){ card.disabled=true; card.querySelector('.go').innerHTML=ico('pin')+' Proveravam lokaciju…'; }
+    try{ const g=await getPos(true); await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); S.sec=null; S.expand=null; toast('Dolazak je upisan. Dobar rad!','good'); await reloadSmena(); }
+    catch(err){ toast(errText(err),'bad'); renderPick(); }
   }
-  ['p-from','p-to'].forEach(id=>$(id).addEventListener('change',renderPregled));
-
-  // ---------- RADNO VREME ----------
-  async function renderRad(){
-    const from=$('r-from').value, to=$('r-to').value; if(!from||!to) return;
-    let sh, br;
-    try{ sh=await q(sb.from('staff_shifts').select('*').gte('work_date',from).lte('work_date',to).order('clock_in',{ascending:false}));
-         br=sh.length? await q(sb.from('staff_breaks').select('*').in('staff_shift_id',sh.map(x=>x.id))) : []; }
-    catch(e){ $('r-table').innerHTML=`<div class="empty">${esc(errText(e))}</div>`; return; }
-    const who=$('r-who').value; if(who) sh=sh.filter(x=>x.user_id===who);
-    const now=Date.now();
-    const rows=sh.map(s=>{ const end=s.clock_out?new Date(s.clock_out).getTime():now; const tot=end-new Date(s.clock_in).getTime();
-      const bs=br.filter(b=>b.staff_shift_id===s.id); const brk=bs.reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0);
-      return {s,tot,brk,net:tot-brk,nb:bs.length}; });
-    const per={}; rows.forEach(r=>{ const p=per[r.s.user_id]=per[r.s.user_id]||{n:0,tot:0,brk:0,net:0}; p.n++; p.tot+=r.tot; p.brk+=r.brk; p.net+=r.net; });
-    $('r-sum').innerHTML = Object.keys(per).length ? `<div class="tablewrap"><table><thead><tr><th>Osoba</th><th class="n">Smena</th><th class="n">Na poslu (h)</th><th class="n">Pauze (h)</th><th class="n">Rad bez pauza (h)</th><th class="n">Prosek pauze</th></tr></thead><tbody>${
-      Object.entries(per).sort((a,b)=>person(a[0]).localeCompare(person(b[0]))).map(([u,p])=>`<tr><td>${esc(person(u))}</td><td class="n">${p.n}</td><td class="n">${hrs(p.tot)}</td><td class="n">${hrs(p.brk)}</td><td class="n"><b>${hrs(p.net)}</b></td><td class="n">${dur(p.brk/p.n)}</td></tr>`).join('')}</tbody></table></div>` : '';
-    $('r-table').innerHTML = rows.length ? `<div class="tablewrap"><table><thead><tr><th>Dan</th><th>Osoba</th><th>Smena</th><th>Dolazak</th><th>Odlazak</th><th class="n">Od lokala</th><th class="n">Na poslu</th><th class="n">Pauze</th><th class="n">Rad</th><th>Napomena</th><th></th></tr></thead><tbody>${
-      rows.map(r=>`<tr><td>${DAYS[dow(r.s.work_date)]} ${fmtD(r.s.work_date)}</td><td>${esc(person(r.s.user_id))}</td><td>${r.s.shift}.</td><td>${bgHM(new Date(r.s.clock_in))}</td><td>${r.s.clock_out?bgHM(new Date(r.s.clock_out)):'<b style="color:var(--good)">na smeni</b>'}</td><td class="n">${r.s.in_dist_m!=null?Math.round(r.s.in_dist_m)+' m':'—'}${r.s.out_dist_m!=null?' / '+Math.round(r.s.out_dist_m)+' m':''}</td><td class="n">${dur(r.tot)}</td><td class="n">${dur(r.brk)}${r.nb?' ('+r.nb+')':''}</td><td class="n"><b>${dur(r.net)}</b></td><td>${r.s.edited_at?'✏️ ':''}${esc(r.s.note||'')}</td><td><button class="btn ghost small" type="button" data-fix="${r.s.id}">Ispravi</button></td></tr>`).join('')}</tbody></table></div>`
-      : `<div class="empty"><strong>Nema evidencije za ovaj period</strong></div>`;
-    $('r-table').querySelectorAll('[data-fix]').forEach(b=>b.addEventListener('click',async()=>{
-      const s=sh.find(x=>x.id===b.dataset.fix);
-      const fmtIn=t=>t?`${bgDate(new Date(t))} ${bgHM(new Date(t))}`:'';
-      const ni=prompt('Dolazak (GGGG-MM-DD SS:MM):',fmtIn(s.clock_in)); if(ni==null) return;
-      const no=prompt('Odlazak (GGGG-MM-DD SS:MM, prazno = još na smeni):',fmtIn(s.clock_out)); if(no==null) return;
-      const note=prompt('Napomena (zašto je ispravljeno):',s.note||''); if(note==null) return;
-      const toTs=v=>{ v=v.trim(); if(!v) return null; const m=v.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}):(\d{2})$/); if(!m) throw new Error('Format: 2026-11-25 10:05');
-        // Beograd: probaj +01:00 pa +02:00 dok ne pogodi lokalno vreme
-        for(const off of ['+01:00','+02:00']){ const d=new Date(`${m[1]}T${pad(m[2])}:${m[3]}:00${off}`); if(bgHM(d)===`${pad(m[2])}:${m[3]}`) return d.toISOString(); }
-        return new Date(`${m[1]}T${pad(m[2])}:${m[3]}:00+01:00`).toISOString(); };
-      try{ await q(sb.rpc('staff_fix',{p_id:s.id,p_in:toTs(ni),p_out:toTs(no),p_note:note})); renderRad(); }catch(e){ alert(errText(e)); }
-    }));
+  async function clockOut(){
+    const open=itemsOf(S.shift).filter(i=>!st(i,S.date,S.shift).d&&!i.optional).length;
+    if(!(await ask('Odlazak sa smene?', open?`Ostalo je ${open} neurađenih stavki ček-liste. Da li si napisao/la primopredaju?`:'Ček-lista je završena. Hvala!','Odjavi me'))) return;
+    if(S.site&&S.site.qr_required&&!qrCode()){ modal(`<div class="h-md">${ico('qr','lg')} Skeniraj QR kod</div><div class="muted">Za odlazak skeniraj QR kod na zidu u kuhinji kamerom telefona, pa klikni Odlazak.</div><button class="btn ghost" type="button" onclick="document.getElementById('modal-bg').hidden=true">U redu</button>`); return; }
+    try{ const g=await getPos(true); await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); toast('Odlazak je upisan. Vidimo se!','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); }
   }
-  ['r-from','r-to','r-who'].forEach(id=>$(id).addEventListener('change',renderRad));
 
   // ---------- TREBOVANJE ----------
   async function renderTreb(){
-    const from=$('t-from').value, to=$('t-to').value; if(!from||!to) return;
-    let rs; try{ rs=await q(sb.from('chk_requests').select('*').gte('work_date',from).lte('work_date',to).order('created_at')); }catch(e){ $('t-out').innerHTML=`<div class="empty">${esc(errText(e))}</div>`; return; }
-    if(!rs.length){ $('t-out').innerHTML='<div class="empty"><strong>Nema trebovanja u ovom periodu</strong></div>'; return; }
-    const agg={}; rs.forEach(r=>{ const k=r.name.toLowerCase()+'|'+r.unit; const a=agg[k]=agg[k]||{name:r.name,unit:r.unit,qty:0,n:0}; a.qty+=Number(r.qty); a.n++; });
-    $('t-out').innerHTML=`<div class="panel"><div class="row" style="justify-content:space-between"><h2>Za nabavku</h2><button class="btn ghost small" type="button" id="t-copy">Kopiraj spisak</button></div>
-      <div class="tablewrap"><table><thead><tr><th>Artikal</th><th class="n">Ukupno</th><th>Jed.</th><th class="n">Puta trebovano</th></tr></thead><tbody>${Object.values(agg).sort((a,b)=>a.name.localeCompare(b.name)).map(a=>`<tr><td>${esc(a.name)}</td><td class="n">${String(Math.round(a.qty*100)/100).replace('.',',')}</td><td>${esc(a.unit)}</td><td class="n">${a.n}</td></tr>`).join('')}</tbody></table></div></div>
-      <div class="tablewrap"><table><thead><tr><th>Dan</th><th>Smena</th><th>Artikal</th><th class="n">Količina</th><th>Ko</th></tr></thead><tbody>${rs.map(r=>`<tr><td>${fmtD(r.work_date)}</td><td>${r.shift}.</td><td>${esc(r.name)}</td><td class="n">${String(r.qty).replace('.',',')} ${esc(r.unit)}</td><td>${esc(person(r.created_by))}</td></tr>`).join('')}</tbody></table></div>`;
-    $('t-copy').addEventListener('click',()=>{ const t=Object.values(agg).map(a=>`${a.name} – ${String(Math.round(a.qty*100)/100).replace('.',',')} ${a.unit}`).join('\n'); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>status('Spisak kopiran.')); });
+    try{ await Promise.all([loadReqs(), loadMine()]); }catch(e){ toast(errText(e),'bad'); }
+    renderNav();
+    const v=$('v-treb'); const cur=S.open?{d:S.open.work_date,s:S.open.shift}:null;
+    let h=`<section><div class="eyebrow">Trebovanje</div><div class="h-xl" style="margin-top:4px">Šta fali?</div></section>`;
+    const inboxFirst = S.sef && !cur;
+    if(inboxFirst) h+=mgrHtml();
+    if(cur||S.sef){
+      const t=S.treb;
+      h+=`<section class="card">${inboxFirst?'<div class="h-md">Dodaj stavku</div>':''}<label class="f">Artikal<input list="wi-list2" id="tr-name" value="${esc(t.name)}" placeholder="npr. pavlaka, brioš, ulje…" autocomplete="off"></label>
+        <div class="grid2" style="gap:10px"><label class="f">Količina<div class="stepper"><button type="button" data-step="-1">−</button><input class="num" id="tr-qty" inputmode="decimal" value="${fnum(t.qty)}"><button type="button" data-step="1">+</button></div></label>
+        <label class="f">Jedinica<select id="tr-unit">${['kom','kg','l','pak','gaj','kut'].map(u=>`<option ${u===t.unit?'selected':''}>${u}</option>`).join('')}</select></label></div>
+        <label class="toggle"><input type="checkbox" id="tr-urg" ${t.urgent?'checked':''}> Hitno (treba danas)</label>
+        <button class="btn shift" type="button" id="tr-add" style="${cur?'':'background:var(--ink)'}">${ico('plus')} Dodaj na spisak</button>
+        ${!cur?'<div class="muted" style="font-size:13px">Nisi na smeni — stavka se dodaje u današnju 1. smenu.</div>':''}
+        <datalist id="wi-list2">${S.wasteItems.map(w=>`<option value="${esc(w.name)}">`).join('')}</datalist></section>`;
+      const d=cur?cur.d:today(), s=cur?cur.s:1;
+      const mine=S.reqs.filter(r=>r.work_date===d&&r.shift===s&&(!inboxFirst||r.status==='novo'));
+      const nova=mine.filter(r=>r.status==='novo');
+      const mgr=S.site&&S.site.treb_name;
+      if(!(inboxFirst&&!mine.length)) h+=`<section class="card"><div class="spread"><div class="h-md">Spisak smene</div><span class="chip shift">${s}. smena · ${fmtD(d)}</span></div>
+        ${mine.length?`<div>${mine.map(r=>reqRow(r,true)).join('')}</div>`:'<div class="empty"><b>Spisak je prazan</b>Dodaj šta fali, pa pošalji menadžeru.</div>'}
+        ${nova.length?`<button class="btn good block" type="button" id="tr-send">${ico('send')} Pošalji ${mgr?esc(mgr):'menadžeru kuhinje'} (${nova.length})</button>
+          <div class="muted" style="font-size:13px">${S.site&&S.site.treb_phone?'Stavke se označe kao poslate i otvori se WhatsApp poruka sa spiskom.':'Stavke se označe kao poslate i vide se menadžeru u aplikaciji. (WhatsApp broj menadžera nije podešen.)'}</div>`:''}</section>`;
+    } else {
+      h+=`<section class="card"><div class="empty"><b>Prvo prijavi dolazak</b>Trebovanje se pravi u toku smene.</div><button class="btn ghost" type="button" data-goto="smena">Na smenu</button></section>`;
+    }
+    if(S.sef){ if(!inboxFirst) h+=mgrHtml(); } else {
+      const old=S.reqs.filter(r=>r.created_by===S.uid&&!(cur&&r.work_date===cur.d&&r.shift===cur.s)).slice(0,15);
+      if(old.length) h+=`<section class="card"><div class="h-md">Moja ranija trebovanja</div><div>${old.map(r=>reqRow(r,false)).join('')}</div></section>`;
+    }
+    v.innerHTML=h;
   }
-  ['t-from','t-to'].forEach(id=>$(id).addEventListener('change',renderTreb));
+  function mgrHtml(){ let h='';
+      const inbox=S.reqs.filter(r=>['poslato','naruceno'].includes(r.status));
+      h+=`<section class="card"><div class="spread"><div class="h-md">Za nabavku</div><span class="chip">${inbox.length} otvoreno</span></div>
+        ${inbox.length?`<div>${inbox.map(r=>reqRow(r,false,true)).join('')}</div><div class="row"><button class="btn ghost sm" type="button" id="tr-copy">Kopiraj spisak</button></div>`:'<div class="empty"><b>Nema otvorenog trebovanja</b>Kad kuvar pošalje spisak, pojaviće se ovde.</div>'}</section>`;
+      const closed=S.reqs.filter(r=>['stiglo','odbijeno'].includes(r.status)).slice(0,20);
+      if(closed.length) h+=`<section class="card"><div class="h-md">Završeno (poslednje)</div><div>${closed.map(r=>reqRow(r,false,false)).join('')}</div></section>`;
+    return h; }
+  function reqRow(r,mineList,mgr){
+    const canDel = r.status==='novo' && (r.created_by===S.uid||S.sef) && mineList;
+    return `<div class="reqrow"><span class="q">${fnum(r.qty)} ${esc(r.unit)}</span><span class="n"><b>${esc(r.name)}${r.urgent?' <span class="chip bad" style="margin-left:4px">HITNO</span>':''}</b><small>${esc(person(r.created_by))} · ${fmtD(r.work_date)} ${r.shift}. smena${r.mgr_note?' · '+esc(r.mgr_note):''}</small></span>
+      <span class="chip status-${r.status}">${TS[r.status]}</span>
+      ${canDel?`<button class="btn ghost sm" type="button" data-delreq="${r.id}" aria-label="Obriši">${ico('x')}</button>`:''}
+      ${mgr?`<span class="row racts">${r.status==='poslato'?`<button class="btn ghost sm" type="button" data-rs="naruceno" data-rid="${r.id}">Naručeno</button>`:''}<button class="btn good sm" type="button" data-rs="stiglo" data-rid="${r.id}">Stiglo</button><button class="btn ghost sm" type="button" data-rs="odbijeno" data-rid="${r.id}">Odbij</button></span>`:''}</div>`;
+  }
+  $('v-treb').addEventListener('click',async e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.goto){ go(b.dataset.goto); return; }
+    if(b.dataset.step){ const i=$('tr-qty'); const n=Math.max(0,(num(i.value)||0)+Number(b.dataset.step)); i.value=fnum(n); S.treb.qty=n; return; }
+    if(b.id==='tr-add'){ const name=$('tr-name').value.trim(), qty=num($('tr-qty').value), unit=$('tr-unit').value, urgent=$('tr-urg').checked;
+      if(!name||!qty||qty<=0){ toast('Upiši artikal i količinu.','bad'); return; }
+      const wi=S.wasteItems.find(w=>w.name.toLowerCase()===name.toLowerCase());
+      const d=S.open?S.open.work_date:today(), s=S.open?S.open.shift:1;
+      try{ await q(sb.from('chk_requests').insert({work_date:d,shift:s,waste_item_id:wi?wi.id:null,name:wi?wi.name:name,qty,unit,urgent})); S.treb={name:'',qty:1,unit:'kom',urgent:false}; toast('Dodato na spisak.','good'); renderTreb(); }catch(err){ toast(errText(err),'bad'); } return; }
+    if(b.dataset.delreq){ try{ await q(sb.from('chk_requests').delete().eq('id',b.dataset.delreq)); renderTreb(); }catch(err){ toast(errText(err),'bad'); } return; }
+    if(b.id==='tr-send'){ const d=S.open?S.open.work_date:today(), s=S.open?S.open.shift:1;
+      const list=S.reqs.filter(r=>r.work_date===d&&r.shift===s&&r.status==='novo');
+      const text=`Trebovanje · In Smoke We Trust\n${DSH[dow(d)]} ${fmtD(d)} · ${s}. smena · ${S.name}\n\n`+list.map(r=>`• ${r.name} — ${fnum(r.qty)} ${r.unit}${r.urgent?' (HITNO)':''}`).join('\n');
+      const phone=S.site&&S.site.treb_phone?String(S.site.treb_phone).replace(/[^\d]/g,''):'';
+      const w = phone ? window.open('about:blank','_blank') : null;
+      try{ const n=await q(sb.rpc('treb_send',{p_date:d,p_shift:s})); toast(`Poslato: ${n} stavki.`,'good');
+        if(phone){ const url=`https://wa.me/${phone}?text=${encodeURIComponent(text)}`; if(w) w.location=url; else location.href=url; }
+        renderTreb(); }
+      catch(err){ if(w) w.close(); toast(errText(err),'bad'); } return; }
+    if(b.dataset.rs){ let note=null; if(b.dataset.rs==='odbijeno'){ note=prompt('Zašto se odbija? (vidi kuvar)',''); if(note===null) return; }
+      try{ await q(sb.rpc('treb_set_status',{p_ids:[b.dataset.rid],p_status:b.dataset.rs,p_note:note})); toast(TS[b.dataset.rs]+'.','good'); renderTreb(); }catch(err){ toast(errText(err),'bad'); } return; }
+    if(b.id==='tr-copy'){ const agg={}; S.reqs.filter(r=>['poslato','naruceno'].includes(r.status)).forEach(r=>{ const k=r.name.toLowerCase()+'|'+r.unit; const a=agg[k]=agg[k]||{name:r.name,unit:r.unit,qty:0,urgent:false}; a.qty+=Number(r.qty); a.urgent=a.urgent||r.urgent; });
+      const t=Object.values(agg).sort((a,b)=>a.name.localeCompare(b.name)).map(a=>`${a.name} — ${fnum(a.qty)} ${a.unit}${a.urgent?' (HITNO)':''}`).join('\n');
+      try{ await navigator.clipboard.writeText(t); toast('Spisak je kopiran.','good'); }catch(_){ toast('Kopiranje nije uspelo.','bad'); } }
+  });
+  $('v-treb').addEventListener('input',e=>{ if(e.target.id==='tr-name') S.treb.name=e.target.value; if(e.target.id==='tr-qty') S.treb.qty=num(e.target.value)||0; });
+  $('v-treb').addEventListener('change',e=>{ if(e.target.id==='tr-unit') S.treb.unit=e.target.value; if(e.target.id==='tr-urg') S.treb.urgent=e.target.checked;
+    if(e.target.id==='tr-name'){ const wi=S.wasteItems.find(w=>w.name.toLowerCase()===e.target.value.trim().toLowerCase()); if(wi){ const u=$('tr-unit'); if(![...u.options].some(o=>o.value===wi.unit)) u.add(new Option(wi.unit,wi.unit)); u.value=wi.unit; S.treb.unit=wi.unit; } } });
 
-  // ---------- PODEŠAVANJA ----------
+  // ---------- MOJE VREME ----------
+  async function renderVreme(){
+    const from=addDays(today(),-30);
+    let sh=[],br=[]; try{ sh=await q(sb.from('staff_shifts').select('*').eq('user_id',S.uid).gte('work_date',from).order('clock_in',{ascending:false})); br=sh.length?await q(sb.from('staff_breaks').select('*').in('staff_shift_id',sh.map(x=>x.id))):[]; }catch(e){ toast(errText(e),'bad'); }
+    const now=Date.now(); const rows=sh.map(s=>{ const end=s.clock_out?new Date(s.clock_out).getTime():now, tot=end-new Date(s.clock_in).getTime(); const brk=br.filter(b=>b.staff_shift_id===s.id).reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0); return {s,tot,brk,net:tot-brk}; });
+    const wk=addDays(today(),-6); const week=rows.filter(r=>r.s.work_date>=wk).reduce((a,r)=>a+r.net,0), month=rows.reduce((a,r)=>a+r.net,0);
+    $('v-vreme').innerHTML=`<section><div class="eyebrow">Moje vreme</div><div class="h-xl" style="margin-top:4px">${esc(S.name)}</div></section>
+      <section class="card"><div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><small>7 dana</small><b>${hrs(week)} h</b></div><div class="kpi"><small>30 dana</small><b>${hrs(month)} h</b></div><div class="kpi"><small>Smena</small><b>${rows.length}</b></div></div></section>
+      <section class="card">${rows.length?rows.map(r=>`<div class="reqrow"><span class="chip ${r.s.shift===1?'warn':''}" style="${r.s.shift===2?'background:var(--s2-soft);color:var(--s2-deep)':''}">${r.s.shift}.</span><span class="n"><b>${DSH[dow(r.s.work_date)]} ${fmtD(r.s.work_date)}</b><small>${bgHM(new Date(r.s.clock_in))} – ${r.s.clock_out?bgHM(new Date(r.s.clock_out)):'na smeni'} · pauze ${dur(r.brk)}${r.s.edited_at?' · ispravljeno':''}</small></span><span class="q">${dur(r.net)}</span></div>`).join(''):'<div class="empty"><b>Još nema smena</b>Ovde se vidi tvoje radno vreme za poslednjih 30 dana.</div>'}</section>`;
+  }
+
+  // ---------- KONTROLA (šef / admin) ----------
+  async function renderKontrola(){
+    if(!S.kDate) S.kDate=today();
+    const d=S.kDate; let done=[],signs=[],onShift=[];
+    try{ [done,signs,onShift]=await Promise.all([ q(sb.from('chk_done').select('*').gte('work_date',addDays(d,-3)).lte('work_date',d)), q(sb.from('chk_signoff').select('*').eq('work_date',d)), q(sb.from('staff_shifts').select('*').eq('work_date',d)) ]); await loadReqs(); }catch(e){ toast(errText(e),'bad'); return; }
+    S.kDone=done; S.kSigns=signs;
+    const box=sh=>{ const sm=summary(d,sh,done), sign=signs.find(x=>x.shift===sh), ppl=onShift.filter(x=>x.shift===sh);
+      const photos=done.filter(x=>x.work_date===d&&x.shift===sh).reduce((a,x)=>a+(x.photos||[]).length,0);
+      return `<section class="card"><div class="band s${sh}"></div><div class="spread"><div><div class="eyebrow">${SHIFT[sh].sub}</div><div class="h-lg">${SHIFT[sh].name}</div></div><div class="ring" style="--p:${sm.pct};--shift:var(--s${sh})"><b>${sm.pct}%</b></div></div>
+        <div class="kpis"><div class="kpi"><small>Urađeno</small><b>${sm.ok}/${sm.total}</b></div><div class="kpi ${sm.over?'bad':''}"><small>Kasni</small><b>${sm.over}</b></div><div class="kpi ${sm.alarm?'bad':''}"><small>Alarm temp.</small><b>${sm.alarm}</b></div><div class="kpi"><small>Slike</small><b>${photos}</b></div></div>
+        <div class="people">${ppl.length?ppl.map(p=>`<span class="chip ${p.clock_out?'':'good'}">${esc(person(p.user_id))} · ${bgHM(new Date(p.clock_in))}${p.clock_out?'–'+bgHM(new Date(p.clock_out)):' · na smeni'}</span>`).join(''):'<span class="muted">Niko se nije prijavio.</span>'}</div>
+        <div class="row">${sign?`<span class="chip good">${ico('check')} Potvrdio/la ${esc(person(sign.signed_by))}</span>`:'<span class="chip">Nije potvrđena</span>'}<button class="btn ghost sm" type="button" data-kshift="${sh}" style="margin-left:auto">Detalji i slike</button></div></section>`; };
+    const openReq=S.reqs.filter(r=>r.status==='poslato').length, urgent=S.reqs.filter(r=>['poslato','naruceno'].includes(r.status)&&r.urgent).length;
+    let h=`<section class="spread" style="flex-wrap:wrap"><div><div class="eyebrow">Kontrola kuhinje</div><div class="h-xl" style="margin-top:4px">${d===today()?'Danas':DSH[dow(d)]+' '+fmtD(d)}</div></div>
+      <div class="datebar"><button class="btn ghost sm" type="button" data-kd="-1">‹</button><input type="date" id="k-date" value="${d}"><button class="btn ghost sm" type="button" data-kd="1" ${d>=today()?'disabled':''}>›</button></div></section>
+      ${openReq||urgent?`<section class="card" style="flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap"><div class="row">${ico('cart','lg')}<div><b>${openReq} novih stavki za nabavku</b>${urgent?`<div class="err">${urgent} hitno</div>`:''}</div></div><button class="btn shift sm" type="button" data-goto="treb" style="background:var(--ember)">Otvori trebovanje</button></section>`:''}
+      <div class="grid2">${box(1)}${box(2)}</div>
+      <div class="seg" role="group"><button type="button" data-kt="cl" aria-pressed="${S.kTab!=='rad'}">Ček-lista</button><button type="button" data-kt="rad" aria-pressed="${S.kTab==='rad'}">Radno vreme</button></div>
+      <div id="k-sub"></div>`;
+    $('v-kontrola').innerHTML=h;
+    if(S.kTab==='rad') renderRad(); else renderKDetail();
+  }
+  function renderKDetail(){
+    const d=S.kDate, sh=S.kShift||1, done=S.kDone||[];
+    const secs=sections(sh); const keepSigns=S.signs; S.signs=S.kSigns||[];
+    const sm=summary(d,sh,done);
+    let h=`<div class="seg" role="group" style="margin-bottom:12px"><button type="button" data-ks="1" aria-pressed="${sh===1}">1. smena</button><button type="button" data-ks="2" aria-pressed="${sh===2}">2. smena</button></div>`;
+    h+=secs.map(s=>`<section style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"><div class="spread"><div class="h-md">${esc(s.name)}</div><span class="chip">${s.items.filter(i=>st(i,d,sh,done).d).length}/${s.items.length}</span></div><div class="list">${s.items.map(i=>itemHtml(i,d,sh,true,done)).join('')}</div></section>`).join('');
+    h+=signHtml(d,sh,sm);
+    S.signs=keepSigns;
+    $('k-sub').innerHTML=h; fillThumbs($('k-sub'));
+  }
+  async function renderRad(){
+    const d=S.kDate, from=addDays(d,-6);
+    let sh=[],br=[]; try{ sh=await q(sb.from('staff_shifts').select('*').gte('work_date',from).lte('work_date',d).order('clock_in',{ascending:false})); br=sh.length?await q(sb.from('staff_breaks').select('*').in('staff_shift_id',sh.map(x=>x.id))):[]; }catch(e){ toast(errText(e),'bad'); return; }
+    const now=Date.now(); const rows=sh.map(s=>{ const end=s.clock_out?new Date(s.clock_out).getTime():now, tot=end-new Date(s.clock_in).getTime(); const bs=br.filter(b=>b.staff_shift_id===s.id); const brk=bs.reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0); return {s,tot,brk,net:tot-brk}; });
+    const per={}; rows.forEach(r=>{ const p=per[r.s.user_id]=per[r.s.user_id]||{n:0,net:0,brk:0}; p.n++; p.net+=r.net; p.brk+=r.brk; });
+    $('k-sub').innerHTML=`<div class="muted" style="margin-bottom:10px">Poslednjih 7 dana do ${fmtD(d)}</div>
+      ${Object.keys(per).length?`<div class="tablewrap" style="margin-bottom:14px"><table><thead><tr><th>Osoba</th><th class="n">Smena</th><th class="n">Rad (h)</th><th class="n">Pauze (h)</th></tr></thead><tbody>${Object.entries(per).sort((a,b)=>person(a[0]).localeCompare(person(b[0]))).map(([u,p])=>`<tr><td>${esc(person(u))}</td><td class="n">${p.n}</td><td class="n"><b>${hrs(p.net)}</b></td><td class="n">${hrs(p.brk)}</td></tr>`).join('')}</tbody></table></div>`:''}
+      ${rows.length?`<div class="tablewrap"><table><thead><tr><th>Dan</th><th>Osoba</th><th>Smena</th><th>Dolazak</th><th>Odlazak</th><th class="n">Od lokala</th><th class="n">Pauze</th><th class="n">Rad</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${DSH[dow(r.s.work_date)]} ${fmtD(r.s.work_date)}</td><td>${esc(person(r.s.user_id))}</td><td>${r.s.shift}.</td><td>${bgHM(new Date(r.s.clock_in))}</td><td>${r.s.clock_out?bgHM(new Date(r.s.clock_out)):'<b style="color:var(--good)">na smeni</b>'}</td><td class="n">${r.s.in_dist_m!=null?Math.round(r.s.in_dist_m)+' m':'—'}</td><td class="n">${dur(r.brk)}</td><td class="n"><b>${dur(r.net)}</b></td><td>${r.s.edited_at?'<span class="chip warn">ispravljeno</span> ':''}<button class="btn ghost sm" type="button" data-fix="${r.s.id}">Ispravi</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="card"><div class="empty"><b>Nema evidencije</b></div></div>'}`;
+    S.radRows=sh;
+  }
+  $('v-kontrola').addEventListener('click',async e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.goto){ go(b.dataset.goto); return; }
+    if(b.dataset.kd){ S.kDate=addDays(S.kDate,Number(b.dataset.kd)); if(S.kDate>today()) S.kDate=today(); renderKontrola(); return; }
+    if(b.dataset.kt){ S.kTab=b.dataset.kt; renderKontrola(); return; }
+    if(b.dataset.ks||b.dataset.kshift){ S.kShift=Number(b.dataset.ks||b.dataset.kshift); S.kTab='cl'; if(b.dataset.kshift){ renderKontrola().then(()=>$('k-sub').scrollIntoView({behavior:'smooth'})); } else renderKDetail(); return; }
+    if(b.dataset.sign||b.dataset.unsign){ const [d,sh]=(b.dataset.sign||b.dataset.unsign).split('|');
+      if(b.dataset.unsign && !(await ask('Poništiti potvrdu?','Kuvari ponovo mogu da menjaju stavke ove smene.','Poništi',true))) return;
+      try{ await q(sb.rpc('chk_sign',{p_date:d,p_shift:Number(sh),p_note:b.dataset.sign?(document.querySelector('#k-sub [data-signnote]')||{}).value||null:null,p_undo:!!b.dataset.unsign})); toast('Sačuvano.','good'); renderKontrola(); }catch(err){ toast(errText(err),'bad'); } return; }
+    if(b.dataset.fix){ const s=(S.radRows||[]).find(x=>x.id===b.dataset.fix); if(!s) return;
+      const fmtIn=t=>t?bgHM(new Date(t)):'';
+      modal(`<div class="h-md">Ispravka radnog vremena</div><div class="muted">${esc(person(s.user_id))} · ${DSH[dow(s.work_date)]} ${fmtD(s.work_date)} · ${s.shift}. smena</div>
+        <div class="grid2" style="gap:10px"><label class="f">Dolazak<input type="time" id="fx-in" value="${fmtIn(s.clock_in)}"></label><label class="f">Odlazak<small>prazno = još na smeni</small><input type="time" id="fx-out" value="${fmtIn(s.clock_out)}"></label></div>
+        <label class="f">Razlog ispravke<input id="fx-note" value="${esc(s.note||'')}" placeholder="npr. zaboravio odjavu"></label>
+        <div class="row"><button class="btn" type="button" id="fx-ok" style="flex:1">Sačuvaj</button><button class="btn ghost" type="button" id="fx-no" style="flex:1">Odustani</button></div>`);
+      const toTs=(hm,base)=>{ if(!hm) return null; for(const off of ['+01:00','+02:00']){ const x=new Date(`${base}T${hm}:00${off}`); if(bgHM(x)===hm) return x.toISOString(); } return new Date(`${base}T${hm}:00+01:00`).toISOString(); };
+      $('fx-no').onclick=closeModal;
+      $('fx-ok').onclick=async()=>{ try{ const inT=toTs($('fx-in').value,s.work_date); let outT=toTs($('fx-out').value,s.work_date); if(outT&&inT&&outT<inT) outT=toTs($('fx-out').value,addDays(s.work_date,1));
+        await q(sb.rpc('staff_fix',{p_id:s.id,p_in:inT,p_out:outT,p_note:$('fx-note').value})); closeModal(); toast('Ispravljeno.','good'); renderRad(); }catch(err){ toast(errText(err),'bad'); } };
+      return; }
+    if(b.dataset.undo){ if(!(await ask('Poništiti čekiranje?','Stavka se vraća kao neurađena.','Poništi',true))) return; try{ await q(sb.rpc('chk_uncheck',{p_id:b.dataset.undo})); renderKontrola(); }catch(err){ toast(errText(err),'bad'); } }
+  });
+  $('v-kontrola').addEventListener('change',e=>{ if(e.target.id==='k-date'){ S.kDate=e.target.value&&e.target.value<=today()?e.target.value:today(); renderKontrola(); } });
+
+  // ---------- PODEŠAVANJA (admin) ----------
   let siteFull=null;
-  async function renderSite(){
-    try{ const r=await q(sb.from('staff_site').select('*').eq('id',1)); siteFull=r&&r[0]; }catch(e){ $('st-msg').textContent=errText(e); return; }
-    if(!siteFull){ $('st-msg').textContent='Nije pokrenut SQL 22_lokacija_qr.sql.'; return; }
-    $('st-lat').value=siteFull.lat; $('st-lng').value=siteFull.lng; $('st-rad').value=siteFull.radius_m; $('st-geo').checked=siteFull.geo_required; $('st-qr').checked=siteFull.qr_required;
+  async function renderPodes(){
+    try{ const r=await q(sb.from('staff_site').select('*').eq('id',1)); siteFull=r&&r[0]; await loadBase(); }catch(e){ toast(errText(e),'bad'); }
+    if(!siteFull){ $('v-podes').innerHTML='<div class="card"><b>Nije pokrenut SQL 22/23.</b></div>'; return; }
     const url=location.origin+'/aplikacija/osoblje.html?k='+siteFull.qr_secret;
-    let svg='';
-    try{ const qr=qrcode(0,'M'); qr.addData(url); qr.make(); svg=qr.createSvgTag({cellSize:6,margin:2,scalable:true}); }catch(_){ svg='<div class="status">QR biblioteka nije učitana.</div>'; }
-    $('qr-img').innerHTML=svg;
-    $('qr-print').innerHTML=`<h1 style="font-family:var(--f-display);font-size:42px;margin:0">IN SMOKE WE TRUST</h1><div style="font-size:24px;font-weight:600">Skeniraj kamerom telefona<br>za DOLAZAK i ODLAZAK</div>${svg}<div style="font-size:16px">Kuhinja osoblje · insmoke.rs/osoblje</div>`;
+    let svg=''; try{ const qr=qrcode(0,'M'); qr.addData(url); qr.make(); svg=qr.createSvgTag({cellSize:6,margin:2,scalable:true}); }catch(_){ svg='<div class="muted">QR biblioteka nije učitana.</div>'; }
+    $('qr-print').innerHTML=`<div style="font:900 48px var(--f-display);text-transform:uppercase">In Smoke We Trust</div><div style="font-size:26px;font-weight:700">Skeniraj kamerom telefona<br>za DOLAZAK i ODLAZAK</div>${svg}<div style="font-size:16px">Kuhinja · insmoke.rs/osoblje</div>`;
+    const staff=S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role));
+    $('v-podes').innerHTML=`<section><div class="eyebrow">Podešavanja</div><div class="h-xl" style="margin-top:4px">Kuhinja</div></section>
+      <div class="grid2">
+      <section class="card"><div class="h-md">${ico('qr')} QR kod za zid</div><div class="qrbox"><div>${svg}</div><div style="display:flex;flex-direction:column;gap:10px;flex:1;min-width:200px"><div class="muted">Odštampaj i zalepi pored ulaza u kuhinju. Ako neko pošalje sliku koda, napravi nov — stari odmah prestaje da važi.</div><button class="btn" type="button" id="qr-print-btn">Štampaj QR kod</button><button class="btn ghost" type="button" id="qr-new">Nov QR kod</button></div></div></section>
+      <section class="card"><div class="h-md">${ico('pin')} Lokal</div>
+        <div class="grid2" style="gap:10px"><label class="f">Geografska širina<input id="st-lat" inputmode="decimal" value="${siteFull.lat}"></label><label class="f">Geografska dužina<input id="st-lng" inputmode="decimal" value="${siteFull.lng}"></label></div>
+        <div class="grid2" style="gap:10px"><label class="f">Krug (m)<input id="st-rad" inputmode="numeric" value="${siteFull.radius_m}"></label><button class="btn ghost" type="button" id="st-here" style="align-self:end">${ico('pin')} Moja lokacija</button></div>
+        <label class="toggle"><input type="checkbox" id="st-geo" ${siteFull.geo_required?'checked':''} style="accent-color:var(--good)"> Provera lokacije (GPS)</label>
+        <label class="toggle"><input type="checkbox" id="st-qr" ${siteFull.qr_required?'checked':''} style="accent-color:var(--good)"> QR kod za dolazak i odlazak</label>
+        <button class="btn" type="button" id="st-save">Sačuvaj lokal</button></section>
+      <section class="card"><div class="h-md">${ico('cart')} Menadžer kuhinje (trebovanje)</div><div class="muted">Kome ide trebovanje. Kuvar klikne „Pošalji“ i otvori se WhatsApp poruka ovom broju; stavke se vide i u aplikaciji.</div>
+        <label class="f">Osoba<select id="tm-user"><option value="">— izaberi —</option>${staff.map(p=>`<option value="${p.id}" ${p.id===siteFull.treb_user?'selected':''}>${esc(p.full_name)} (${ROLE[p.role]||p.role})</option>`).join('')}</select></label>
+        <label class="f">WhatsApp broj<small>sa pozivnim brojem, npr. 381641234567</small><input id="tm-phone" inputmode="tel" value="${esc(siteFull.treb_phone||'')}" placeholder="381…"></label>
+        <button class="btn" type="button" id="tm-save">Sačuvaj</button></section>
+      <section class="card"><div class="h-md">${ico('thermo')} Mesta za temperaturu</div>
+        <div>${S.points.map(p=>`<div class="reqrow" data-pt="${p.id}"><span class="n"><input data-f="label" value="${esc(p.label)}"><small>${KIND[p.kind]}</small></span><input class="num" data-f="t_min" value="${p.t_min??''}" placeholder="min" style="width:76px;font-size:16px"><input class="num" data-f="t_max" value="${p.t_max??''}" placeholder="max" style="width:76px;font-size:16px"><input type="checkbox" data-f="active" ${p.active?'checked':''} style="width:22px;height:22px"><button class="btn ghost sm" type="button" data-savept="1">Sačuvaj</button></div>`).join('')}</div>
+        <div class="row"><input id="pt-label" placeholder="Novo mesto, npr. Frižider 3" style="flex:2"><select id="pt-kind" style="flex:1"><option value="frizider">frižider</option><option value="zamrzivac">zamrzivač</option><option value="holding">holding</option></select><button class="btn ghost" type="button" id="pt-add">${ico('plus')} Dodaj</button></div></section>
+      </div>
+      <section class="card"><div class="h-md">Stavke ček-lista</div><div class="muted">Rok i uključenost. Nove stavke i tekst: javi Vuksanu.</div>
+        ${[1,2].map(sh=>`<div class="spread" style="margin-top:6px"><b>${SHIFT[sh].name}</b></div><div class="tablewrap"><table><tbody>${S.items.filter(i=>i.shift===sh).map(i=>`<tr data-it="${i.id}"><td class="muted">${esc(i.section)}</td><td style="white-space:normal">${esc(i.title)}</td><td><input type="time" data-f="due" value="${i.due?i.due.slice(0,5):''}" style="width:120px;padding:8px"></td><td><input type="checkbox" data-f="active" ${i.active?'checked':''} style="width:22px;height:22px"></td><td><button class="btn ghost sm" type="button" data-saveit="1">Sačuvaj</button></td></tr>`).join('')}</tbody></table></div>`).join('')}</section>`;
   }
-  $('st-here').addEventListener('click',async()=>{ try{ const g=await getPos(true); if(g.lat==null) throw new Error('Lokacija nije dobijena.'); $('st-lat').value=g.lat.toFixed(7); $('st-lng').value=g.lng.toFixed(7); $('st-msg').textContent='Lokacija upisana (preciznost ~'+Math.round(g.acc)+' m). Klikni Sačuvaj.'; }catch(e){ alert(errText(e)); } });
-  $('st-save').addEventListener('click',async()=>{ const lat=num($('st-lat').value), lng=num($('st-lng').value), rad=Math.round(num($('st-rad').value)||0);
-    if(lat==null||lng==null||rad<30){ alert('Upiši lokaciju i krug (najmanje 30 m).'); return; }
-    try{ await q(sb.from('staff_site').update({lat,lng,radius_m:rad,geo_required:$('st-geo').checked,qr_required:$('st-qr').checked,updated_at:new Date().toISOString()}).eq('id',1)); await loadBase(); await renderSite(); $('st-msg').textContent='Sačuvano.'; }catch(e){ alert(errText(e)); } });
-  $('qr-new').addEventListener('click',async()=>{ if(!confirm('Napraviti nov QR kod? Stari (odštampani) odmah prestaje da važi i mora da se odštampa nov.')) return;
-    try{ await q(sb.rpc('staff_qr_new')); await renderSite(); $('st-msg').textContent='Nov QR kod je napravljen — odštampaj ga.'; }catch(e){ alert(errText(e)); } });
-  $('qr-print-btn').addEventListener('click',()=>{ $('qr-print').style.display='flex'; window.print(); setTimeout(()=>$('qr-print').style.display='none',500); });
+  $('v-podes').addEventListener('click',async e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    try{
+      if(b.id==='qr-print-btn'){ $('qr-print').style.display='flex'; window.print(); setTimeout(()=>$('qr-print').style.display='none',500); return; }
+      if(b.id==='qr-new'){ if(!(await ask('Nov QR kod?','Stari (odštampani) kod odmah prestaje da važi i mora da se odštampa nov.','Napravi nov',true))) return; await q(sb.rpc('staff_qr_new')); toast('Nov QR kod — odštampaj ga.','good'); return renderPodes(); }
+      if(b.id==='st-here'){ const g=await getPos(true); if(g.lat==null) throw new Error('Lokacija nije dobijena.'); $('st-lat').value=g.lat.toFixed(7); $('st-lng').value=g.lng.toFixed(7); toast('Lokacija upisana (±'+Math.round(g.acc)+' m). Klikni Sačuvaj.'); return; }
+      if(b.id==='st-save'){ const lat=num($('st-lat').value), lng=num($('st-lng').value), rad=Math.round(num($('st-rad').value)||0); if(lat==null||lng==null||rad<30) throw new Error('Upiši lokaciju i krug (najmanje 30 m).');
+        await q(sb.from('staff_site').update({lat,lng,radius_m:rad,geo_required:$('st-geo').checked,qr_required:$('st-qr').checked,updated_at:new Date().toISOString()}).eq('id',1)); toast('Lokal sačuvan.','good'); return renderPodes(); }
+      if(b.id==='tm-save'){ await q(sb.from('staff_site').update({treb_user:$('tm-user').value||null,treb_phone:$('tm-phone').value.replace(/[^\d]/g,'')||null}).eq('id',1)); toast('Menadžer za trebovanje sačuvan.','good'); return renderPodes(); }
+      if(b.dataset.savept){ const r=b.closest('[data-pt]'), g=f=>r.querySelector(`[data-f="${f}"]`); await q(sb.from('chk_points').update({label:g('label').value.trim(),t_min:num(g('t_min').value),t_max:num(g('t_max').value),active:g('active').checked}).eq('id',r.dataset.pt)); toast('Sačuvano.','good'); return renderPodes(); }
+      if(b.id==='pt-add'){ const label=$('pt-label').value.trim(); if(!label) throw new Error('Upiši naziv.'); const kind=$('pt-kind').value, def={frizider:[0,5],zamrzivac:[null,-18],holding:[63,null]}[kind];
+        await q(sb.from('chk_points').insert({label,kind,t_min:def[0],t_max:def[1],sort:(S.points.length+1)*10})); toast('Dodato.','good'); return renderPodes(); }
+      if(b.dataset.saveit){ const r=b.closest('[data-it]'); await q(sb.from('chk_items').update({due:r.querySelector('[data-f="due"]').value||null,active:r.querySelector('[data-f="active"]').checked}).eq('id',r.dataset.it)); toast('Sačuvano.','good'); return; }
+    }catch(err){ toast(errText(err),'bad'); }
+  });
 
-  function renderPodes(){
-    renderSite();
-    $('pt-list').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Naziv</th><th>Vrsta</th><th class="n">Min °C</th><th class="n">Max °C</th><th>Aktivno</th><th></th></tr></thead><tbody>${S.points.map(p=>`<tr data-pt="${p.id}"><td><input data-f="label" value="${esc(p.label)}"></td><td>${KIND_LABEL[p.kind]}</td><td><input class="num" data-f="t_min" value="${p.t_min??''}" style="width:80px"></td><td><input class="num" data-f="t_max" value="${p.t_max??''}" style="width:80px"></td><td><input type="checkbox" data-f="active" ${p.active?'checked':''} style="width:auto"></td><td><button class="btn ghost small" type="button" data-savept="1">Sačuvaj</button></td></tr>`).join('')}</tbody></table></div>`;
-    $('it-list').innerHTML=[1,2].map(sh=>`<h3 style="margin-top:6px">${sh}. smena</h3><div class="tablewrap"><table><thead><tr><th>Sekcija</th><th>Stavka</th><th>Rok</th><th>Aktivna</th><th></th></tr></thead><tbody>${S.items.filter(i=>i.shift===sh).map(i=>`<tr data-it="${i.id}"><td>${esc(i.section)}</td><td style="white-space:normal">${esc(i.title)}</td><td><input type="time" data-f="due" value="${i.due?i.due.slice(0,5):''}" style="width:110px"></td><td><input type="checkbox" data-f="active" ${i.active?'checked':''} style="width:auto"></td><td><button class="btn ghost small" type="button" data-saveit="1">Sačuvaj</button></td></tr>`).join('')}</tbody></table></div>`).join('');
-  }
-  $('pt-list').addEventListener('click',async e=>{ if(!e.target.dataset.savept) return; const tr=e.target.closest('tr');
-    const g=f=>tr.querySelector(`[data-f="${f}"]`);
-    try{ await q(sb.from('chk_points').update({label:g('label').value.trim(),t_min:num(g('t_min').value),t_max:num(g('t_max').value),active:g('active').checked}).eq('id',tr.dataset.pt)); await loadBase(); renderPodes(); status('Sačuvano.'); }catch(err){ alert(errText(err)); } });
-  $('pt-add').addEventListener('click',async()=>{ const label=$('pt-label').value.trim(); if(!label){ alert('Upiši naziv.'); return; }
-    try{ await q(sb.from('chk_points').insert({label,kind:$('pt-kind').value,t_min:num($('pt-min').value),t_max:num($('pt-max').value),sort:(S.points.length+1)*10})); $('pt-label').value=$('pt-min').value=$('pt-max').value=''; await loadBase(); renderPodes(); }catch(err){ alert(errText(err)); } });
-  $('it-list').addEventListener('click',async e=>{ if(!e.target.dataset.saveit) return; const tr=e.target.closest('tr');
-    try{ await q(sb.from('chk_items').update({due:tr.querySelector('[data-f="due"]').value||null,active:tr.querySelector('[data-f="active"]').checked}).eq('id',tr.dataset.it)); await loadBase(); renderPodes(); status('Sačuvano.'); }catch(err){ alert(errText(err)); } });
-
-  // ---------- tabovi ----------
-  function tab(v){
-    if(['pregled','rad','trebovanje'].includes(v)&&!S.sef) v='smena'; if(v==='podesavanja'&&!S.admin) v='smena';
-    S.view=v; document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
-    ['smena','pregled','rad','trebovanje','podesavanja'].forEach(x=>$('view-'+x).hidden=x!==v);
-    if(location.hash!=='#'+v) history.replaceState(null,'','#'+v);
-    if(v==='pregled') renderPregled(); if(v==='rad') renderRad(); if(v==='trebovanje') renderTreb(); if(v==='podesavanja') renderPodes(); if(v==='smena') reloadSmena();
-  }
-  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>tab(b.dataset.view)));
+  // ---------- meni ----------
+  $('me-btn').addEventListener('click',()=>{ const m=$('menu'); m.hidden=!m.hidden; $('me-btn').setAttribute('aria-expanded',String(!m.hidden)); });
+  document.addEventListener('click',e=>{ if(!e.target.closest('#menu')&&!e.target.closest('#me-btn')) $('menu').hidden=true; });
+  $('logout').addEventListener('click',()=>{ $('menu').hidden=true; sb.auth.signOut(); });
+  $('na-logout').addEventListener('click',()=>sb.auth.signOut());
 
   // ---------- uživo ----------
   let chan=null;
   function subscribe(){
     if(chan){ sb.removeChannel(chan); chan=null; }
-    let t=null; const re=()=>{ clearTimeout(t); t=setTimeout(()=>{ if(S.view==='smena') reloadSmena(); else if(S.view==='pregled') renderPregled(); else if(S.view==='rad') renderRad(); else if(S.view==='trebovanje') renderTreb(); },500); };
+    let t=null; const re=()=>{ clearTimeout(t); t=setTimeout(()=>{ if(S.view==='smena') reloadSmena(); else if(S.view==='treb') renderTreb(); else if(S.view==='kontrola') renderKontrola(); },600); };
     chan=sb.channel('osoblje-live');
     ['staff_shifts','staff_breaks','chk_done','chk_requests','chk_signoff'].forEach(tb=>chan.on('postgres_changes',{event:'*',schema:'public',table:tb},re));
     ['chk_items','chk_points'].forEach(tb=>chan.on('postgres_changes',{event:'*',schema:'public',table:tb},async()=>{ await loadBase(); re(); }));
     chan.subscribe();
   }
-  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && S.uid && S.view==='smena') reloadSmena(); });
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&S.uid&&S.view==='smena') reloadSmena(); });
 
   async function enter(session){
     if(chan){ sb.removeChannel(chan); chan=null; }
-    if(!session){ showV('login-view'); return; }
+    if(!session){ document.body.className=''; showV('login-view'); return; }
     const {data:prof}=await sb.from('profiles').select('full_name,role').eq('id',session.user.id).maybeSingle();
     const role=(prof&&prof.role)||'ceka', name=(prof&&prof.full_name)||session.user.email;
     if(!['kuvar','sef','menadzer','admin'].includes(role)){
-      $('na-title').textContent = role==='ceka' ? 'Nalog čeka odobrenje' : 'Nemaš pristup';
-      $('na-text').textContent = role==='ceka' ? 'Administrator treba da odobri tvoj nalog u Kitchen Control-u (tab Tim).' : 'Ako ti treba pristup, javi se administratoru.';
-      showV('noaccess-view'); return;
-    }
+      $('na-title').textContent=role==='ceka'?'Nalog čeka odobrenje':'Nemaš pristup';
+      $('na-text').textContent=role==='ceka'?'Administrator treba da odobri tvoj nalog u Kitchen Control-u (tab Tim).':'Ako ti treba pristup, javi se administratoru.';
+      showV('noaccess-view'); return; }
+    Object.assign(S,{open:null,breaks:[],done:[],reqs:[],signs:[],onShift:[],sec:null,expand:null,drafts:{},pending:{},kDate:null,kShift:null,kTab:null,treb:{name:'',qty:1,unit:'kom',urgent:false}});
     S.uid=session.user.id; S.role=role; S.name=name; S.admin=role==='admin'; S.sef=['sef','menadzer','admin'].includes(role);
-    $('me-name').textContent=name; $('me-role').textContent=ROLE_LABEL[role]||role;
-    document.querySelectorAll('.sefonly').forEach(el=>el.hidden=!S.sef); document.querySelectorAll('.adminonly').forEach(el=>el.hidden=!S.admin);
-    const t=today(), w=addDays(t,-6);
-    $('p-from').value=w; $('p-to').value=t; $('r-from').value=w; $('r-to').value=t; $('t-from').value=t; $('t-to').value=t;
+    $('me-name').textContent=name; $('me-role').textContent=ROLE[role]||role; $('me-av').textContent=initials(name);
     showV('app-view');
-    try{ await loadBase(); }catch(e){ status('Greška: '+errText(e)+' — da li je pokrenut SQL 21_osoblje.sql?'); return; }
-    $('r-who').innerHTML='<option value="">Svi</option>'+S.people.filter(p=>['kuvar','sef','menadzer','admin'].includes(p.role)).map(p=>`<option value="${p.id}">${esc(p.full_name)}</option>`).join('');
-    const h=(location.hash||'').slice(1); tab(['smena','pregled','rad','trebovanje','podesavanja'].includes(h)?h:'smena');
+    try{ await loadBase(); await loadReqs(); }catch(e){ toast('Greška: '+errText(e)+' — da li su pokrenuti SQL 21–23?','bad'); return; }
+    const h=(location.hash||'').slice(1);
+    await go(['smena','treb','vreme','kontrola','podes'].includes(h)?h:'smena');
     subscribe();
   }
-  $('login-form').addEventListener('submit',async ev=>{
-    ev.preventDefault(); const m=$('l-msg'); m.className='msg'; m.textContent='';
-    const email=$('l-email').value.trim(), password=$('l-pass').value;
-    if(!email||!password){ m.classList.add('err'); m.textContent='Upiši email i lozinku.'; return; }
-    $('l-btn').disabled=true; const {error}=await sb.auth.signInWithPassword({email,password}); $('l-btn').disabled=false;
-    if(error){ m.classList.add('err'); m.textContent='Pogrešan email ili lozinka.'; }
-  });
-  $('logout').addEventListener('click',()=>sb.auth.signOut());
-  $('na-logout').addEventListener('click',()=>sb.auth.signOut());
+  $('login-form').addEventListener('submit',async ev=>{ ev.preventDefault(); const m=$('l-msg'); m.textContent='';
+    const email=$('l-email').value.trim(), password=$('l-pass').value; if(!email||!password){ m.textContent='Upiši email i lozinku.'; return; }
+    $('l-btn').disabled=true; const {error}=await sb.auth.signInWithPassword({email,password}); $('l-btn').disabled=false; if(error) m.textContent='Pogrešan email ili lozinka.'; });
   let lastUid;
-  sb.auth.onAuthStateChange((event,session)=>{ const uid=session?session.user.id:null; if(uid===lastUid && event!=='INITIAL_SESSION') return; lastUid=uid; setTimeout(()=>enter(session),0); });
+  sb.auth.onAuthStateChange((event,session)=>{ const uid=session?session.user.id:null; if(uid===lastUid&&event!=='INITIAL_SESSION') return; lastUid=uid; setTimeout(()=>enter(session),0); });
 })();
 </script>
 </body>
