@@ -129,6 +129,10 @@ tfoot td{font-weight:600}
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .lightbox img{max-width:100%;max-height:100%;border-radius:8px}
 .lightbox button{position:absolute;top:14px;right:14px}
+.qrbox{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.qrbox svg{width:220px;height:220px;background:#fff;padding:8px;border-radius:8px}
+.geo{font-size:13px;color:var(--char-muted)}
+@media print{body *{visibility:hidden}#qr-print,#qr-print *{visibility:visible}#qr-print{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}#qr-print svg{width:12cm;height:12cm}}
 .foot{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
 </style>
 </head>
@@ -212,6 +216,23 @@ tfoot td{font-weight:600}
   <!-- PODEŠAVANJA -->
   <section id="view-podesavanja" class="wrap" style="gap:14px" hidden>
     <div class="panel">
+      <h2>Lokal i QR kod</h2>
+      <p class="status" style="margin:0">Dolazak, pauza, odlazak i čekiranje rade samo u krugu oko lokala (proverava server). Dolazak i odlazak traže i skeniran QR kod sa zida u kuhinji. Šef smene i administrator mogu da dopune ček-listu i van lokala.</p>
+      <div class="reqform" style="grid-template-columns:1fr 1fr 1fr auto">
+        <label>Geografska širina<input class="num" id="st-lat" inputmode="decimal"></label>
+        <label>Geografska dužina<input class="num" id="st-lng" inputmode="decimal"></label>
+        <label>Krug (m)<input class="num" id="st-rad" inputmode="numeric"></label>
+        <button class="btn ghost" type="button" id="st-here">📍 Moja lokacija</button>
+      </div>
+      <div class="row"><label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" id="st-geo" style="width:auto"> Provera lokacije (GPS)</label>
+        <label style="flex-direction:row;gap:8px;align-items:center"><input type="checkbox" id="st-qr" style="width:auto"> QR kod za dolazak i odlazak</label>
+        <button class="btn" type="button" id="st-save">Sačuvaj</button><span class="status" id="st-msg"></span></div>
+      <div class="qrbox"><div id="qr-img"></div><div style="display:flex;flex-direction:column;gap:8px;max-width:380px">
+        <b>QR kod za zid u kuhinji</b><span class="status">Odštampaj i zalepi pored ulaza u kuhinju. Radnik ga skenira kamerom telefona pri dolasku i odlasku. Ako neko pošalje sliku koda, napravi nov kod — stari odmah prestaje da važi.</span>
+        <div class="row"><button class="btn" type="button" id="qr-print-btn">🖨️ Štampaj</button><button class="btn ghost" type="button" id="qr-new">Nov QR kod</button></div></div></div>
+      <div id="qr-print" style="display:none"></div>
+    </div>
+    <div class="panel">
       <h2>Mesta za temperaturu</h2>
       <p class="status" style="margin:0">Svaki frižider, zamrzivač i holding orman koji se meri. Granice su u °C; prazno znači bez granice. Kad unos izađe iz granica, stavka pocrveni i vidi se u pregledu.</p>
       <div id="pt-list"></div>
@@ -230,12 +251,13 @@ tfoot td{font-weight:600}
     </div>
   </section>
 
-  <p class="foot">Vreme dolaska, pauze, odlaska i svakog čekiranja upisuje server, ne telefon. Slike se prave kamerom u trenutku čekiranja i na njih se upisuje datum, vreme i ime. Petkom i subotom rokovi za zatvaranje kuhinje pomeraju se sat kasnije.</p>
+  <p class="foot">Vreme dolaska, pauze, odlaska i svakog čekiranja upisuje server, ne telefon. Slike se prave kamerom u trenutku čekiranja i na njih se upisuje datum, vreme i ime. Petkom i subotom rokovi za zatvaranje kuhinje pomeraju se sat kasnije. Dolazak, pauza, odlazak i čekiranje rade samo u lokalu (lokacija telefona); dolazak i odlazak traže QR kod sa zida u kuhinji.</p>
 </div>
 
 <div class="lightbox" id="lightbox" hidden><img id="lb-img" alt="Slika"><button class="btn ghost" id="lb-x" type="button" style="background:#fff;color:#000">Zatvori</button></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
@@ -259,9 +281,26 @@ tfoot td{font-weight:600}
   const KIND_LABEL = {frizider:'frižider', zamrzivac:'zamrzivač', holding:'holding'};
 
   const S = {uid:null, name:'', role:'', sef:false, admin:false, people:[], items:[], points:[], done:[], reqs:[], signs:[], open:null, breaks:[], wasteItems:[],
-             view:'smena', ckDate:null, ckShift:null, shifts:[], allBreaks:[], drafts:{}, pending:{}};
+             site:null, view:'smena', ckDate:null, ckShift:null, shifts:[], allBreaks:[], drafts:{}, pending:{}};
   const status = t => { $('status').textContent=t; };
   const person = id => (S.people.find(p=>p.id===id)||{}).full_name || '—';
+
+  // ---------- QR iz adrese i lokacija ----------
+  (function(){ try{ const u=new URL(location.href); const k=u.searchParams.get('k'); if(k){ sessionStorage.setItem('osoblje-qr',JSON.stringify({k,t:Date.now()})); u.searchParams.delete('k'); history.replaceState(null,'',u.pathname+u.search+u.hash); } }catch(_){} })();
+  function qrCode(){ try{ const v=JSON.parse(sessionStorage.getItem('osoblje-qr')||'null'); if(v && Date.now()-v.t < 20*60000) return v.k; }catch(_){} return null; }
+  function qrUsed(){ try{ sessionStorage.removeItem('osoblje-qr'); }catch(_){} }
+  function getPos(required){
+    if(S.site && !S.site.geo_required && required) return Promise.resolve({lat:null,lng:null,acc:null});
+    return new Promise((res,rej)=>{
+      if(!navigator.geolocation){ required?rej(new Error('Ovaj telefon ne daje lokaciju.')):res({lat:null,lng:null,acc:null}); return; }
+      navigator.geolocation.getCurrentPosition(
+        p=>res({lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy}),
+        e=>{ if(!required){ res({lat:null,lng:null,acc:null}); return; }
+          rej(new Error(e.code===1?'Lokacija je blokirana. Dozvoli lokaciju za insmoke.rs u podešavanjima telefona (Safari/Chrome → Lokacija), pa pokušaj ponovo.':'Lokacija nije dobijena. Proveri da je lokacija uključena i pokušaj ponovo.')); },
+        {enableHighAccuracy:true, timeout:required?20000:6000, maximumAge:required?0:30000});
+    });
+  }
+  const geoArgs = g => ({p_lat:g.lat, p_lng:g.lng, p_acc:g.acc==null?null:Math.round(g.acc)});
 
   // ---------- baza ----------
   const showV = id => ['login-view','noaccess-view','config-view','app-view'].forEach(v=>$(v).hidden = v!==id);
@@ -278,6 +317,7 @@ tfoot td{font-weight:600}
       q(sb.from('chk_points').select('*').order('sort')),
       q(sb.from('waste_items').select('id,name,unit,area,active').eq('active',true).order('name'))
     ]);
+    try{ const st=await q(sb.rpc('staff_site_public')); S.site=(st&&st[0])||null; }catch(_){ S.site=null; }
     S.people=people||[]; S.items=items||[]; S.points=(points||[]).map(p=>({...p,t_min:p.t_min==null?null:Number(p.t_min),t_max:p.t_max==null?null:Number(p.t_max)})); S.wasteItems=wi||[];
   }
   async function loadMine(){
@@ -372,12 +412,14 @@ tfoot td{font-weight:600}
       const def = Number(bgHM(new Date()).slice(0,2))<16 ? 1 : 2;
       el.innerHTML=`<div><div class="st">Nisi na smeni</div><div class="big">Dobrodošao/la</div></div>
         <div class="row"><span class="st">Smena</span><div class="seg" role="group" aria-label="Smena"><button type="button" data-ns="1" aria-pressed="${def===1}">1. smena</button><button type="button" data-ns="2" aria-pressed="${def===2}">2. smena</button></div></div>
-        <div class="acts"><button class="btn good" type="button" id="c-in">✅ Dolazak</button></div>`;
+        <div class="acts"><button class="btn good" type="button" id="c-in">✅ Dolazak</button></div>
+        ${S.site&&S.site.qr_required?`<div class="geo">${qrCode()?'✓ QR kod skeniran':'📷 Prvo skeniraj QR kod na zidu u kuhinji'}${S.site.geo_required?' · lokacija se proverava':''}</div>`:''}`;
       el.querySelectorAll('[data-ns]').forEach(b=>b.addEventListener('click',()=>el.querySelectorAll('[data-ns]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))));
       $('c-in').addEventListener('click',async()=>{
         const sh=Number(el.querySelector('[data-ns][aria-pressed="true"]').dataset.ns);
-        $('c-in').disabled=true;
-        try{ await q(sb.rpc('staff_clock_in',{p_shift:sh})); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-in').disabled=false; }
+        if(S.site&&S.site.qr_required&&!qrCode()){ alert('Prvo skeniraj QR kod na zidu u kuhinji kamerom telefona. Otvoriće se ova stranica, pa klikni Dolazak.'); return; }
+        $('c-in').disabled=true; $('c-in').textContent='Proveravam lokaciju…';
+        try{ const g=await getPos(true); await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); await reloadSmena(); }catch(e){ alert(errText(e)); renderClock(); }
       });
       return;
     }
@@ -385,15 +427,17 @@ tfoot td{font-weight:600}
     el.className='clock'+(onBreak?' onbreak':'');
     el.innerHTML=`<div><div class="st">${onBreak?'Na pauzi':'Na smeni'} · ${S.open.shift}. smena · ${fmtD(S.open.work_date)}</div><div class="big">Dolazak ${bgHM(new Date(S.open.clock_in))}</div></div>
       <div class="nums"><div><small>Na poslu</small><b id="c-total">—</b></div><div><small>Pauze</small><b id="c-break">—</b></div><div><small>Rad bez pauza</small><b id="c-net">—</b></div></div>
+      ${S.site&&S.site.qr_required?`<div class="geo">${qrCode()?'✓ QR kod skeniran — možeš na odlazak':'Za odlazak: skeniraj QR kod na zidu'}</div>`:''}
       <div class="acts"><button class="btn ${onBreak?'good':'ghost'}" type="button" id="c-br" style="${onBreak?'':'background:transparent;color:var(--char-ink);border-color:var(--char-line)'}">${onBreak?'▶️ Kraj pauze':'☕ Pauza'}</button><button class="btn ember" type="button" id="c-out">🏁 Odlazak</button></div>`;
     const upd=()=>{ const now=Date.now(); const tot=now-new Date(S.open.clock_in).getTime(); const br=S.breaks.reduce((a,b)=>a+((b.end_at?new Date(b.end_at).getTime():now)-new Date(b.start_at).getTime()),0);
       if($('c-total')){ $('c-total').textContent=dur(tot); $('c-break').textContent=dur(br); $('c-net').textContent=dur(tot-br); } };
     upd(); clearInterval(tick); tick=setInterval(()=>{ upd(); },30000);
-    $('c-br').addEventListener('click',async()=>{ $('c-br').disabled=true; try{ await q(sb.rpc('staff_break_toggle')); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-br').disabled=false; } });
+    $('c-br').addEventListener('click',async()=>{ $('c-br').disabled=true; try{ const g=await getPos(true); await q(sb.rpc('staff_break_toggle',geoArgs(g))); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-br').disabled=false; } });
     $('c-out').addEventListener('click',async()=>{
       const open=S.items.filter(it=>it.active && it.shift===S.open.shift && !itemState(it,S.open.work_date,S.open.shift).d).length;
       if(!confirm(open?`Ostalo je ${open} nečekiranih stavki. Ipak se odjaviti?`:'Odjaviti se sa smene?')) return;
-      $('c-out').disabled=true; try{ await q(sb.rpc('staff_clock_out')); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-out').disabled=false; }
+      if(S.site&&S.site.qr_required&&!qrCode()){ alert('Za odlazak skeniraj QR kod na zidu u kuhinji kamerom telefona, pa klikni Odlazak.'); return; }
+      $('c-out').disabled=true; try{ const g=await getPos(true); await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); await reloadSmena(); }catch(e){ alert(errText(e)); $('c-out').disabled=false; }
     });
   }
 
@@ -517,8 +561,8 @@ tfoot td{font-weight:600}
         if(S.pending[id]){ errEl.textContent='Sačekaj da se slika pošalje.'; return; }
       }
       const temps=Object.entries(dr.temps||{}).map(([k,v])=>({point_id:k,value:num(v)})).filter(x=>x.value!=null);
-      e.target.disabled=true;
-      try{ await q(sb.rpc('chk_check',{p_date:S.ckDate,p_shift:S.ckShift,p_item:id,p_temps:temps,p_note:dr.note||null,p_photos:skip?[]:(dr.photos||[]),p_skip:skip}));
+      e.target.disabled=true; errEl.textContent='';
+      try{ const g=await getPos(!S.sef); await q(sb.rpc('chk_check',{p_date:S.ckDate,p_shift:S.ckShift,p_item:id,p_temps:temps,p_note:dr.note||null,p_photos:skip?[]:(dr.photos||[]),p_skip:skip,...geoArgs(g)}));
         delete S.drafts[id]; await loadDay(); renderSmena(); }
       catch(err){ errEl.textContent=errText(err); e.target.disabled=false; }
     }
@@ -573,8 +617,8 @@ tfoot td{font-weight:600}
     const per={}; rows.forEach(r=>{ const p=per[r.s.user_id]=per[r.s.user_id]||{n:0,tot:0,brk:0,net:0}; p.n++; p.tot+=r.tot; p.brk+=r.brk; p.net+=r.net; });
     $('r-sum').innerHTML = Object.keys(per).length ? `<div class="tablewrap"><table><thead><tr><th>Osoba</th><th class="n">Smena</th><th class="n">Na poslu (h)</th><th class="n">Pauze (h)</th><th class="n">Rad bez pauza (h)</th><th class="n">Prosek pauze</th></tr></thead><tbody>${
       Object.entries(per).sort((a,b)=>person(a[0]).localeCompare(person(b[0]))).map(([u,p])=>`<tr><td>${esc(person(u))}</td><td class="n">${p.n}</td><td class="n">${hrs(p.tot)}</td><td class="n">${hrs(p.brk)}</td><td class="n"><b>${hrs(p.net)}</b></td><td class="n">${dur(p.brk/p.n)}</td></tr>`).join('')}</tbody></table></div>` : '';
-    $('r-table').innerHTML = rows.length ? `<div class="tablewrap"><table><thead><tr><th>Dan</th><th>Osoba</th><th>Smena</th><th>Dolazak</th><th>Odlazak</th><th class="n">Na poslu</th><th class="n">Pauze</th><th class="n">Rad</th><th>Napomena</th><th></th></tr></thead><tbody>${
-      rows.map(r=>`<tr><td>${DAYS[dow(r.s.work_date)]} ${fmtD(r.s.work_date)}</td><td>${esc(person(r.s.user_id))}</td><td>${r.s.shift}.</td><td>${bgHM(new Date(r.s.clock_in))}</td><td>${r.s.clock_out?bgHM(new Date(r.s.clock_out)):'<b style="color:var(--good)">na smeni</b>'}</td><td class="n">${dur(r.tot)}</td><td class="n">${dur(r.brk)}${r.nb?' ('+r.nb+')':''}</td><td class="n"><b>${dur(r.net)}</b></td><td>${r.s.edited_at?'✏️ ':''}${esc(r.s.note||'')}</td><td><button class="btn ghost small" type="button" data-fix="${r.s.id}">Ispravi</button></td></tr>`).join('')}</tbody></table></div>`
+    $('r-table').innerHTML = rows.length ? `<div class="tablewrap"><table><thead><tr><th>Dan</th><th>Osoba</th><th>Smena</th><th>Dolazak</th><th>Odlazak</th><th class="n">Od lokala</th><th class="n">Na poslu</th><th class="n">Pauze</th><th class="n">Rad</th><th>Napomena</th><th></th></tr></thead><tbody>${
+      rows.map(r=>`<tr><td>${DAYS[dow(r.s.work_date)]} ${fmtD(r.s.work_date)}</td><td>${esc(person(r.s.user_id))}</td><td>${r.s.shift}.</td><td>${bgHM(new Date(r.s.clock_in))}</td><td>${r.s.clock_out?bgHM(new Date(r.s.clock_out)):'<b style="color:var(--good)">na smeni</b>'}</td><td class="n">${r.s.in_dist_m!=null?Math.round(r.s.in_dist_m)+' m':'—'}${r.s.out_dist_m!=null?' / '+Math.round(r.s.out_dist_m)+' m':''}</td><td class="n">${dur(r.tot)}</td><td class="n">${dur(r.brk)}${r.nb?' ('+r.nb+')':''}</td><td class="n"><b>${dur(r.net)}</b></td><td>${r.s.edited_at?'✏️ ':''}${esc(r.s.note||'')}</td><td><button class="btn ghost small" type="button" data-fix="${r.s.id}">Ispravi</button></td></tr>`).join('')}</tbody></table></div>`
       : `<div class="empty"><strong>Nema evidencije za ovaj period</strong></div>`;
     $('r-table').querySelectorAll('[data-fix]').forEach(b=>b.addEventListener('click',async()=>{
       const s=sh.find(x=>x.id===b.dataset.fix);
@@ -605,7 +649,27 @@ tfoot td{font-weight:600}
   ['t-from','t-to'].forEach(id=>$(id).addEventListener('change',renderTreb));
 
   // ---------- PODEŠAVANJA ----------
+  let siteFull=null;
+  async function renderSite(){
+    try{ const r=await q(sb.from('staff_site').select('*').eq('id',1)); siteFull=r&&r[0]; }catch(e){ $('st-msg').textContent=errText(e); return; }
+    if(!siteFull){ $('st-msg').textContent='Nije pokrenut SQL 22_lokacija_qr.sql.'; return; }
+    $('st-lat').value=siteFull.lat; $('st-lng').value=siteFull.lng; $('st-rad').value=siteFull.radius_m; $('st-geo').checked=siteFull.geo_required; $('st-qr').checked=siteFull.qr_required;
+    const url=location.origin+'/aplikacija/osoblje.html?k='+siteFull.qr_secret;
+    let svg='';
+    try{ const qr=qrcode(0,'M'); qr.addData(url); qr.make(); svg=qr.createSvgTag({cellSize:6,margin:2,scalable:true}); }catch(_){ svg='<div class="status">QR biblioteka nije učitana.</div>'; }
+    $('qr-img').innerHTML=svg;
+    $('qr-print').innerHTML=`<h1 style="font-family:var(--f-display);font-size:42px;margin:0">IN SMOKE WE TRUST</h1><div style="font-size:24px;font-weight:600">Skeniraj kamerom telefona<br>za DOLAZAK i ODLAZAK</div>${svg}<div style="font-size:16px">Kuhinja osoblje · insmoke.rs/osoblje</div>`;
+  }
+  $('st-here').addEventListener('click',async()=>{ try{ const g=await getPos(true); if(g.lat==null) throw new Error('Lokacija nije dobijena.'); $('st-lat').value=g.lat.toFixed(7); $('st-lng').value=g.lng.toFixed(7); $('st-msg').textContent='Lokacija upisana (preciznost ~'+Math.round(g.acc)+' m). Klikni Sačuvaj.'; }catch(e){ alert(errText(e)); } });
+  $('st-save').addEventListener('click',async()=>{ const lat=num($('st-lat').value), lng=num($('st-lng').value), rad=Math.round(num($('st-rad').value)||0);
+    if(lat==null||lng==null||rad<30){ alert('Upiši lokaciju i krug (najmanje 30 m).'); return; }
+    try{ await q(sb.from('staff_site').update({lat,lng,radius_m:rad,geo_required:$('st-geo').checked,qr_required:$('st-qr').checked,updated_at:new Date().toISOString()}).eq('id',1)); await loadBase(); await renderSite(); $('st-msg').textContent='Sačuvano.'; }catch(e){ alert(errText(e)); } });
+  $('qr-new').addEventListener('click',async()=>{ if(!confirm('Napraviti nov QR kod? Stari (odštampani) odmah prestaje da važi i mora da se odštampa nov.')) return;
+    try{ await q(sb.rpc('staff_qr_new')); await renderSite(); $('st-msg').textContent='Nov QR kod je napravljen — odštampaj ga.'; }catch(e){ alert(errText(e)); } });
+  $('qr-print-btn').addEventListener('click',()=>{ $('qr-print').style.display='flex'; window.print(); setTimeout(()=>$('qr-print').style.display='none',500); });
+
   function renderPodes(){
+    renderSite();
     $('pt-list').innerHTML=`<div class="tablewrap"><table><thead><tr><th>Naziv</th><th>Vrsta</th><th class="n">Min °C</th><th class="n">Max °C</th><th>Aktivno</th><th></th></tr></thead><tbody>${S.points.map(p=>`<tr data-pt="${p.id}"><td><input data-f="label" value="${esc(p.label)}"></td><td>${KIND_LABEL[p.kind]}</td><td><input class="num" data-f="t_min" value="${p.t_min??''}" style="width:80px"></td><td><input class="num" data-f="t_max" value="${p.t_max??''}" style="width:80px"></td><td><input type="checkbox" data-f="active" ${p.active?'checked':''} style="width:auto"></td><td><button class="btn ghost small" type="button" data-savept="1">Sačuvaj</button></td></tr>`).join('')}</tbody></table></div>`;
     $('it-list').innerHTML=[1,2].map(sh=>`<h3 style="margin-top:6px">${sh}. smena</h3><div class="tablewrap"><table><thead><tr><th>Sekcija</th><th>Stavka</th><th>Rok</th><th>Aktivna</th><th></th></tr></thead><tbody>${S.items.filter(i=>i.shift===sh).map(i=>`<tr data-it="${i.id}"><td>${esc(i.section)}</td><td style="white-space:normal">${esc(i.title)}</td><td><input type="time" data-f="due" value="${i.due?i.due.slice(0,5):''}" style="width:110px"></td><td><input type="checkbox" data-f="active" ${i.active?'checked':''} style="width:auto"></td><td><button class="btn ghost small" type="button" data-saveit="1">Sačuvaj</button></td></tr>`).join('')}</tbody></table></div>`).join('');
   }
