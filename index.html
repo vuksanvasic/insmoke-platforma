@@ -330,6 +330,10 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
       <button role="tab" aria-selected="false" data-view="lotovi">Stanje lotova</button>
       <button role="tab" aria-selected="false" data-view="sled">Sledljivost</button>
     </div>
+    <div class="navgroup"><span class="navlabel">Kuhinja osoblje</span>
+      <button role="tab" aria-selected="false" data-view="osoblje" data-href="osoblje.html#smena" title="Dolazak, pauza, odlazak i ček-lista smene">Moja smena i ček-lista ↗</button>
+      <button role="tab" aria-selected="false" data-view="osoblje-pregled" data-href="osoblje.html#pregled" class="sef-only" hidden title="Pregled ček-lista, radno vreme, trebovanje">Pregled osoblja ↗</button>
+    </div>
     <div class="navgroup" id="nav-sef" hidden><span class="navlabel">Proizvodi</span>
       <button role="tab" aria-selected="false" data-view="normativi" title="Normativi su u Management Control-u">Normativi ↗</button>
     </div>
@@ -835,7 +839,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
   });
 
   // ---------- tabovi ----------
-  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.view==='normativi'){ location.href='management.html#normativi'; return; } tab(b.dataset.view); }));
+  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.href){ location.href=b.dataset.href; return; } if(b.dataset.view==='normativi'){ location.href='management.html#normativi'; return; } tab(b.dataset.view); }));
   function tab(v){
     if(!VIEWS.includes(v) || (ADMIN_VIEWS.includes(v) && !isAdmin) || (SEF_VIEWS.includes(v) && !isSef)) v='unos';
     document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===v)));
@@ -1956,6 +1960,7 @@ tr.clickrow.sel td{background:color-mix(in srgb,var(--ember) 8%,transparent)}
     $('mc-link').hidden=!isSef;
     $('nav-admin').hidden=!isAdmin;
     $('nav-sef').hidden=!isSef;
+    document.querySelectorAll('.sef-only').forEach(el=>el.hidden=!isSef);
     if(!W('date').value) W('date').value=today();
     try{ const sh=localStorage.getItem('syl-shift'); if(sh) W('shift').value=sh; }catch(_){}
     W('cook').value=me.full_name;

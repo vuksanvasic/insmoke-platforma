@@ -128,3 +128,15 @@ Stranica `zadaci.html` (https://insmoke.rs/aplikacija/zadaci.html), ista prijava
 - Prikaz po nedelji, mesecu ili sve: zadatak pripada periodu po roku; u tekućem periodu vide se i otvoreni zadaci bez roka i oni koji kasne iz ranijih perioda.
 - Istorija (dugme na tabli): poslednjih 12 nedelja ili meseci — koliko zadataka, urađeno na vreme, sa kašnjenjem, nije urađeno, u toku, % na vreme; i isto po osobi. Svaki zadatak čuva svoju istoriju (task_events).
 - Tim (dugme na tabli, administrator): dodavanje osobe sa imenom, mejlom, ulogom i početnom lozinkom; nalog je odmah aktivan (`supabase/16_tim.sql`, funkcija `admin_add_member`). Ljudi i dalje mogu i sami da se registruju.
+
+## Kuhinja osoblje (smena i ček-lista)
+
+Stranica `osoblje.html` (https://insmoke.rs/aplikacija/osoblje.html), ista prijava. U Kitchen Control-u je u meniju grupa **Kuhinja osoblje**.
+
+- **Moja smena** (svi): dugmad Dolazak (bira se 1. ili 2. smena), Pauza / Kraj pauze, Odlazak. Vreme upisuje server (`now()`), ne telefon; računa se vreme na poslu, pauze i rad bez pauza. Ispod je ček-lista te smene, zajednička za sve koji su u smeni.
+- Stavka traži dokaz po šablonu: 📷 slika (samo kamera; na sliku se upisuje datum, vreme i ime), 🌡️ temperatura po mestu merenja (granice; van granica stavka pocrveni — `alarm`), ✍️ upis, 🛒 trebovanje (artikal iz šifarnika namirnica + količina). „Ako ima“ stavke (prijem robe) mogu „Danas nije bilo“. Rok po stavci; petkom i subotom rokovi zatvaranja +1h. Kasni / posle roka se vidi.
+- Primopredaja: stavka „Primopredaja napisana“ jedne smene prikazuje se kao „Pročitana primopredaja“ u sledećoj.
+- Potvrda šefa smene na dnu; posle potvrde kuvar ne može da poništava stavke (samo administrator).
+- **Pregled ček-lista**, **Radno vreme** (zbir po osobi, ispravka zaboravljene odjave uz napomenu), **Trebovanje** (zbirni spisak za nabavku): šef smene, menadžer, administrator. Kuvar vidi samo svoje radno vreme.
+- **Podešavanja** (administrator): mesta za temperaturu (frižideri, zamrzivači, holding) sa granicama; rok i uključenost stavki.
+- Baza: `supabase/21_osoblje.sql` — `staff_shifts`, `staff_breaks`, `chk_points`, `chk_items` (šablon 1. i 2. smene), `chk_done`, `chk_requests`, `chk_signoff`; funkcije `staff_clock_in`, `staff_break_toggle`, `staff_clock_out`, `staff_fix`, `chk_check`, `chk_uncheck`, `chk_sign`; slike u privatnom prostoru `osoblje`.
