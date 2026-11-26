@@ -256,6 +256,9 @@ tr:last-child td{border-bottom:0}
 .install .t b{display:block;font:400 22px var(--f-display);letter-spacing:.03em;color:#fff}
 .install .x{background:none;border:0;color:var(--muted);cursor:pointer;padding:8px}
 
+.qs-wrap{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1/1;width:100%;max-width:420px;align-self:center}
+.qs-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+.qs-frame{position:absolute;inset:18%;border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
 /* prijava */
 .login{max-width:420px;margin:0 auto;padding:9vh 18px 40px;display:flex;flex-direction:column;gap:20px}
 .logo{font:400 72px/0.82 var(--f-display);letter-spacing:.01em;color:#fff}
@@ -336,6 +339,7 @@ tr:last-child td{border-bottom:0}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script src="config.js"></script>
 <script>
 (function(){
@@ -393,6 +397,33 @@ tr:last-child td{border-bottom:0}
   (function(){ try{ const u=new URL(location.href); const k=u.searchParams.get('k'); if(k){ sessionStorage.setItem('osoblje-qr',JSON.stringify({k,t:Date.now()})); u.searchParams.delete('k'); history.replaceState(null,'',u.pathname+u.search+u.hash); } }catch(_){} })();
   function qrCode(){ try{ const v=JSON.parse(sessionStorage.getItem('osoblje-qr')||'null'); if(v && Date.now()-v.t < 20*60000) return v.k; }catch(_){} return null; }
   function qrUsed(){ try{ sessionStorage.removeItem('osoblje-qr'); }catch(_){} }
+  function qrFromText(t){ t=String(t||'').trim(); try{ const u=new URL(t); const k=u.searchParams.get('k'); if(k) return k; }catch(_){} return /^[A-Za-z0-9_-]{16,64}$/.test(t)?t:null; }
+  // Skener QR koda u aplikaciji (radi i kad je aplikacija instalirana na početni ekran).
+  function scanQR(what){ return new Promise(resolve=>{
+    let stream=null, raf=0, done=false, det=null;
+    modal(`<div class="spread"><div class="h-md">${ico('qr')} ${esc(what)} — skeniraj QR kod</div><button class="btn ghost sm" type="button" id="qs-x" aria-label="Zatvori">${ico('x')}</button></div>
+      <div class="qs-wrap"><video id="qs-v" playsinline muted autoplay></video><div class="qs-frame"></div></div>
+      <div class="muted" id="qs-msg">Uperi kameru u QR kod na zidu u kuhinji.</div>`);
+    const stop=v=>{ if(done) return; done=true; cancelAnimationFrame(raf); if(stream) stream.getTracks().forEach(t=>t.stop()); closeModal(); resolve(v); };
+    $('qs-x').onclick=()=>stop(null); $('modal-bg').addEventListener('click',function h(e){ if(e.target.id==='modal-bg'){ $('modal-bg').removeEventListener('click',h); stop(null);} });
+    const msg=t=>{ const m=$('qs-msg'); if(m) m.innerHTML=t; };
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ msg('<span class="err">Ovaj telefon ne daje kameru aplikaciji. Skeniraj QR kod običnom kamerom telefona.</span>'); return; }
+    navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}).then(async st=>{
+      if(done){ st.getTracks().forEach(t=>t.stop()); return; }
+      stream=st; const v=$('qs-v'); v.srcObject=st; try{ await v.play(); }catch(_){}
+      try{ if('BarcodeDetector' in window){ const f=await BarcodeDetector.getSupportedFormats(); if(f.includes('qr_code')) det=new BarcodeDetector({formats:['qr_code']}); } }catch(_){ det=null; }
+      const c=document.createElement('canvas'), g=c.getContext('2d',{willReadFrequently:true});
+      const tick=async()=>{ if(done) return;
+        if(v.readyState>=2 && v.videoWidth){
+          let txt=null;
+          try{ if(det){ const r=await det.detect(v); if(r&&r[0]) txt=r[0].rawValue; }
+               else if(window.jsQR){ const w=Math.min(640,v.videoWidth), h=Math.round(v.videoHeight*w/v.videoWidth); c.width=w; c.height=h; g.drawImage(v,0,0,w,h); const r=jsQR(g.getImageData(0,0,w,h).data,w,h,{inversionAttempts:'dontInvert'}); if(r) txt=r.data; } }catch(_){}
+          if(txt){ const k=qrFromText(txt); if(k){ try{ sessionStorage.setItem('osoblje-qr',JSON.stringify({k,t:Date.now()})); }catch(_){} if(navigator.vibrate) navigator.vibrate(60); stop(k); return; } msg('<span class="err">To nije QR kod kuhinje. Skeniraj kod sa zida.</span>'); }
+        }
+        raf=requestAnimationFrame(tick); };
+      tick();
+    }).catch(e=>{ msg('<span class="err">'+(e&&e.name==='NotAllowedError'?'Kamera je blokirana. Dozvoli kameru za insmoke.rs u podešavanjima telefona i pokušaj ponovo.':'Kamera nije dostupna. Pokušaj ponovo.')+'</span>'); });
+  }); }
   function getPos(required){
     if(S.site && !S.site.geo_required && required) return Promise.resolve({lat:null,lng:null,acc:null});
     return new Promise((res,rej)=>{
@@ -515,7 +546,7 @@ tr:last-child td{border-bottom:0}
       <div class="spread"><div><div class="tag"><i></i>${onBreak?'Na pauzi':'Na smeni'}</div><div class="h-xl" style="margin-top:6px">${SHIFT[sh].name}</div><div class="muted" style="font-size:14px;margin-top:4px">${DAYS[dow(date)]} ${fmtD(date)} · ${SHIFT[sh].sub}</div></div>${ico(SHIFT[sh].ico,'lg')}</div>
       <div class="stats"><div><small>Dolazak</small><b>${bgHM(new Date(S.open.clock_in))}</b></div><div><small>Pauze</small><b id="c-br-t">0:00</b></div><div><small>Rad</small><b id="c-net">0:00</b></div></div>
       <div class="acts"><button class="btn light" type="button" id="c-br">${ico(onBreak?'check':'coffee')} ${onBreak?'Kraj pauze':'Pauza'}</button><button class="btn inv" type="button" id="c-out">${ico('in')} Odlazak</button></div>
-      ${needQr?`<div class="note-qr">${ico('qr')} ${qrOk?'QR kod skeniran — možeš na odlazak.':'Za odlazak skeniraj QR kod na zidu u kuhinji.'}</div>`:''}
+      ${needQr?`<div class="note-qr">${ico('qr')} ${qrOk?'QR kod skeniran — možeš na odlazak.':'Za odlazak se otvara kamera — uperi je u QR kod na zidu.'}</div>`:''}
     </section>`;
     h+=`<section class="card"><div class="prog"><div class="ring" style="--p:${sm.pct}"><b>${sm.pct}%</b></div><div style="flex:1"><div class="h-md">Ček-lista</div><div class="muted">${sm.ok} od ${sm.total} urađeno</div>
       <div class="row" style="margin-top:8px">${sm.over?`<span class="chip bad">${sm.over} kasni</span>`:''}${sm.alarm?`<span class="chip bad">${ico('thermo')} ${sm.alarm} temperatura</span>`:''}${sm.late?`<span class="chip warn">${sm.late} posle roka</span>`:''}${!sm.over&&!sm.alarm&&sm.ok===sm.total?'<span class="chip good">Sve urađeno</span>':''}</div></div></div></section>`;
@@ -551,7 +582,7 @@ tr:last-child td{border-bottom:0}
         <div><div class="meter"><i style="width:${sm.pct}%"></i></div><div class="spread" style="margin-top:6px;font-size:13px"><span>Ček-lista ${sm.ok}/${sm.total}</span>${who.length?`<span class="who">${esc(who.join(', '))}</span>`:''}</div></div>
         <span class="go">${ico('out')} Dolazak</span></button>`; };
     $('v-smena').innerHTML=`<section class="hello"><div class="eyebrow">${DAYS[dow(t)]}, ${fmtD(t)}</div><div class="h-xl" style="margin-top:4px">Zdravo, <span>${esc(S.name.split(' ')[0])}</span></div><div class="muted" style="margin-top:6px">Izaberi svoju smenu i prijavi dolazak.</div></section>
-      ${(needQr||(S.site&&S.site.geo_required))?`<div class="gate">${needQr?`<span class="chip ${qrOk?'good':''}">${ico(qrOk?'check':'qr')} ${qrOk?'QR kod skeniran':'Prvo skeniraj QR kod na zidu'}</span>`:''}${S.site&&S.site.geo_required?`<span class="chip">${ico('pin')} Lokacija se proverava</span>`:''}</div>`:''}
+      ${(needQr||(S.site&&S.site.geo_required))?`<div class="gate">${needQr?`<span class="chip ${qrOk?'good':''}">${ico(qrOk?'check':'qr')} ${qrOk?'QR kod skeniran':'Dolazak: kamera skenira QR kod na zidu'}</span>`:''}${S.site&&S.site.geo_required?`<span class="chip">${ico('pin')} Lokacija se proverava</span>`:''}</div>`:''}
       <div class="shifts">${card(1)}${card(2)}</div>
       ${installHtml()}
       ${S.sef?`<section class="card"><div class="h-md">Šef smene</div><div class="muted">Ček-liste obe smene, potvrde i slike su u tabu Kontrola.</div><button class="btn ghost" type="button" data-goto="kontrola">${ico('chart')} Otvori Kontrolu</button></section>`:''}`;
@@ -640,7 +671,7 @@ tr:last-child td{border-bottom:0}
     delete S.pending[id]; renderSmena(); });
 
   async function clockIn(sh){
-    if(S.site&&S.site.qr_required&&!qrCode()){ modal(`<div class="h-md">${ico('qr','lg')} Skeniraj QR kod</div><div class="muted">Otvori kameru telefona i skeniraj QR kod na zidu u kuhinji. Otvoriće se ova aplikacija — onda klikni Dolazak.</div><button class="btn ghost" type="button" onclick="document.getElementById('modal-bg').hidden=true">U redu</button>`); return; }
+    if(S.site&&S.site.qr_required&&!qrCode()){ const k=await scanQR('Dolazak'); if(!k) return; }
     const card=document.querySelector(`[data-in="${sh}"]`); if(card){ card.disabled=true; card.querySelector('.go').innerHTML=ico('pin')+' Proveravam lokaciju…'; }
     try{ const g=await getPos(true); await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); S.sec=null; S.expand=null; toast('Dolazak je upisan. Dobar rad!','good'); await reloadSmena(); }
     catch(err){ toast(errText(err),'bad'); renderPick(); }
@@ -648,7 +679,7 @@ tr:last-child td{border-bottom:0}
   async function clockOut(){
     const open=itemsOf(S.shift).filter(i=>!st(i,S.date,S.shift).d&&!i.optional).length;
     if(!(await ask('Odlazak sa smene?', open?`Ostalo je ${open} neurađenih stavki ček-liste. Da li si napisao/la primopredaju?`:'Ček-lista je završena. Hvala!','Odjavi me'))) return;
-    if(S.site&&S.site.qr_required&&!qrCode()){ modal(`<div class="h-md">${ico('qr','lg')} Skeniraj QR kod</div><div class="muted">Za odlazak skeniraj QR kod na zidu u kuhinji kamerom telefona, pa klikni Odlazak.</div><button class="btn ghost" type="button" onclick="document.getElementById('modal-bg').hidden=true">U redu</button>`); return; }
+    if(S.site&&S.site.qr_required&&!qrCode()){ const k=await scanQR('Odlazak'); if(!k) return; }
     try{ const g=await getPos(true); await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); toast('Odlazak je upisan. Vidimo se!','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); }
   }
 
