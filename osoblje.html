@@ -665,7 +665,7 @@ tr:last-child td{border-bottom:0}
     if(b.dataset.shoot){ const card=b.closest('[data-item]'), id=card.dataset.item; const r=await openCamera(); if(r==='fallback'){ card.querySelector('[data-cam]').click(); return; } if(r) await addPhoto(id,r); return; }
     if(b.dataset.rmph){ const id=b.closest('[data-item]').dataset.item, dr=S.drafts[id]; if(dr&&dr.photos) dr.photos=dr.photos.filter(x=>x!==b.dataset.rmph); renderSmena(); return; }
     if(b.dataset.in){ await clockIn(Number(b.dataset.in)); return; }
-    if(b.id==='c-br'){ b.disabled=true; try{ const g=await getPos(true); const r=await q(sb.rpc('staff_break_toggle',geoArgs(g))); toast(r==='pocetak'?'Pauza je počela.':'Pauza je završena.','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); b.disabled=false; } return; }
+    if(b.id==='c-br'){ b.disabled=true; try{ const g=await posFor(); if(!g){ b.disabled=false; return; } const r=await q(sb.rpc('staff_break_toggle',geoArgs(g))); toast(r==='pocetak'?'Pauza je počela.':'Pauza je završena.','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); b.disabled=false; } return; }
     if(b.id==='c-out'){ await clockOut(); return; }
     if(b.dataset.sec && !b.dataset.open){ S.sec=b.dataset.sec; S.expand=null; renderSmena(); return; }
     if(b.dataset.open){ S.sec=b.dataset.sec; S.expand=b.dataset.open; renderSmena(); const el=document.querySelector(`[data-item="${b.dataset.open}"]`); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); return; }
@@ -771,17 +771,41 @@ tr:last-child td{border-bottom:0}
     if(b.dataset.mult){ openRecipe($('modal').dataset.rec, Number(b.dataset.mult)); return; }
     if(b.dataset.recipe){ openRecipe(b.dataset.recipe); return; } });
 
+  // Administrator: upozorenje umesto zabrane (van lokala / bez QR koda); udaljenost se upisuje.
+  function choose(title,text,opts){ return new Promise(res=>{
+    modal(`<div class="h-md">${esc(title)}</div><div class="muted">${text}</div><div style="display:flex;flex-direction:column;gap:10px">${opts.map((o,i)=>`<button class="btn ${o.cls||'ghost'}" type="button" data-ch="${i}">${esc(o.label)}</button>`).join('')}</div>`);
+    $('modal').querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>{ closeModal(); res(opts[Number(b.dataset.ch)].v); });
+  }); }
+  async function needQr(what){
+    if(!(S.site&&S.site.qr_required) || qrCode()) return true;
+    if(S.admin){ const c=await choose('QR kod nije skeniran', 'Kao administrator možeš da nastaviš bez skeniranja. Kuvari moraju da skeniraju kod.', [{label:'Skeniraj QR kod',v:'scan',cls:'pink'},{label:'Nastavi bez QR koda',v:'skip'},{label:'Odustani',v:null}]);
+      if(c==='skip') return true; if(c!=='scan') return false; }
+    return !!(await scanQR(what));
+  }
+  async function posFor(){
+    if(!S.admin) return getPos(true);
+    const g=await getPos(false);
+    if(!(S.site&&S.site.geo_required)) return g;
+    if(g.lat==null){ return (await choose('Lokacija nije dostupna','Telefon nije dao lokaciju. Kao administrator možeš da nastaviš; biće zabeleženo bez lokacije.',[{label:'Nastavi',v:1,cls:'pink'},{label:'Odustani',v:0}])) ? g : null; }
+    if(S.site.lat!=null){ const R=6371000, toR=x=>x*Math.PI/180, sl=Number(S.site.lat), sg=Number(S.site.lng), dLa=toR(g.lat-sl), dLo=toR(g.lng-sg);
+      const d=2*R*Math.asin(Math.sqrt(Math.sin(dLa/2)**2+Math.cos(toR(sl))*Math.cos(toR(g.lat))*Math.sin(dLo/2)**2));
+      if(d-Math.min(g.acc||0,150)>(S.site.radius_m||150)){
+        const km=d>=1000?(d/1000).toFixed(1).replace('.',',')+' km':Math.round(d)+' m';
+        if(!(await choose('Nisi u lokalu', `Udaljen si oko <b style="color:#fff">${km}</b> od lokala. Kao administrator možeš da nastaviš — udaljenost se upisuje i vidi u Radnom vremenu.`, [{label:'Nastavi kao administrator',v:1,cls:'pink'},{label:'Odustani',v:0}]))) return null; } }
+    return g;
+  }
+
   async function clockIn(sh){
-    if(S.site&&S.site.qr_required&&!qrCode()){ const k=await scanQR('Dolazak'); if(!k) return; }
+    if(!(await needQr('Dolazak'))) return;
     const card=document.querySelector(`[data-in="${sh}"]`); if(card){ card.disabled=true; card.querySelector('.go').innerHTML=ico('pin')+' Proveravam lokaciju…'; }
-    try{ const g=await getPos(true); await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); S.sec=null; S.expand=null; toast('Dolazak je upisan. Dobar rad!','good'); await reloadSmena(); }
+    try{ const g=await posFor(); if(!g){ renderPick(); return; } await q(sb.rpc('staff_clock_in',{p_shift:sh,...geoArgs(g),p_qr:qrCode()})); qrUsed(); S.sec=null; S.expand=null; toast('Dolazak je upisan. Dobar rad!','good'); await reloadSmena(); }
     catch(err){ toast(errText(err),'bad'); renderPick(); }
   }
   async function clockOut(){
     const open=itemsOf(S.shift).filter(i=>!st(i,S.date,S.shift).d&&!i.optional).length;
     if(!(await ask('Odlazak sa smene?', open?`Ostalo je ${open} neurađenih stavki ček-liste. Da li si napisao/la primopredaju?`:'Ček-lista je završena. Hvala!','Odjavi me'))) return;
-    if(S.site&&S.site.qr_required&&!qrCode()){ const k=await scanQR('Odlazak'); if(!k) return; }
-    try{ const g=await getPos(true); await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); toast('Odlazak je upisan. Vidimo se!','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); }
+    if(!(await needQr('Odlazak'))) return;
+    try{ const g=await posFor(); if(!g) return; await q(sb.rpc('staff_clock_out',{...geoArgs(g),p_qr:qrCode()})); qrUsed(); toast('Odlazak je upisan. Vidimo se!','good'); await reloadSmena(); }catch(err){ toast(errText(err),'bad'); }
   }
 
   // ---------- TREBOVANJE ----------
