@@ -914,7 +914,7 @@ tr:last-child td{border-bottom:0}
     $('me-name').textContent=name; $('me-role').textContent=ROLE[role]||role; $('me-av').textContent=initials(name);
     showV('app-view');
     try{ await loadBase(); await loadReqs(); }catch(e){ toast('Greška: '+errText(e)+' — da li su pokrenuti SQL 21–23?','bad'); return; }
-    const h=(location.hash||'').slice(1);
+    const h0=(location.hash||'').slice(1), h={pregled:'kontrola',rad:'kontrola',trebovanje:'treb',podesavanja:'podes'}[h0]||h0;
     await go(['smena','treb','vreme','kontrola','podes'].includes(h)?h:'smena');
     subscribe();
   }
