@@ -426,13 +426,13 @@ tr:last-child td{border-bottom:0}
   function qrUsed(){ try{ sessionStorage.removeItem('osoblje-qr'); }catch(_){} }
   function qrFromText(t){ t=String(t||'').trim(); try{ const u=new URL(t); const k=u.searchParams.get('k'); if(k) return k; }catch(_){} return /^[A-Za-z0-9_-]{16,64}$/.test(t)?t:null; }
   // Skener QR koda u aplikaciji (radi i kad je aplikacija instalirana na početni ekran).
-  function scanQR(what){ return new Promise(resolve=>{
+  function scanQR(what, allowSkip){ return new Promise(resolve=>{
     let stream=null, raf=0, done=false, det=null;
     modal(`<div class="spread"><div class="h-md">${ico('qr')} ${esc(what)} — skeniraj QR kod</div><button class="btn ghost sm" type="button" id="qs-x" aria-label="Zatvori">${ico('x')}</button></div>
       <div class="qs-wrap"><video id="qs-v" playsinline muted autoplay></video><div class="qs-frame"></div></div>
-      <div class="muted" id="qs-msg">Uperi kameru u QR kod na zidu u kuhinji.</div>`);
+      <div class="muted" id="qs-msg">Uperi kameru u QR kod na zidu u kuhinji.</div>${allowSkip?`<button class="btn ghost" type="button" id="qs-skip">Nastavi bez QR koda (administrator)</button>`:''}`);
     const stop=v=>{ if(done) return; done=true; cancelAnimationFrame(raf); if(stream) stream.getTracks().forEach(t=>t.stop()); closeModal(); resolve(v); };
-    $('qs-x').onclick=()=>stop(null); $('modal-bg').addEventListener('click',function h(e){ if(e.target.id==='modal-bg'){ $('modal-bg').removeEventListener('click',h); stop(null);} });
+    $('qs-x').onclick=()=>stop(null); if(allowSkip) $('qs-skip').onclick=()=>stop('SKIP'); $('modal-bg').addEventListener('click',function h(e){ if(e.target.id==='modal-bg'){ $('modal-bg').removeEventListener('click',h); stop(null);} });
     const msg=t=>{ const m=$('qs-msg'); if(m) m.innerHTML=t; };
     if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ msg('<span class="err">Ovaj telefon ne daje kameru aplikaciji. Skeniraj QR kod običnom kamerom telefona.</span>'); return; }
     navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}).then(async st=>{
@@ -778,9 +778,8 @@ tr:last-child td{border-bottom:0}
   }); }
   async function needQr(what){
     if(!(S.site&&S.site.qr_required) || qrCode()) return true;
-    if(S.admin){ const c=await choose('QR kod nije skeniran', 'Kao administrator možeš da nastaviš bez skeniranja. Kuvari moraju da skeniraju kod.', [{label:'Skeniraj QR kod',v:'scan',cls:'pink'},{label:'Nastavi bez QR koda',v:'skip'},{label:'Odustani',v:null}]);
-      if(c==='skip') return true; if(c!=='scan') return false; }
-    return !!(await scanQR(what));
+    const k=await scanQR(what, S.admin);
+    return k==='SKIP' || !!k;
   }
   async function posFor(){
     if(!S.admin) return getPos(true);
